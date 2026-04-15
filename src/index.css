@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+
+  /* Navbar glow background */
+  .navbar-glow {
+    position: relative;
+    z-index: 1;
+  }
+
+  .navbar-glow::before {
+    content: "";
+    position: absolute;
+    inset: -40% -60%;
+    opacity: 0.15;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255, 0, 0, 0.25), transparent 70%);
+  }
+
+  /* Nav link base */
+  .nav-link-base {
+    @apply relative px-4 py-2 text-white uppercase text-sm font-semibold transition-all duration-300;
+  }
+
+  /* Hover glow effect */
+  .nav-link-base:hover {
+    color: #ff1515;
+    text-shadow: 0 0 10px #ff1515, 0 0 20px rgba(255, 17, 17, 0.6);
+  }
+
+  /* Active link */
+  .nav-link-active {
+    color: #ff1515 !important;
+  }
+
+  /* Active underline glow */
+  .nav-link-active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #ff1515;
+    box-shadow: 0 0 10px #ff1515;
+  }
+
+  /* Hover underline animation */
+  .nav-link-base::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 2px;
+    background: #ff1515;
+    transition: 0.3s;
+  }
+
+  .nav-link-base:hover::after {
+    width: 100%;
+  }
+}
