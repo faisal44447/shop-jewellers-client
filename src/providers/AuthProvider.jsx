@@ -1,16 +1,7 @@
 import { createContext, useEffect, useState } from "react";
-import {
-    GoogleAuthProvider,
-    createUserWithEmailAndPassword,
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    signOut,
-    updateProfile
-} from "firebase/auth";
+import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from "firebase/auth";
 import { app } from "../firebase/firebase.config";
-import axios from "axios";
+import useAxiosPublic from "../hooks/useAxiosPublic";
 
 export const AuthContext = createContext(null);
 
@@ -20,74 +11,59 @@ const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const googleProvider = new GoogleAuthProvider();
+    const axiosPublic = useAxiosPublic();
 
-    // ✅ REGISTER
     const createUser = (email, password) => {
         setLoading(true);
-        return createUserWithEmailAndPassword(auth, email, password);
-    };
+        return createUserWithEmailAndPassword(auth, email, password)
+    }
 
-    // ✅ LOGIN
-    const signIn = async (email, password) => {
+    const signIn = (email, password) => {
         setLoading(true);
-        const result = await signInWithEmailAndPassword(auth, email, password);
+        return signInWithEmailAndPassword(auth, email, password);
+    }
 
-        // 🔥 LOGIN এর সাথে সাথে TOKEN নাও
-        const user = result.user;
-
-        const res = await axios.post("https://jewellers-shop-server.vercel.app/jwt", {
-            email: user.email
-        });
-
-        if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
-        }
-
-        return result;
-    };
-
-    // ✅ GOOGLE LOGIN
-    const googleSignIn = async () => {
+    const googleSignIn = () => {
         setLoading(true);
-        const result = await signInWithPopup(auth, googleProvider);
+        return signInWithPopup(auth, googleProvider);
+    }
 
-        const user = result.user;
-
-        const res = await axios.post("https://jewellers-shop-server.vercel.app/jwt", {
-            email: user.email
-        });
-
-        if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
-        }
-
-        return result;
-    };
-
-    // ✅ LOGOUT
     const logOut = () => {
-        localStorage.removeItem("access-token"); // 🔥 logout এ remove
         setLoading(true);
         return signOut(auth);
-    };
+    }
 
-    // ✅ UPDATE PROFILE
     const updateUserProfile = (name, photo) => {
         return updateProfile(auth.currentUser, {
-            displayName: name,
-            photoURL: photo
+            displayName: name, photoURL: photo
         });
-    };
+    }
 
-    // ✅ USER TRACK (NO TOKEN HERE ❌)
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, currentUser => {
             setUser(currentUser);
-            setLoading(false);
+            if (currentUser) {
+                // get token and store client
+                const userInfo = { email: currentUser.email };
+                axiosPublic.post('/jwt', userInfo)
+                    .then(res => {
+                        if (res.data.token) {
+                            localStorage.setItem('access-token', res.data.token);
+                            setLoading(false);
+                        }
+                    })
+            }
+            else {
+                // TODO: remove token (if token stored in the client side: Local storage, caching, in memory)
+                localStorage.removeItem('access-token');
+                setLoading(false);
+            }
+            
         });
-
-        return () => unsubscribe();
-    }, []);
+        return () => {
+            return unsubscribe();
+        }
+    }, [axiosPublic])
 
     const authInfo = {
         user,
@@ -97,7 +73,7 @@ const AuthProvider = ({ children }) => {
         googleSignIn,
         logOut,
         updateUserProfile
-    };
+    }
 
     return (
         <AuthContext.Provider value={authInfo}>

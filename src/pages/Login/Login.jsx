@@ -41,7 +41,7 @@ const Login = () => {
     };
 
     return (
-        <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800">            <div className="card w-full max-w-sm p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
+        <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800 -mt-20 py-10">            <div className="card w-full max-w-sm p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
 
             <div className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
 

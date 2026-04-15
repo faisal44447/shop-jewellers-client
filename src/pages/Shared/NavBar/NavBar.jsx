@@ -3,35 +3,42 @@ import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../../../providers/AuthProvider';
 import { FaShoppingCart } from 'react-icons/fa';
 import shopLogo from '../../../assets/shopLogo.png';
+import Swal from 'sweetalert2'; // Swal ইম্পোর্ট করে নিন
 
 const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
 
+    // --- লগআউট হ্যান্ডলার এখানে এড করবেন ---
     const handleLogOut = () => {
         logOut()
-            .then(() => console.log("Logged out successfully"))
+            .then(() => {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Logged out successfully!",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            })
             .catch((error) => console.log("Log out error:", error));
     };
 
-    // Active style
+    // Active style logic
     const navStyle = ({ isActive }) =>
         isActive
-            ? "nav-link-base nav-link-active"
-            : "nav-link-base";
+            ? "nav-link-base nav-link-active underline text-orange-400" 
+            : "nav-link-base text-white";
 
     const navOptions = (
         <>
             <li><NavLink to="/" className={navStyle}>Home</NavLink></li>
-            <li><NavLink to="/staff-records" className={navStyle}>Staff Records</NavLink></li>
-            <li><NavLink to="/add-staff" className={navStyle}>Add Staff</NavLink></li>
             {user && <li><NavLink to="/dashboard" className={navStyle}>Dashboard</NavLink></li>}
         </>
     );
 
     return (
         <div className="navbar navbar-glow fixed top-0 z-50 bg-black/70 backdrop-blur-xl px-6 shadow-lg">
-
-            {/* Left */}
+            {/* Left side: Logo & Dropdown */}
             <div className="navbar-start">
                 <div className="dropdown">
                     <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden text-white">
@@ -41,28 +48,24 @@ const NavBar = () => {
                         {navOptions}
                     </ul>
                 </div>
-
-                {/* Logo */}
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={shopLogo} alt="Logo" className="w-20 h-20" />
+                    <img src={shopLogo} alt="Logo" className="w-16 h-16" />
                 </Link>
             </div>
 
-            {/* Center */}
+            {/* Center side: NavLinks */}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal gap-8">
                     {navOptions}
                 </ul>
             </div>
 
-            {/* Right */}
-            {/* Right */}
+            {/* Right side: Cart, User Image & Buttons */}
             <div className="navbar-end gap-4">
                 {user ? (
                     <>
                         <FaShoppingCart className="text-xl text-red-500 cursor-pointer" />
 
-                        {/* User Image with Tooltip */}
                         <div className="tooltip tooltip-bottom" data-tip={user?.displayName || "User Name"}>
                             <div className="avatar">
                                 <div className="w-10 rounded-full ring ring-red-500 ring-offset-base-100 ring-offset-2">
@@ -75,7 +78,7 @@ const NavBar = () => {
                         </div>
 
                         <button
-                            onClick={handleLogOut}
+                            onClick={handleLogOut} // এখানে ক্লিক করলে ফাংশনটি কল হবে
                             className="btn btn-sm bg-red-500 text-white hover:bg-red-600 border-none"
                         >
                             Log Out

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const SignUp = () => {
@@ -19,12 +19,13 @@ const SignUp = () => {
                     .then(() => {
                         const userInfo = {
                             name: data.name,
-                            email: data.email
+                            email: data.email,
+                            role: data.email === 'md9897653@gmail.com' ? 'admin' : 'user' 
                         };
 
                         axiosPublic.post('/users', userInfo)
                             .then(res => {
-                                if (res.data.insertedId) {
+                                if (res.data.insertedId || res.data.message === 'user already exists') {
                                     reset();
                                     Swal.fire("Success", "User created successfully", "success");
                                     navigate('/');
@@ -37,48 +38,27 @@ const SignUp = () => {
 
     return (
         <div className="hero min-h-screen bg-base-200 py-20">
-            <div className="card w-full max-w-sm shadow-2xl bg-base-100">
-                <form onSubmit={handleSubmit(onSubmit)} className="card-body">
-                    <h2 className="text-2xl font-bold text-center">Sign Up</h2>
+            <div className="card w-full max-w-sm shadow-2xl bg-base-100 p-8">
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <h2 className="text-3xl font-bold text-center mb-6">Sign Up</h2>
                     
                     <div className="form-control">
-                        <label className="label"><span className="label-text">Name</span></label>
+                        <label className="label text-sm font-bold">Name</label>
                         <input {...register("name", { required: true })} className="input input-bordered" placeholder="Your Name" />
                     </div>
 
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Photo URL</span></label>
-                        <input {...register("photoURL", { required: true })} className="input input-bordered" placeholder="Photo URL" />
-                    </div>
-
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Email</span></label>
+                    <div className="form-control mt-2">
+                        <label className="label text-sm font-bold">Email</label>
                         <input {...register("email", { required: true })} className="input input-bordered" placeholder="Email" />
                     </div>
 
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Password</span></label>
-                        <div className="relative">
-                            <input
-                                {...register("password", { required: true, minLength: 6 })}
-                                type={showPass ? "text" : "password"}
-                                className="input input-bordered w-full"
-                                placeholder="Password"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPass(!showPass)}
-                                className="absolute right-3 top-3 text-sm text-blue-500"
-                            >
-                                {showPass ? "Hide" : "Show"}
-                            </button>
-                        </div>
+                    <div className="form-control mt-2">
+                        <label className="label text-sm font-bold">Password</label>
+                        <input {...register("password", { required: true, minLength: 6 })} type="password" title="Min 6 chars" className="input input-bordered" placeholder="Password" />
                     </div>
 
-                    <button className="btn btn-primary mt-4">Sign Up</button>
-                    <p className="text-center mt-2">
-                        Already have an account? <Link to="/login" className="text-blue-600 font-bold">Login</Link>
-                    </p>
+                    <button className="btn btn-primary w-full mt-6">Create Account</button>
+                    <p className="text-center mt-4">Already have an account? <Link to="/login" className="text-blue-600 font-bold">Login</Link></p>
                 </form>
             </div>
         </div>
