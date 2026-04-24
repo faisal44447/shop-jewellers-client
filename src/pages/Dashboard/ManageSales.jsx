@@ -31,8 +31,8 @@ const ManageSales = () => {
                         <tr key={i}>
                             <td>{s.productId}</td>
                             <td>{s.quantity}</td>
-                            <td>{s.totalPrice}</td>
-                            <td>{new Date(s.createdAt).toLocaleString()}</td>
+                            <td>{s.total}</td>
+                            <td>{new Date(s.date).toLocaleString()}</td>
                         </tr>
                     ))}
                 </tbody>

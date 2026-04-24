@@ -1,16 +1,24 @@
-import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../providers/AuthProvider';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import SocialLogin from '../../components/SocialLogin/SocialLogin';
-import { LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha } from 'react-simple-captcha'; import Swal from 'sweetalert2';
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../providers/AuthProvider";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import SocialLogin from "../../components/SocialLogin/SocialLogin";
+import {
+    LoadCanvasTemplate,
+    loadCaptchaEnginge,
+    validateCaptcha,
+} from "react-simple-captcha";
+import Swal from "sweetalert2";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
 
 const Login = () => {
     const [disabled, setDisabled] = useState(true);
     const [showPass, setShowPass] = useState(false);
+
     const { signIn } = useContext(AuthContext);
+    const axiosPublic = useAxiosPublic();
+
     const navigate = useNavigate();
     const location = useLocation();
-
     const from = location.state?.from?.pathname || "/";
 
     useEffect(() => {
@@ -18,91 +26,112 @@ const Login = () => {
     }, []);
 
     const handleValidateCaptcha = (e) => {
-        const user_captcha_value = e.target.value;
-        if (validateCaptcha(user_captcha_value)) {
-            setDisabled(false);
-        } else {
-            setDisabled(true);
-        }
+        const value = e.target.value;
+        setDisabled(!validateCaptcha(value));
     };
 
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
+
         const form = event.target;
         const email = form.email.value;
         const password = form.password.value;
 
-        signIn(email, password)
-            .then(() => {
-                Swal.fire("Success", "Login Successful", "success");
-                navigate(from, { replace: true });
-            })
-            .catch(err => Swal.fire("Error", err.message, "error"));
+        try {
+            // 1. Firebase login
+            const result = await signIn(email, password);
+            const user = result.user;
+
+            // 2. Save user to DB
+            const userInfo = {
+                email: user.email,
+                name: user.displayName || "User",
+            };
+
+            await axiosPublic.post("/users", userInfo);
+
+            Swal.fire("Success", "Login Successful", "success");
+
+            navigate(from, { replace: true });
+        } catch (err) {
+            Swal.fire("Error", err.message, "error");
+        }
     };
 
     return (
-        <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800 -mt-20 py-10">            <div className="card w-full max-w-sm p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
+        <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800 -mt-20 py-10">
 
-            <div className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
+            <div className="card w-full max-w-sm p-[2px] rounded-2xl 
+        bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 
+        shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
 
-                <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">
-                    Welcome Back
-                </h2>
+                <form
+                    onSubmit={handleLogin}
+                    className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white"
+                >
+                    <h2 className="text-3xl font-bold text-center text-yellow-400">
+                        Welcome Back
+                    </h2>
 
-                {/* Email */}
-                <input
-                    name="email"
-                    type="email"
-                    placeholder="Email"
-                    className="input input-bordered bg-black/40 border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-4"
-                    required
-                />
-
-                {/* Password */}
-                <div className="relative mt-2">
+                    {/* Email */}
                     <input
-                        name="password"
-                        type={showPass ? "text" : "password"}
-                        placeholder="Password"
-                        className="input input-bordered w-full bg-black/40 border-yellow-500 text-white"
+                        name="email"
+                        type="email"
+                        placeholder="Email"
+                        className="input input-bordered bg-black/40 border-yellow-500 text-white mt-4"
                         required
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowPass(!showPass)}
-                        className="absolute right-3 top-3 text-yellow-400 text-sm"
-                    >
-                        {showPass ? "Hide" : "Show"}
-                    </button>
-                </div>
 
-                {/* Captcha */}
-                <div className="form-control">
-                    <label className="label">
+                    {/* Password */}
+                    <div className="relative mt-2">
+                        <input
+                            name="password"
+                            type={showPass ? "text" : "password"}
+                            placeholder="Password"
+                            className="input input-bordered w-full bg-black/40 border-yellow-500 text-white"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPass(!showPass)}
+                            className="absolute right-3 top-3 text-yellow-400 text-sm"
+                        >
+                            {showPass ? "Hide" : "Show"}
+                        </button>
+                    </div>
+
+                    {/* Captcha */}
+                    <div className="form-control mt-3">
                         <LoadCanvasTemplate />
-                    </label>
-                    <input onBlur={handleValidateCaptcha} type="text" name="captcha" placeholder="type the captcha above" className="input input-bordered" />
+                        <input
+                            onBlur={handleValidateCaptcha}
+                            type="text"
+                            placeholder="type captcha"
+                            className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
+                        />
+                    </div>
 
-                </div>
+                    {/* Button */}
+                    <button
+                        type="submit"
+                        disabled={disabled}
+                        className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 
+              border-none text-black font-bold"
+                    >
+                        Login
+                    </button>
 
-                {/* Button */}
-                <button
-                    disabled={disabled}
-                    className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 border-none text-black font-bold shadow-lg hover:scale-105 hover:shadow-yellow-500/50 transition-all duration-300"
-                >
-                    Login
-                </button>
+                    {/* Signup */}
+                    <p className="text-sm mt-3 text-center">
+                        New here?{" "}
+                        <Link to="/signup" className="text-yellow-400 font-bold">
+                            Create account
+                        </Link>
+                    </p>
+                </form>
 
-                {/* Signup */}
-                <p className="text-sm mt-3 text-center">
-                    New here?{" "}
-                    <Link to="/signup" className="text-yellow-400 font-bold hover:underline">
-                        Create account
-                    </Link>
-                </p>
+                <SocialLogin />
             </div>
-            <SocialLogin></SocialLogin>
-        </div>
         </div>
     );
 };

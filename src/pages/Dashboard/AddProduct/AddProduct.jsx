@@ -1,130 +1,56 @@
-import { useState } from "react";
-import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
+import useAxiosPublic from "../../../hooks/useAxiosPublic";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const AddProduct = () => {
-    const axiosSecure = useAxiosSecure();
+  const { register, handleSubmit, reset } = useForm();
+  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
-    const [form, setForm] = useState({
-        name: "",
-        category: "",
-        stock: "",
-        buyPrice: "",
-        sellPrice: ""
-    });
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", data.image[0]);
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
+      const imgRes = await axiosPublic.post(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_HOSTING_KEY}`,
+        formData
+      );
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      const product = {
+        name: data.name,
+        karat: data.karat,
+        vori: Number(data.vori || 0),
+        ana: Number(data.ana || 0),
+        rati: Number(data.rati || 0),
+        point: Number(data.point || 0),
+        buyPrice: Number(data.buyPrice || 0),
+        image: imgRes.data.data.display_url,
+        createdAt: new Date(),
+      };
 
-        const productData = {
-            ...form,
-            stock: parseInt(form.stock),
-            buyPrice: parseFloat(form.buyPrice),
-            sellPrice: parseFloat(form.sellPrice)
-        };
+      const res = await axiosSecure.post("/products", product);
 
-        try {
-            const res = await axiosSecure.post('/products', productData);
+      if (res.data.success) {
+        Swal.fire("Success", "Product added", "success");
+        reset();
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire("Error", "Failed to add product", "error");
+    }
+  };
 
-            if (res.data.insertedId) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Product Added!",
-                    text: "Your product has been saved successfully",
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+      <input {...register("name")} placeholder="Name" className="input" />
+      <input {...register("karat")} placeholder="Karat" className="input" />
+      <input type="file" {...register("image")} className="file-input" />
 
-                setForm({
-                    name: "",
-                    category: "",
-                    stock: "",
-                    buyPrice: "",
-                    sellPrice: ""
-                });
-            }
-        } catch (err) {
-            Swal.fire({
-                icon: "error",
-                title: "Failed!",
-                text: "Product not added"
-            });
-        }
-    };
-
-    return (
-        <div className="max-w-xl mx-auto bg-white p-6 shadow rounded">
-
-            <h2 className="text-2xl font-bold mb-4">Add Product</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Product Name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                    required
-                />
-
-                <input
-                    type="text"
-                    name="category"
-                    placeholder="Category"
-                    value={form.category}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                />
-
-                <input
-                    type="number"
-                    name="stock"
-                    placeholder="Stock"
-                    value={form.stock}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                    required
-                />
-
-                <input
-                    type="number"
-                    name="buyPrice"
-                    placeholder="Buy Price"
-                    value={form.buyPrice}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                    required
-                />
-
-                <input
-                    type="number"
-                    name="sellPrice"
-                    placeholder="Sell Price"
-                    value={form.sellPrice}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                    required
-                />
-
-                <button
-                    type="submit"
-                    className="btn btn-warning w-full"
-                >
-                    Add Product
-                </button>
-
-            </form>
-        </div>
-    );
+      <button className="btn btn-primary w-full">Add Product</button>
+    </form>
+  );
 };
 
 export default AddProduct;

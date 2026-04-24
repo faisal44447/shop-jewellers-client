@@ -2,13 +2,13 @@ import { useContext } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../../../providers/AuthProvider';
 import { FaShoppingCart } from 'react-icons/fa';
-import shopLogo from '../../../assets/shopLogo.png';
-import Swal from 'sweetalert2'; // Swal ইম্পোর্ট করে নিন
+import Swal from 'sweetalert2'; 
+import laivinIcon from '../../../assets/laivinIcon.PNG'; // Adjust the path as needed
 
 const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
 
-    // --- লগআউট হ্যান্ডলার এখানে এড করবেন ---
+
     const handleLogOut = () => {
         logOut()
             .then(() => {
@@ -26,7 +26,7 @@ const NavBar = () => {
     // Active style logic
     const navStyle = ({ isActive }) =>
         isActive
-            ? "nav-link-base nav-link-active underline text-orange-400" 
+            ? "nav-link-base nav-link-active underline text-orange-400"
             : "nav-link-base text-white";
 
     const navOptions = (
@@ -49,7 +49,7 @@ const NavBar = () => {
                     </ul>
                 </div>
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={shopLogo} alt="Logo" className="w-16 h-16" />
+                    <img src={laivinIcon} alt="Logo" className="w-20 h-20" />
                 </Link>
             </div>
 

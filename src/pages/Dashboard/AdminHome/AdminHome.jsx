@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { FaBook, FaDollarSign, FaUsers } from 'react-icons/fa';
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FaDollarSign, FaUsers, FaBox } from "react-icons/fa";
 import {
     BarChart,
     Bar,
@@ -10,128 +11,123 @@ import {
     PieChart,
     Pie,
     Legend,
-    ResponsiveContainer
-} from 'recharts';
+    ResponsiveContainer,
+} from "recharts";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useAuth from "../../../hooks/useAuth";
+import useAdmin from "../../../hooks/useAdmin";
 
-import useAxiosSecure from '../../../hooks/useAxiosSecure';
-import useAuth from '../../../hooks/useAuth';
-
-const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const colors = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 const AdminHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
+    const [isAdmin, isAdminLoading] = useAdmin();
 
-    // ✅ Admin stats
+    if (isAdminLoading) {
+        return <p className="text-center mt-10">Loading...</p>;
+    }
+
+    // ✅ DASHBOARD SUMMARY
     const { data: stats = {} } = useQuery({
-        queryKey: ['admin-stats'],
+        queryKey: ["dashboard"],
         queryFn: async () => {
-            const res = await axiosSecure.get('/admin-stats');
+            const res = await axiosSecure.get("/dashboard");
             return res.data;
-        }
+        },
     });
 
-    // ✅ Order stats (chart data)
-    const { data: chartData = [], isLoading } = useQuery({
-        queryKey: ['order-stats'],
+    // ✅ PRODUCTS FOR CHART
+    const { data: products = [], isLoading } = useQuery({
+        queryKey: ["products"],
         queryFn: async () => {
-            const res = await axiosSecure.get('/order-stats');
+            const res = await axiosSecure.get("/products");
             return res.data;
-        }
+        },
     });
 
-    // ✅ Pie chart data
-    const pieChartData = chartData.map(data => ({
-        name: data._id,
-        value: data.revenue
-    }));
-
-    // ✅ Loading handle
     if (isLoading) {
         return <p className="text-center mt-10">Loading charts...</p>;
     }
 
+    // ✅ SAFETY FIX (map error avoid)
+    const safeChart = Array.isArray(products) ? products : [];
+
+    const pieChartData = safeChart.map((p) => ({
+        name: p.name,
+        value: p.buyPrice || 0,
+    }));
+
     return (
         <div>
-            <h2 className="text-3xl mb-5">
-                <span>Hi, Welcome </span>
-                {user?.displayName ? user.displayName : 'Back'}
-            </h2>
 
-            {/* ✅ Stats */}
-            <div className="stats shadow mb-10">
+            {/* PROFILE */}
+            <div className="flex items-center gap-4 mb-6">
+                <img
+                    src={
+                        isAdmin
+                            ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                            : user?.photoURL
+                    }
+                    className="w-16 h-16 rounded-full"
+                />
 
-                <div className="stat">
-                    <div className="stat-figure text-secondary">
-                        <FaDollarSign className='text-3xl' />
-                    </div>
-                    <div className="stat-title">Revenue</div>
-                    <div className="stat-value">${stats.revenue || 0}</div>
-                </div>
-
-                <div className="stat">
-                    <div className="stat-figure text-secondary">
-                        <FaUsers className='text-3xl' />
-                    </div>
-                    <div className="stat-title">Users</div>
-                    <div className="stat-value">{stats.users || 0}</div>
-                </div>
-
-                <div className="stat">
-                    <div className="stat-figure text-secondary">
-                        <FaBook className='text-3xl' />
-                    </div>
-                    <div className="stat-title">Menu Items</div>
-                    <div className="stat-value">{stats.menuItems || 0}</div>
-                </div>
-
-                <div className="stat">
-                    <div className="stat-title">Orders</div>
-                    <div className="stat-value">{stats.orders || 0}</div>
-                </div>
-
+                <h2 className="text-3xl">
+                    {isAdmin ? "Welcome Admin 👑" : `Welcome ${user?.displayName}`}
+                </h2>
             </div>
 
-            {/* ✅ Charts */}
-            <div className="flex flex-col md:flex-row gap-10">
+            {/* STATS */}
+            <div className="stats shadow mb-10">
+                <div className="stat">
+                    <div>Revenue</div>
+                    <div>{stats.totalSales || 0}</div>
+                </div>
 
-                {/* 🔵 Bar Chart */}
+                <div className="stat">
+                    <div>Stock</div>
+                    <div>{stats.totalStock || 0}</div>
+                </div>
+
+                <div className="stat">
+                    <div>Profit</div>
+                    <div>{stats.profit || 0}</div>
+                </div>
+            </div>
+
+            {/* CHART */}
+            <div className="flex gap-10 flex-col md:flex-row">
+
+                {/* BAR */}
                 <div className="w-full md:w-1/2 h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
+                    <ResponsiveContainer>
+                        <BarChart data={safeChart}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="_id" />
+                            <XAxis dataKey="name" />
                             <YAxis />
-                            <Bar dataKey="quantity">
-                                {
-                                    chartData.map((entry, index) => (
-                                        <Cell key={index} fill={colors[index % colors.length]} />
-                                    ))
-                                }
+                            <Bar dataKey="buyPrice">
+                                {safeChart.map((_, i) => (
+                                    <Cell key={i} fill={colors[i % colors.length]} />
+                                ))}
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* 🟢 Pie Chart */}
-                <div className="w-full md:w-1/2 h-[400px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                {/* PIE */}
+                <div className="w-full md:w-1/2 h-[300px]">
+                    <ResponsiveContainer>
                         <PieChart>
                             <Pie
                                 data={pieChartData}
                                 dataKey="value"
                                 nameKey="name"
-                                cx="50%"
-                                cy="50%"
                                 outerRadius={100}
                                 label
                             >
-                                {
-                                    pieChartData.map((entry, index) => (
-                                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                                    ))
-                                }
+                                {pieChartData.map((_, i) => (
+                                    <Cell key={i} fill={colors[i % colors.length]} />
+                                ))}
                             </Pie>
                             <Legend />
                         </PieChart>

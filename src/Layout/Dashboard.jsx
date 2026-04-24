@@ -1,37 +1,48 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { FaHome, FaShoppingCart, FaUsers, FaUtensils, FaList, FaBook, FaCalendar, FaAd, FaSearch, FaEnvelope } from "react-icons/fa";
 import useCart from "../hooks/useCart";
 import useAdmin from "../hooks/useAdmin";
 
 const Dashboard = () => {
     const [cart] = useCart();
-    const [isAdmin] = useAdmin();
+    const [isAdmin, isAdminLoading] = useAdmin(); // ✅ FIX
+
+    if (isAdminLoading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <span className="loading loading-spinner text-warning loading-lg"></span>
+            </div>
+        );
+    }
+
+    const linkStyle = ({ isActive }) =>
+        `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-orange-700 text-white" : "hover:bg-orange-600 text-white"
+        }`;
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
-            <div className="w-64 bg-orange-500 text-white min-h-screen p-4">
-                <h2 className="text-2xl font-bold text-center mb-8 uppercase">Shop Panel</h2>
-                <ul className="menu space-y-2">
+        <div className="flex min-h-screen">
+            <div className="w-64 bg-orange-500 text-white p-4">
+                <h2 className="text-xl font-bold mb-5">Dashboard</h2>
 
+                <ul className="space-y-2">
                     {isAdmin ? (
                         <>
-                            <li><NavLink to="/dashboard/adminHome">Admin Home</NavLink></li>
-                            <li><NavLink to="/dashboard/add-product">Add Product</NavLink></li>
-                            <li><NavLink to="/dashboard/manage-products">Manage Products</NavLink></li>
-                            <li><NavLink to="/dashboard/all-users">All Users</NavLink></li>
-                            <li><NavLink to="/dashboard/sales">Sales History</NavLink></li>
+                            <li><NavLink to="/dashboard/adminHome" className={linkStyle}>Admin Home</NavLink></li>
+                            <li><NavLink to="/dashboard/add-product" className={linkStyle}>Add Product</NavLink></li>
+                            <li><NavLink to="/dashboard/manage-product" className={linkStyle}>Manage Product</NavLink></li>
                         </>
                     ) : (
                         <>
-                            <li><NavLink to="/dashboard/userHome">User Home</NavLink></li>
-                            <li><NavLink to="/dashboard/sell-product">Sell Product</NavLink></li>
-                            <li><NavLink to="/dashboard/history">History</NavLink></li>
+                            <li><NavLink to="/dashboard/userHome" className={linkStyle}>User Home</NavLink></li>
+                            <li><NavLink to="/dashboard/products" className={linkStyle}>Products</NavLink></li>
+                            <li><NavLink to="/dashboard/cart" className={linkStyle}>Cart ({cart.length})</NavLink></li>
                         </>
                     )}
 
+                    <li><NavLink to="/" className={linkStyle}>Back Home</NavLink></li>
                 </ul>
             </div>
-            <div className="flex-1 p-10">
+
+            <div className="flex-1 p-6 bg-gray-50">
                 <Outlet />
             </div>
         </div>

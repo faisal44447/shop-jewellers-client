@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     include: ['react-helmet-async']
+  },
+  resolve: {
+  alias: {
+    events: "events"
   }
+},
 })
