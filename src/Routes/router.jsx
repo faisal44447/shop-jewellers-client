@@ -15,6 +15,20 @@ import Cart from "../pages/Dashboard/Cart/Cart";
 
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
+import Expenses from '../pages/Dashboard/Expenses/Expenses';
+import ExpensesDetailsToDo from '../pages/Dashboard/Expenses/ExpensesDetailsToDo';
+import ExpenseList from '../pages/Dashboard/ExpenseList/ExpenseList';
+import EditStaff from '../pages/Dashboard/EditStaff/EditStaff';
+import HowladList from '../pages/Dashboard/HowladNewa/HowladList';
+import HowladNewa from '../pages/Dashboard/HowladNewa/HowladNewa';
+import PaboTaka from '../pages/Dashboard/PaboTaka/PaboTaka';
+import PaboTakaList from '../pages/Dashboard/PaboTaka/PaboTakaList';
+import ProductCard from '../pages/Dashboard/ProductCard/ProductCard';
+import ProductCardPage from '../pages/Dashboard/ProductCardPage/ProductCardPage';
+import SellProduct from '../pages/Dashboard/SellProduct/SellProduct';
+import Sales from '../pages/Dashboard/Sales/Sales';
+import StaffList from '../pages/Dashboard/StaffList/StaffList';
+import StaffSalaryCard from "../pages/Dashboard/StaffSalaryCard/StaffSalaryCard";
 
 export const router = createBrowserRouter([
     {
@@ -38,11 +52,29 @@ export const router = createBrowserRouter([
             { path: "userHome", element: <UserHome /> },
             { path: "products", element: <Products /> },
             { path: "cart", element: <Cart /> },
+            { path: "expense", element: <Expenses /> },
+            { path: "expense-detailsToDo", element: <ExpensesDetailsToDo /> },
+            { path: "howlad-newa", element: <HowladNewa /> },
+            { path: "paboTaka", element: <PaboTaka /> },
+            { path: "product-cardPage", element: <ProductCardPage /> },
+            { path: "sell-product", element: <SellProduct /> },
+            { path: "staff-salaryCard", element: <StaffSalaryCard /> },
+            { path: "staff-list", element: <StaffList /> },
+
 
             // ADMIN ONLY
             { path: "adminHome", element: <AdminRoute><AdminHome /></AdminRoute> },
             { path: "add-product", element: <AdminRoute><AddProduct /></AdminRoute> },
             { path: "manage-product", element: <AdminRoute><ManageProduct /></AdminRoute> },
+            { path: "expense-list", element: <AdminRoute><ExpenseList /></AdminRoute> },
+            { path: "edit-staff", element: <AdminRoute><EditStaff /></AdminRoute> },
+            { path: "howlad-list", element: <AdminRoute><HowladList /></AdminRoute> },
+            { path: "paboTaka", element: <AdminRoute><PaboTakaList /></AdminRoute> },
+            { path: "product-card", element: <AdminRoute><ProductCard /></AdminRoute> },
+            { path: "sales", element: <AdminRoute><Sales /></AdminRoute> },
+            { path: "edit-staff", element: <AdminRoute><EditStaff /></AdminRoute> },
+
+
         ],
     },
 ]);

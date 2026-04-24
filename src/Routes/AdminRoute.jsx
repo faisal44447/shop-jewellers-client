@@ -4,7 +4,7 @@ import useAdmin from "../hooks/useAdmin";
 
 const AdminRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    const [isAdmin, isAdminLoading] = useAdmin(); // ✅ correct destructuring
+    const [isAdmin, isAdminLoading] = useAdmin();
     const location = useLocation();
 
     if (loading || isAdminLoading) {
@@ -25,7 +25,7 @@ const AdminRoute = ({ children }) => {
         return <Navigate to="/dashboard/userHome" replace />;
     }
 
-    // ✅ admin হলে access দিবে
+    // ✅ admin হলে access
     return children;
 };
 
