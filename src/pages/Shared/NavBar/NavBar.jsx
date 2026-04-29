@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../../../providers/AuthProvider';
 import { FaShoppingCart } from 'react-icons/fa';
 import Swal from 'sweetalert2'; 
-import laivinIcon from '../../../assets/laivinIcon.PNG'; // Adjust the path as needed
+import ljiCON from '../../../assets/ljIcon.JPG'; // Adjust the path as needed
 
 const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
@@ -49,7 +49,7 @@ const NavBar = () => {
                     </ul>
                 </div>
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={laivinIcon} alt="Logo" className="w-20 h-20" />
+                    <img src={ljiCON} alt="Logo" className="w-20 h-20 rounded-full " />
                 </Link>
             </div>
 
