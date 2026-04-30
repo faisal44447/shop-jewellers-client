@@ -35,7 +35,7 @@ const AddProfit = () => {
         setDateTime("");
 
         Swal.fire("Success", "Profit added successfully", "success");
-        navigate("/profit-list");
+        navigate("/dashboard/profit-list");
       }
     } catch (err) {
       console.error(err);

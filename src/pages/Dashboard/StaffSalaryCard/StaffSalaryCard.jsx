@@ -1,29 +1,34 @@
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
-import useAdmin from "../../../hooks/useAdmin";
-
 const StaffSalaryCard = ({ staff, handleDelete, handleEdit }) => {
-    const [isAdmin] = useAdmin(); // ✅ FIX
-
-    const remaining = staff.monthlySalary - staff.totalTaken;
-
     return (
-        <div className="card shadow p-4">
-            <h2>{staff.name}</h2>
+        <div className="rounded-2xl shadow-lg p-5 bg-gray-800 text-white">
 
-            {isAdmin && (
-                <div className="flex gap-2">
-                    <button onClick={() => handleEdit(staff)}>
-                        <FaEdit />
-                    </button>
-                    <button onClick={() => handleDelete(staff._id)}>
-                        <FaTrashAlt />
-                    </button>
-                </div>
-            )}
+            <h2 className="text-xl font-bold">{staff.name}</h2>
 
-            <p>Salary: {staff.monthlySalary}</p>
-            <p>Taken: {staff.totalTaken}</p>
-            <p>Remaining: {remaining}</p>
+            <p>💰 Salary: ৳{staff.monthlySalary}</p>
+            <p>💸 Withdrawal: ৳{staff.totalTaken}</p>
+
+            <p className="text-green-400 font-bold">
+                Balance: ৳{staff.monthlySalary - staff.totalTaken}
+            </p>
+
+            <div className="flex justify-end gap-2 mt-4">
+
+                <button
+                    onClick={() => handleEdit(staff)}
+                    className="btn btn-sm btn-warning"
+                >
+                    Edit
+                </button>
+
+                <button
+                    onClick={() => handleDelete(staff._id)}
+                    className="btn btn-sm btn-error"
+                >
+                    Delete
+                </button>
+
+            </div>
+
         </div>
     );
 };

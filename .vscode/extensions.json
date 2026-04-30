@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "kisstkondoros.vscode-codemetrics"
+        "kisstkondoros.vscode-codemetrics",
+        "dskwrk.vscode-generate-getter-setter"
     ]
 }

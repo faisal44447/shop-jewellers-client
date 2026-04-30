@@ -44,8 +44,7 @@ const AddStaff = () => {
 
                 form.reset();
 
-                // সংশোধন ২: আপনার router ফাইলে পাথ দেওয়া আছে 'staff-records'
-                navigate('/staff-records');
+                navigate('/dashboard/staff-list'); // ✅ FIXED
             }
         } catch (error) {
             console.error("Error adding staff:", error);

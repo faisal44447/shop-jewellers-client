@@ -1,6 +1,9 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FaDollarSign, FaUsers, FaBox } from "react-icons/fa";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useAuth from "../../../hooks/useAuth";
+import useAdmin from "../../../hooks/useAdmin";
+
 import {
     BarChart,
     Bar,
@@ -12,23 +15,17 @@ import {
     Pie,
     Legend,
     ResponsiveContainer,
+    Tooltip,
 } from "recharts";
-import useAxiosSecure from "../../../hooks/useAxiosSecure";
-import useAuth from "../../../hooks/useAuth";
-import useAdmin from "../../../hooks/useAdmin";
 
-const colors = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const colors = ["#22c55e", "#ef4444", "#3b82f6", "#f59e0b"];
 
 const AdminHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const [isAdmin, isAdminLoading] = useAdmin();
+    const [isAdmin = false, isAdminLoading] = useAdmin();
 
-    if (isAdminLoading) {
-        return <p className="text-center mt-10">Loading...</p>;
-    }
-
-    // ✅ DASHBOARD SUMMARY
+    // ================= DASHBOARD =================
     const { data: stats = {} } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
@@ -37,7 +34,7 @@ const AdminHome = () => {
         },
     });
 
-    // ✅ PRODUCTS FOR CHART
+    // ================= PRODUCTS =================
     const { data: products = [], isLoading } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
@@ -46,20 +43,23 @@ const AdminHome = () => {
         },
     });
 
-    if (isLoading) {
-        return <p className="text-center mt-10">Loading charts...</p>;
+    if (isAdminLoading || isLoading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg"></span>
+            </div>
+        );
     }
 
-    // ✅ SAFETY FIX (map error avoid)
-    const safeChart = Array.isArray(products) ? products : [];
+    const safeProducts = Array.isArray(products) ? products : [];
 
-    const pieChartData = safeChart.map((p) => ({
+    const pieChartData = safeProducts.map((p) => ({
         name: p.name,
-        value: p.buyPrice || 0,
+        value: (p.sellPrice || 0) - (p.buyPrice || 0),
     }));
 
     return (
-        <div>
+        <div className="p-5">
 
             {/* PROFILE */}
             <div className="flex items-center gap-4 mb-6">
@@ -67,74 +67,91 @@ const AdminHome = () => {
                     src={
                         isAdmin
                             ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                            : user?.photoURL
+                            : user?.photoURL || "https://i.ibb.co/2n0Q5Yc/default-user.png"
                     }
-                    className="w-16 h-16 rounded-full"
+                    className="w-16 h-16 rounded-full border"
                 />
 
-                <h2 className="text-3xl">
+                <h2 className="text-2xl md:text-3xl font-bold">
                     {isAdmin ? "Welcome Admin 👑" : `Welcome ${user?.displayName}`}
                 </h2>
             </div>
 
-            {/* STATS */}
-            <div className="stats shadow mb-10">
-                <div className="stat">
-                    <div>Revenue</div>
-                    <div>{stats.totalSales || 0}</div>
+            {/* ================= STATS CARDS (CLEAN UI) ================= */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+
+                {/* REVENUE */}
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-green-500">
+                    <p className="text-gray-500 text-sm">💰 Revenue</p>
+                    <h2 className="text-3xl font-bold text-green-600">
+                        ৳{stats.totalSales || 0}
+                    </h2>
+                    <p className="text-xs text-gray-400">Total sales amount</p>
                 </div>
 
-                <div className="stat">
-                    <div>Stock</div>
-                    <div>{stats.totalStock || 0}</div>
+                {/* STOCK (IMPROVED) */}
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-blue-500">
+                    <p className="text-gray-500 text-sm">📦 Total Stock Items</p>
+                    <h2 className="text-3xl font-bold text-blue-600">
+                        {stats.totalStock || 0}
+                    </h2>
+                    <p className="text-xs text-gray-400">
+                        Current available products in inventory
+                    </p>
                 </div>
 
-                <div className="stat">
-                    <div>Profit</div>
-                    <div>{stats.profit || 0}</div>
+                {/* PROFIT */}
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-yellow-500">
+                    <p className="text-gray-500 text-sm">📈 Profit</p>
+                    <h2 className="text-3xl font-bold text-yellow-600">
+                        ৳{stats.profit || 0}
+                    </h2>
+                    <p className="text-xs text-gray-400">Total earnings</p>
                 </div>
+
             </div>
 
-            {/* CHART */}
-            <div className="flex gap-10 flex-col md:flex-row">
+            {/* ================= CHARTS ================= */}
+            <div className="flex flex-col md:flex-row gap-10">
 
-                {/* BAR */}
-                <div className="w-full md:w-1/2 h-[300px]">
+                {/* BAR CHART */}
+                <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
-                        <BarChart data={safeChart}>
+                        <BarChart data={safeProducts}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis />
-                            <Bar dataKey="buyPrice">
-                                {safeChart.map((_, i) => (
-                                    <Cell key={i} fill={colors[i % colors.length]} />
-                                ))}
-                            </Bar>
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="buyPrice" fill="#22c55e" />
+                            <Bar dataKey="sellPrice" fill="#ef4444" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE */}
-                <div className="w-full md:w-1/2 h-[300px]">
+                {/* PIE CHART */}
+                <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
                         <PieChart>
                             <Pie
                                 data={pieChartData}
                                 dataKey="value"
                                 nameKey="name"
-                                outerRadius={100}
+                                outerRadius={110}
                                 label
                             >
                                 {pieChartData.map((_, i) => (
                                     <Cell key={i} fill={colors[i % colors.length]} />
                                 ))}
                             </Pie>
+                            <Tooltip />
                             <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
 
             </div>
+
         </div>
     );
 };

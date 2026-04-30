@@ -38,6 +38,7 @@ import StaffSalaryCard from "../pages/Dashboard/StaffSalaryCard/StaffSalaryCard"
 
 import AddProfit from "../pages/Dashboard/AddProfit/AddProfit";
 import ProfitList from '../pages/Dashboard/AddProfit/ProfitList';
+import AddStaff from "../pages/Dashboard/AddStaff/AddStaff";
 
 export const router = createBrowserRouter([
     {
@@ -81,15 +82,15 @@ export const router = createBrowserRouter([
 
             { path: "expense-list", element: <AdminRoute><ExpenseList /></AdminRoute> },
             { path: "howlad-list", element: <AdminRoute><HowladList /></AdminRoute> },
+            { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },
 
             { path: "paboTaka-list", element: <AdminRoute><PaboTakaList /></AdminRoute> },
-
+            
             { path: "sales", element: <AdminRoute><Sales /></AdminRoute> },
             { path: "staff-list", element: <AdminRoute><StaffList /></AdminRoute> },
 
             { path: "edit-staff", element: <AdminRoute><EditStaff /></AdminRoute> },
 
-            // PROFIT
             { path: "add-profit", element: <AdminRoute><AddProfit /></AdminRoute> },
             { path: "profit-list", element: <AdminRoute><ProfitList /></AdminRoute> },
         ],

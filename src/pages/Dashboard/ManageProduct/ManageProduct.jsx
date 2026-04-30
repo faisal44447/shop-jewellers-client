@@ -12,7 +12,7 @@ const ManageProduct = () => {
 
     const axiosSecure = useAxiosSecure();
 
-    // ================= FETCH PRODUCTS =================
+    // ================= FETCH DATA =================
     const fetchProducts = async () => {
         try {
             const res = await axiosSecure.get("/products");
@@ -22,7 +22,6 @@ const ManageProduct = () => {
         }
     };
 
-    // ================= FETCH PABO =================
     const fetchPabo = async () => {
         try {
             const res = await axiosSecure.get("/receivables");
@@ -32,7 +31,6 @@ const ManageProduct = () => {
         }
     };
 
-    // ================= FETCH PROFITS =================
     const fetchProfits = async () => {
         try {
             const res = await axiosSecure.get("/profits");
@@ -43,38 +41,47 @@ const ManageProduct = () => {
     };
 
     useEffect(() => {
-        fetchProducts();
-        fetchPabo();
-        fetchProfits();
+        const loadData = async () => {
+            await fetchProducts();
+            await fetchPabo();
+            await fetchProfits();
+        };
+        loadData();
     }, []);
 
     // ================= DELETE PRODUCT =================
-    const handleDeleteProduct = async (item) => {
+    const handleDeleteProduct = (item) => {
         Swal.fire({
             title: "Delete Product?",
             text: "This cannot be undone!",
             icon: "warning",
             showCancelButton: true,
-        }).then(async (result) => {
+        }).then((result) => {
             if (result.isConfirmed) {
-                await axiosSecure.delete(`/products/${item._id}`);
-                fetchProducts();
-                Swal.fire("Deleted!", "Product removed", "success");
+                axiosSecure.delete(`/products/${item._id}`)
+                    .then(() => {
+                        fetchProducts();
+                        Swal.fire("Deleted!", "Product removed", "success");
+                    })
+                    .catch(err => console.log(err));
             }
         });
     };
 
     // ================= DELETE PABO =================
-    const handleDeletePabo = async (id) => {
+    const handleDeletePabo = (id) => {
         Swal.fire({
             title: "Delete?",
             icon: "warning",
             showCancelButton: true,
-        }).then(async (result) => {
+        }).then((result) => {
             if (result.isConfirmed) {
-                await axiosSecure.delete(`/receivables/${id}`);
-                fetchPabo();
-                Swal.fire("Deleted!", "Removed successfully", "success");
+                axiosSecure.delete(`/receivables/${id}`)
+                    .then(() => {
+                        fetchPabo();
+                        Swal.fire("Deleted!", "Removed successfully", "success");
+                    })
+                    .catch(err => console.log(err));
             }
         });
     };
@@ -90,15 +97,19 @@ const ManageProduct = () => {
             preConfirm: () => {
                 return {
                     name: document.getElementById("name").value,
-                    amount: Number(document.getElementById("amount").value)
+                    amount: Number(document.getElementById("amount").value),
                 };
-            }
+            },
         });
 
         if (formValues) {
-            await axiosSecure.patch(`/receivables/${item._id}`, formValues);
-            fetchPabo();
-            Swal.fire("Updated!", "Pabo updated", "success");
+            try {
+                await axiosSecure.patch(`/receivables/${item._id}`, formValues);
+                fetchPabo();
+                Swal.fire("Updated!", "Pabo updated", "success");
+            } catch (err) {
+                console.log(err);
+            }
         }
     };
 
@@ -109,7 +120,7 @@ const ManageProduct = () => {
                 Manage System
             </h2>
 
-            {/* ================= TAB BUTTONS ================= */}
+            {/* ================= TABS ================= */}
             <div className="flex gap-3 mb-6 flex-wrap">
 
                 <button
@@ -133,23 +144,20 @@ const ManageProduct = () => {
                     💸 Profit
                 </button>
 
-                {/* FIXED ROUTES */}
                 <Link to="/dashboard/expenses">
-                    <button className="btn btn-info">
-                        📋 Expenses
-                    </button>
+                    <button className="btn btn-info">📋 Expenses</button>
                 </Link>
 
                 <Link to="/dashboard/add-product">
-                    <button className="btn btn-success">
-                        ➕ Add Product
-                    </button>
+                    <button className="btn btn-success">➕ Add Product</button>
                 </Link>
 
                 <Link to="/dashboard/add-profit">
-                    <button className="btn btn-warning">
-                        ➕ Add Profit
-                    </button>
+                    <button className="btn btn-warning">➕ Add Profit</button>
+                </Link>
+
+                <Link to="/dashboard/add-staff">
+                    <button className="btn btn-warning">➕ Add Staff</button>
                 </Link>
             </div>
 
@@ -178,6 +186,7 @@ const ManageProduct = () => {
                                         <img
                                             src={item.image || "https://picsum.photos/200"}
                                             className="w-12 h-12 rounded object-cover"
+                                            alt=""
                                         />
                                     </td>
 
@@ -188,21 +197,19 @@ const ManageProduct = () => {
                                     </td>
                                     <td>৳{item.buyPrice}</td>
 
-                                    <td>
-                                        <div className="flex gap-2">
-                                            <Link to={`/dashboard/edit/${item._id}`}>
-                                                <button className="btn btn-warning btn-xs">
-                                                    <FaEdit />
-                                                </button>
-                                            </Link>
-
-                                            <button
-                                                onClick={() => handleDeleteProduct(item)}
-                                                className="btn btn-error btn-xs"
-                                            >
-                                                <FaTrashAlt />
+                                    <td className="flex gap-2">
+                                        <Link to={`/dashboard/edit/${item._id}`}>
+                                            <button className="btn btn-warning btn-xs">
+                                                <FaEdit />
                                             </button>
-                                        </div>
+                                        </Link>
+
+                                        <button
+                                            onClick={() => handleDeleteProduct(item)}
+                                            className="btn btn-error btn-xs"
+                                        >
+                                            <FaTrashAlt />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -230,7 +237,6 @@ const ManageProduct = () => {
                                     <td>{i + 1}</td>
                                     <td>{item.name}</td>
                                     <td>৳{item.amount}</td>
-
                                     <td className="flex gap-2">
                                         <button
                                             onClick={() => handleEditPabo(item)}
