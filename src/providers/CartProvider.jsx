@@ -3,36 +3,30 @@ import { createContext, useEffect, useState } from "react";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-
     const [cart, setCart] = useState([]);
 
-    // ✅ Load from localStorage (first time)
+    // load from localStorage
     useEffect(() => {
-        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-        setCart(savedCart);
+        const stored = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(stored);
     }, []);
 
-    // ✅ Save to localStorage (every change)
+    // save to localStorage
     useEffect(() => {
         localStorage.setItem("cart", JSON.stringify(cart));
     }, [cart]);
 
-    // ✅ ADD TO CART
+    // ADD TO CART
     const addToCart = (product) => {
-        const newItem = {
-            ...product,
-            status: "cart"   // 🔥 IMPORTANT
-        };
-        setCart(prev => [...prev, newItem]);
+        setCart((prev) => [...prev, product]);
     };
 
-    // ✅ REMOVE
+    // REMOVE
     const removeFromCart = (id) => {
-        const updatedCart = cart.filter(item => item._id !== id);
-        setCart(updatedCart);
+        setCart((prev) => prev.filter(item => item._id !== id));
     };
 
-    // ✅ CLEAR CART (তোমার আগের code থেকে add করলাম)
+    // CLEAR
     const clearCart = () => {
         setCart([]);
         localStorage.removeItem("cart");
@@ -43,7 +37,7 @@ const CartProvider = ({ children }) => {
             cart,
             addToCart,
             removeFromCart,
-            clearCart   // 🔥 add করা হয়েছে
+            clearCart
         }}>
             {children}
         </CartContext.Provider>

@@ -1,86 +1,46 @@
-import { useState, useContext } from "react";
+import { useContext, useState } from "react";
+import { CartContext } from "../../../providers/CartProvider";
 import Swal from "sweetalert2";
-import { CartContext } from '../../../providers/CartProvider';
 
 const ProductCard = ({ product }) => {
-    const [price, setPrice] = useState("");
     const { addToCart } = useContext(CartContext);
+    const [price, setPrice] = useState("");
 
-    // ✅ FIX
     if (!product) return null;
 
     const handleAddToCart = () => {
-
         addToCart({
             ...product,
-            sellPrice: Number(price || product.buyPrice)
+            sellPrice: Number(price || product.buyPrice),
         });
 
-        // 🔥 SWEET ALERT
         Swal.fire({
-            position: "top-end",
             icon: "success",
-            title: `${product.name} added to cart`,
+            title: "Added to cart",
+            timer: 1200,
             showConfirmButton: false,
-            timer: 1500
         });
     };
 
     return (
-        <div className="card mt-10 bg-base-100 w-80 shadow-xl">
+        <div className="card bg-base-100 shadow-xl p-4">
 
-            {/* IMAGE */}
-            <figure>
-                <img
-                    src={product?.image || "https://picsum.photos/300"}
-                    alt={product?.name}
-                    className="h-48 w-full object-contain rounded"
-                />
-            </figure>
+            <img src={product.image} className="h-40 object-cover" />
 
-            {/* BODY */}
-            <div className="card-body">
+            <h2 className="font-bold">{product.name}</h2>
 
-                {/* TITLE */}
-                <h2 className="card-title">
-                    {product?.name}
-                    <div className="badge badge-secondary">BUY</div>
-                </h2>
+            <p>Buy: ৳{product.buyPrice}</p>
 
+            <input
+                className="input input-bordered w-full my-2"
+                placeholder="Sell price"
+                onChange={(e) => setPrice(e.target.value)}
+            />
 
+            <button onClick={handleAddToCart} className="btn btn-success w-full">
+                Add to Cart
+            </button>
 
-
-
-                <div className="flex justify-between">
-                    <p>
-                        {product.vori}ভরি {product.ana}আনা {product.rati}রতি {product.point}পয়েন্ট
-                    </p>
-                </div>
-
-                {/* PRICE */}
-                <div className="flex justify-between">
-                    <p>Buy: ৳{product?.buyPrice}</p>
-                    <p className="text-yellow-400">{product.karat} ক্যারেট</p>
-                </div>
-
-                {/* INPUT */}
-                <input
-                    placeholder="Sell Price"
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="input input-bordered"
-                />
-
-                {/* BUTTON */}
-                <div className="card-actions justify-end">
-                    <button
-                        onClick={handleAddToCart}
-                        className="btn btn-success w-full"
-                    >
-                        Sell to Product
-                    </button>
-                </div>
-
-            </div>
         </div>
     );
 };

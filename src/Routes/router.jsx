@@ -64,6 +64,7 @@ export const router = createBrowserRouter([
             // USER
             { path: "userHome", element: <UserHome /> },
             { path: "products", element: <Products /> },
+            { path: "product-card-page", element: <ProductCardPage /> },
             { path: "cart", element: <Cart /> },
 
             { path: "expenses", element: <Expenses /> },
@@ -85,7 +86,7 @@ export const router = createBrowserRouter([
             { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },
 
             { path: "paboTaka-list", element: <AdminRoute><PaboTakaList /></AdminRoute> },
-            
+
             { path: "sales", element: <AdminRoute><Sales /></AdminRoute> },
             { path: "staff-list", element: <AdminRoute><StaffList /></AdminRoute> },
 

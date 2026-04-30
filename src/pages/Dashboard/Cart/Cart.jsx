@@ -26,7 +26,7 @@ const Cart = () => {
             if (res.data.success) {
                 removeFromCart(item._id);
                 Swal.fire("Success", "Sold successfully", "success");
-                navigate("/sales");
+                navigate("/dashboard/sales");
             }
         } catch (err) {
             Swal.fire("Error", "Sell failed", "error");

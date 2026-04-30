@@ -19,15 +19,15 @@ const queryClient = new QueryClient();
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CartProvider>
-          <HelmetProvider>
+     <CartProvider>
+       <AuthProvider>
+        <HelmetProvider>
             <div className='max-w-screen-xl mx-auto'>
               <RouterProvider router={router} />
             </div>
           </HelmetProvider>
-        </CartProvider>
       </AuthProvider>
+     </CartProvider>
     </QueryClientProvider>
   </StrictMode>
 );

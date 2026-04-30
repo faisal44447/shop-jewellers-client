@@ -1,96 +1,84 @@
-import { useContext } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { AuthContext } from '../../../providers/AuthProvider';
-import { FaShoppingCart } from 'react-icons/fa';
-import Swal from 'sweetalert2'; 
-import ljiCON from '../../../assets/ljIcon.JPG'; // Adjust the path as needed
+import { useContext } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { AuthContext } from "../../../providers/AuthProvider";
+import { CartContext } from "../../../providers/CartProvider";
+import { FaShoppingCart } from "react-icons/fa";
+import Swal from "sweetalert2";
+import ljiCON from "../../../assets/ljIcon.JPG";
 
 const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
-
+    const { cart } = useContext(CartContext);
 
     const handleLogOut = () => {
-        logOut()
-            .then(() => {
-                Swal.fire({
-                    position: "top-end",
-                    icon: "success",
-                    title: "Logged out successfully!",
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            })
-            .catch((error) => console.log("Log out error:", error));
+        logOut().then(() => {
+            Swal.fire({
+                icon: "success",
+                title: "Logged out!",
+                timer: 1200,
+                showConfirmButton: false
+            });
+        });
     };
 
-    // Active style logic
     const navStyle = ({ isActive }) =>
         isActive
-            ? "nav-link-base nav-link-active underline text-orange-400"
-            : "nav-link-base text-white";
-
-    const navOptions = (
-        <>
-            <li><NavLink to="/" className={navStyle}>Home</NavLink></li>
-            {user && <li><NavLink to="/dashboard" className={navStyle}>Dashboard</NavLink></li>}
-        </>
-    );
+            ? "text-orange-400 border-b-2 border-orange-400 pb-1"
+            : "text-white hover:text-orange-400";
 
     return (
-        <div className="navbar navbar-glow fixed top-0 z-50 bg-black/70 backdrop-blur-xl px-6 shadow-lg">
-            {/* Left side: Logo & Dropdown */}
+        <div className="navbar fixed top-0 z-50 bg-black/80 backdrop-blur-md px-6 shadow-lg">
+
+            {/* LEFT */}
             <div className="navbar-start">
-                <div className="dropdown">
-                    <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden text-white">
-                        ☰
-                    </div>
-                    <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-black rounded-box w-52">
-                        {navOptions}
-                    </ul>
-                </div>
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={ljiCON} alt="Logo" className="w-20 h-20 rounded-full " />
+                    <img src={ljiCON} className="w-12 h-12 rounded-full" />
+                    <span className="text-white font-bold">LJ Shop</span>
                 </Link>
             </div>
 
-            {/* Center side: NavLinks */}
-            <div className="navbar-center hidden lg:flex">
-                <ul className="menu menu-horizontal gap-8">
-                    {navOptions}
-                </ul>
+            {/* CENTER */}
+            <div className="navbar-center hidden lg:flex gap-8">
+                <NavLink to="/" className={navStyle}>Home</NavLink>
+
+                {user && (
+                    <>
+                        <NavLink to="/dashboard" className={navStyle}>Dashboard</NavLink>
+                        <NavLink to="/dashboard/product-card-page" className={navStyle}>
+                            Products
+                        </NavLink>
+                    </>
+                )}
             </div>
 
-            {/* Right side: Cart, User Image & Buttons */}
-            <div className="navbar-end gap-4">
+            {/* RIGHT */}
+            <div className="navbar-end flex items-center gap-4">
+
+                {/* CART ICON */}
+                {user && (
+                    <NavLink to="/dashboard/cart" className="relative">
+                        <FaShoppingCart className="text-2xl text-red-500" />
+
+                        {/* BADGE */}
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 rounded-full">
+                            {cart?.length || 0}
+                        </span>
+                    </NavLink>
+                )}
+
                 {user ? (
-                    <>
-                        <FaShoppingCart className="text-xl text-red-500 cursor-pointer" />
-
-                        <div className="tooltip tooltip-bottom" data-tip={user?.displayName || "User Name"}>
-                            <div className="avatar">
-                                <div className="w-10 rounded-full ring ring-red-500 ring-offset-base-100 ring-offset-2">
-                                    <img
-                                        src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
-                                        alt="User Profile"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={handleLogOut} // এখানে ক্লিক করলে ফাংশনটি কল হবে
-                            className="btn btn-sm bg-red-500 text-white hover:bg-red-600 border-none"
-                        >
-                            Log Out
-                        </button>
-                    </>
+                    <button
+                        onClick={handleLogOut}
+                        className="btn btn-sm bg-red-500 text-white"
+                    >
+                        Logout
+                    </button>
                 ) : (
-                    <Link to="/login">
-                        <button className="btn btn-sm bg-red-500 text-white hover:bg-red-600 border-none">
-                            Log In
-                        </button>
+                    <Link to="/login" className="btn btn-sm bg-orange-500 text-white">
+                        Login
                     </Link>
                 )}
+
             </div>
         </div>
     );
