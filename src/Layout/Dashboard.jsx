@@ -1,43 +1,33 @@
 import { NavLink, Outlet } from "react-router-dom";
-import useCart from "../hooks/useCart";
-import useAdmin from "../hooks/useAdmin";
 import useAuth from "../hooks/useAuth";
+import useAdmin from "../hooks/useAdmin";
+import useCart from "../hooks/useCart";
 
 import {
     FaHome,
     FaBoxOpen,
     FaShoppingCart,
-    FaUserShield,
-    FaPlus,
     FaMoneyBill,
-    FaTruck,
-    FaMoneyCheckAlt,
     FaUsers,
-    FaArrowLeft
+    FaPlus,
+    FaArrowLeft,
+    FaEdit
 } from "react-icons/fa";
 
 const Dashboard = () => {
-    const [cart] = useCart();
-    const [isAdmin, isAdminLoading] = useAdmin();
     const { user } = useAuth();
-
-    if (isAdminLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <span className="loading loading-spinner text-warning loading-lg"></span>
-            </div>
-        );
-    }
+    const [isAdmin] = useAdmin();
+    const [cart] = useCart();
 
     const linkStyle = ({ isActive }) =>
-        `flex items-center gap-3 p-2 rounded-lg transition-all ${isActive ? "bg-red-600 text-white" : "hover:bg-red-500 text-white"
+        `flex items-center gap-3 p-2 rounded-lg ${isActive ? "bg-red-600 text-white" : "text-white hover:bg-red-500"
         }`;
 
     return (
         <div className="flex min-h-screen">
 
             {/* SIDEBAR */}
-            <div className="w-64 bg-orange-500 text-white p-4">
+            <div className="w-64 bg-orange-500 p-4 text-white">
 
                 <div className="text-center mb-5">
                     <img
@@ -45,32 +35,82 @@ const Dashboard = () => {
                         className="w-16 h-16 rounded-full mx-auto"
                     />
                     <h2 className="font-bold">{user?.displayName || "User"}</h2>
-                    <p>{isAdmin ? "Admin" : "User"}</p>
+                    <p>{isAdmin ? "Admin Panel" : "User Panel"}</p>
                 </div>
 
                 <ul className="space-y-2">
 
-                    {isAdmin && (
+                    {/* USER */}
+                    {!isAdmin && (
                         <>
-                            <li><NavLink to="/dashboard/adminHome" className={linkStyle}><FaHome /> Home</NavLink></li>
-                            <li><NavLink to="/dashboard/add-product" className={linkStyle}><FaPlus /> Add Product</NavLink></li>
-                            <li><NavLink to="/dashboard/manage-product" className={linkStyle}><FaBoxOpen /> Manage</NavLink></li>
+                            <NavLink to="/dashboard/userHome" className={linkStyle}>
+                                <FaHome /> Home
+                            </NavLink>
 
-                            {/* FIXED ROUTES */}
-                            <li><NavLink to="/dashboard/expense-list" className={linkStyle}><FaMoneyBill /> Expenses</NavLink></li>
-                            <li><NavLink to="/dashboard/paboTaka" className={linkStyle}><FaMoneyCheckAlt /> Pabo</NavLink></li>
-                            <li><NavLink to="/dashboard/profit-list" className={linkStyle}>💸 Profit</NavLink></li>
+                            <NavLink to="/dashboard/products" className={linkStyle}>
+                                <FaBoxOpen /> Products
+                            </NavLink>
 
-                            <li><NavLink to="/dashboard/sales" className={linkStyle}><FaShoppingCart /> Sales</NavLink></li>
-                            <li><NavLink to="/dashboard/staff-list" className={linkStyle}><FaUsers /> Staff</NavLink></li>
+                            <NavLink to="/dashboard/cart" className={linkStyle}>
+                                <FaShoppingCart /> Cart ({cart?.length || 0})
+                            </NavLink>
+
+                            <NavLink to="/dashboard/howlad-list" className={linkStyle}>
+                                <FaMoneyBill /> Howlad
+                            </NavLink>
+
+                            <NavLink to="/dashboard/paboTaka-list" className={linkStyle}>
+                                <FaMoneyBill /> Pabo Taka
+                            </NavLink>
                         </>
                     )}
 
-                    {!isAdmin && (
+                    {/* ADMIN */}
+                    {isAdmin && (
                         <>
-                            <li><NavLink to="/dashboard/userHome" className={linkStyle}><FaHome /></NavLink></li>
-                            <li><NavLink to="/dashboard/products" className={linkStyle}><FaBoxOpen /></NavLink></li>
-                            <li><NavLink to="/dashboard/cart" className={linkStyle}><FaShoppingCart /> ({cart?.length})</NavLink></li>
+                            <NavLink to="/dashboard/adminHome" className={linkStyle}>
+                                <FaHome /> Admin Home
+                            </NavLink>
+
+                            <NavLink to="/dashboard/userHome" className={linkStyle}>
+                                <FaHome /> User View
+                            </NavLink>
+
+                            <NavLink to="/dashboard/add-product" className={linkStyle}>
+                                <FaPlus /> Add Product
+                            </NavLink>
+
+                            <NavLink to="/dashboard/manage-product" className={linkStyle}>
+                                <FaBoxOpen /> Manage
+                            </NavLink>
+
+                            <NavLink to="/dashboard/sales" className={linkStyle}>
+                                <FaShoppingCart /> Sales
+                            </NavLink>
+
+                            <NavLink to="/dashboard/expense-list" className={linkStyle}>
+                                <FaMoneyBill /> Expenses
+                            </NavLink>
+
+                            <NavLink to="/dashboard/howlad-newa" className={linkStyle}>
+                                <FaMoneyBill /> Add Howlad
+                            </NavLink>
+
+                            <NavLink to="/dashboard/howlad-list" className={linkStyle}>
+                                <FaMoneyBill /> Howlad List
+                            </NavLink>
+
+                            <NavLink to="/dashboard/paboTaka" className={linkStyle}>
+                                <FaMoneyBill /> Pabo Taka
+                            </NavLink>
+
+                            <NavLink to="/dashboard/profit-list" className={linkStyle}>
+                                💸 Profit
+                            </NavLink>
+
+                            <NavLink to="/dashboard/staff-list" className={linkStyle}>
+                                <FaUsers /> Staff
+                            </NavLink>
                         </>
                     )}
 
@@ -79,6 +119,7 @@ const Dashboard = () => {
                             <FaArrowLeft /> Back
                         </NavLink>
                     </li>
+
                 </ul>
             </div>
 

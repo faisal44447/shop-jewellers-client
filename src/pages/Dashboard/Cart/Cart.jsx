@@ -1,95 +1,108 @@
+import { useContext, useState } from "react";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { CartContext } from "../../../providers/CartProvider";
-import { useContext } from "react";
 
 const Cart = () => {
-    const { cart, removeFromCart, clearCart } = useContext(CartContext);
+    const { cart, removeFromCart } = useContext(CartContext);
     const axiosSecure = useAxiosSecure();
-    const navigate = useNavigate();
 
-    const handleRemove = (id) => {
-        removeFromCart(id);
-        Swal.fire("Removed!", "Item removed", "success");
-    };
+    const [editPrice, setEditPrice] = useState({});
 
-    // ✅ Sell single item
+    // ➕ SELL ITEM
     const handleSellItem = async (item) => {
         try {
-            const res = await axiosSecure.post("/sell", {
+            const payload = {
                 ...item,
-                status: "sold",
-                date: new Date(),
-            });
+                sellPrice: Number(editPrice[item._id] || item.sellPrice || item.buyPrice),
+                quantity: item.quantity || 1,
+            };
+
+            const res = await axiosSecure.post("/sell", payload);
 
             if (res.data.success) {
                 removeFromCart(item._id);
                 Swal.fire("Success", "Sold successfully", "success");
-                navigate("/dashboard/sales");
             }
         } catch (err) {
             Swal.fire("Error", "Sell failed", "error");
         }
     };
 
-    const total = cart.reduce((sum, item) => sum + Number(item.sellPrice || 0), 0);
+    // ➕ INCREASE QTY
+    const increaseQty = (id) => {
+        const updated = cart.map(item =>
+            item._id === id
+                ? { ...item, quantity: (item.quantity || 1) + 1 }
+                : item
+        );
+        localStorage.setItem("cart", JSON.stringify(updated));
+        window.location.reload();
+    };
+
+    // ➖ DECREASE QTY
+    const decreaseQty = (id) => {
+        const updated = cart.map(item =>
+            item._id === id
+                ? { ...item, quantity: Math.max((item.quantity || 1) - 1, 1) }
+                : item
+        );
+        localStorage.setItem("cart", JSON.stringify(updated));
+        window.location.reload();
+    };
 
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-6">🛒 Cart</h2>
 
-            {cart.length === 0 ? (
-                <p>No items in cart</p>
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {cart.map(item => (
-                            <div key={item._id} className="card bg-base-100 shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                                <figure className="px-5 pt-5">
-                                    <img
-                                        src={item.image || "https://picsum.photos/200"}
-                                        alt={item.name}
-                                        className="w-12 h-12 object-cover rounded"
-                                    />
-                                </figure>
+                {cart.map(item => (
+                    <div key={item._id} className="card bg-base-100 shadow-xl p-4">
 
-                                <div className="card-body text-center">
-                                    <h2>{item.name}</h2>
+                        <img src={item.image} className="h-32 object-cover rounded" />
 
-                                    <p className="font-bold">
-                                        ৳{item.sellPrice || item.buyPrice || 0}
-                                    </p>
+                        <h2 className="font-bold">{item.name}</h2>
 
-                                    <p className="text-green-600 font-bold">
-                                        {item.status === "sold" ? "SOLD" : "IN CART"}
-                                    </p>
+                        {/* 🔥 QUANTITY CONTROL */}
+                        <div className="flex items-center gap-2 mt-2">
+                            <button onClick={() => decreaseQty(item._id)} className="btn btn-xs">-</button>
+                            <span>{item.quantity || 1}</span>
+                            <button onClick={() => increaseQty(item._id)} className="btn btn-xs">+</button>
+                        </div>
 
-                                    <button
-                                        onClick={() => handleSellItem(item)} // ✅ pass single item
-                                        className="btn btn-success w-full mt-4"
-                                        disabled={item.status === "sold"} // optional: disable if sold
-                                    >
-                                        ✅ Confirm Sell
-                                    </button>
+                        {/* 💰 PRICE EDIT */}
+                        <input
+                            type="number"
+                            placeholder="Sell Price"
+                            className="input input-bordered w-full mt-2"
+                            defaultValue={item.sellPrice || item.buyPrice}
+                            onChange={(e) =>
+                                setEditPrice({
+                                    ...editPrice,
+                                    [item._id]: e.target.value,
+                                })
+                            }
+                        />
 
-                                    <button
-                                        onClick={() => handleRemove(item._id)}
-                                        className="btn btn-error w-full mt-2"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                        <button
+                            onClick={() => handleSellItem(item)}
+                            className="btn btn-success w-full mt-2"
+                        >
+                            Sell
+                        </button>
+
+                        <button
+                            onClick={() => removeFromCart(item._id)}
+                            className="btn btn-error w-full mt-2"
+                        >
+                            Remove
+                        </button>
+
                     </div>
+                ))}
 
-                    <h3 className="mt-6 btn w-full text-xl font-bold text-center">
-                        Total: {total} ৳
-                    </h3>
-                </>
-            )}
+            </div>
         </div>
     );
 };

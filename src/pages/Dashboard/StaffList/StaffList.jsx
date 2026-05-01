@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useAxiosSecure from '../../../hooks/useAxiosSecure.jsx';
 import Swal from 'sweetalert2';
 
@@ -15,6 +15,8 @@ import {
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import useAdmin from '../../../hooks/useAdmin.jsx';
+import { FaEdit } from 'react-icons/fa';
 
 // ================= MONTH ORDER FIX =================
 const monthOrder = {
@@ -33,6 +35,7 @@ const monthOrder = {
 };
 
 const StaffList = () => {
+    const [isAdmin] = useAdmin();
     const [staffs, setStaffs] = useState([]);
     const [search, setSearch] = useState("");
     const [monthFilter, setMonthFilter] = useState("");
@@ -137,18 +140,41 @@ const StaffList = () => {
             <div id="report">
 
                 {/* BAR CHART */}
-                <div className="bg-white p-5 rounded-xl shadow mb-10 h-80">
-                    <h3 className="text-center font-bold mb-3">📊 Salary vs Taken</h3>
+                <div className="bg-white p-6 rounded-2xl shadow-lg mb-10 h-96">
+
+                    <h3 className="text-center font-bold text-lg mb-4 text-gray-700">
+                        📊 Salary vs Taken Analysis
+                    </h3>
+
                     <ResponsiveContainer width="100%" height="100%">
+
                         <BarChart data={filteredStaffs}>
+
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="monthlySalary" />
-                            <Bar dataKey="totalTaken" />
+
+                            {/* SALARY BAR */}
+                            <Bar
+                                dataKey="monthlySalary"
+                                fill="#22c55e"
+                                name="Salary"
+                                radius={[6, 6, 0, 0]}
+                            />
+
+                            {/* TAKEN BAR */}
+                            <Bar
+                                dataKey="totalTaken"
+                                fill="#ef4444"
+                                name="Taken"
+                                radius={[6, 6, 0, 0]}
+                            />
+
                         </BarChart>
+
                     </ResponsiveContainer>
+
                 </div>
 
                 {/* CARDS */}
@@ -157,13 +183,12 @@ const StaffList = () => {
                     {filteredStaffs.map((staff) => (
                         <div key={staff._id} className="card bg-base-100 shadow-xl">
 
-                            <div className="card-body">
+                            <div className="card-body rounded-2xl shadow-lg p-5 bg-gray-900 text-white border border-gray-700">
 
-                                <h2 className="card-title">
+                                <h2 className="card-title font-bold text-xl text-center">
                                     {staff.name}
                                     <div className="badge badge-secondary">Staff</div>
                                 </h2>
-
                                 <p>💰 Salary: ৳{staff.monthlySalary}</p>
                                 <p>📉 Taken: ৳{staff.totalTaken}</p>
 
@@ -171,7 +196,16 @@ const StaffList = () => {
                                     💵 Remaining: ৳{staff.monthlySalary - staff.totalTaken}
                                 </p>
 
-                                <p>📅 {staff.month} ({staff.year})</p>
+                                <div className='flex justify-between'>
+                                    <div>
+                                        <p>📆 Month: {staff.month}</p>
+                                    </div>
+
+                                    <div className="text-xs text-gray-500">
+                                        <p>📆 {staff.submissionDate}</p>
+                                        <p>⏰ {staff.submissionTime}</p>
+                                    </div>
+                                </div>
 
                                 <div className="text-sm">
                                     {staff.weeklyExpenses?.map((w, i) => (
@@ -179,18 +213,27 @@ const StaffList = () => {
                                     ))}
                                 </div>
 
-                                <div className="text-xs text-gray-500">
-                                    <p>📆 {staff.submissionDate}</p>
-                                    <p>⏰ {staff.submissionTime}</p>
-                                </div>
+                                {/* BUTTONS */}
+                                <div className="flex justify-end gap-3 mt-3">
 
-                                <div className="card-actions justify-end mt-3">
-                                    <button onClick={() => handleEdit(staff)} className="btn btn-warning btn-sm">
-                                        Edit
-                                    </button>
-                                    <button onClick={() => handleDelete(staff._id)} className="btn btn-error btn-sm">
-                                        Delete
-                                    </button>
+                                    {isAdmin && (
+                                        <>
+                                            <Link
+                                                to={`/dashboard/edit-staff/${staff._id}`}
+                                                className="btn btn-warning btn-sm"
+                                            >
+                                                <FaEdit /> Edit
+                                            </Link>
+
+                                            <button
+                                                onClick={() => handleDelete(staff._id)}
+                                                className="btn btn-error btn-sm flex-1"
+                                            >
+                                                Delete
+                                            </button>
+                                        </>
+                                    )}
+
                                 </div>
 
                             </div>

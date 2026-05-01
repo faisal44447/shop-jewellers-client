@@ -17,6 +17,7 @@ import {
     ResponsiveContainer,
     Tooltip,
 } from "recharts";
+import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
 
 const colors = ["#22c55e", "#ef4444", "#3b82f6", "#f59e0b"];
 
@@ -60,7 +61,6 @@ const AdminHome = () => {
 
     return (
         <div className="p-5">
-
             {/* PROFILE */}
             <div className="flex items-center gap-4 mb-6">
                 <img
@@ -77,36 +77,27 @@ const AdminHome = () => {
                 </h2>
             </div>
 
-            {/* ================= STATS CARDS (CLEAN UI) ================= */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+            {/* ================= STATS ================= */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
 
-                {/* REVENUE */}
-                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-green-500">
-                    <p className="text-gray-500 text-sm">💰 Revenue</p>
-                    <h2 className="text-3xl font-bold text-green-600">
-                        ৳{stats.totalSales || 0}
-                    </h2>
-                    <p className="text-xs text-gray-400">Total sales amount</p>
+                <div className="bg-white p-5 rounded-xl shadow border-l-4 border-green-500">
+                    💰 Revenue <br />
+                    <span className="text-2xl font-bold">৳{stats.totalSales || 0}</span>
                 </div>
 
-                {/* STOCK (IMPROVED) */}
-                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-blue-500">
-                    <p className="text-gray-500 text-sm">📦 Total Stock Items</p>
-                    <h2 className="text-3xl font-bold text-blue-600">
-                        {stats.totalStock || 0}
-                    </h2>
-                    <p className="text-xs text-gray-400">
-                        Current available products in inventory
-                    </p>
+                <div className="bg-white p-5 rounded-xl shadow border-l-4 border-red-500">
+                    💸 Expense <br />
+                    <span className="text-2xl font-bold">৳{stats.totalExpense || 0}</span>
                 </div>
 
-                {/* PROFIT */}
-                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-yellow-500">
-                    <p className="text-gray-500 text-sm">📈 Profit</p>
-                    <h2 className="text-3xl font-bold text-yellow-600">
-                        ৳{stats.profit || 0}
-                    </h2>
-                    <p className="text-xs text-gray-400">Total earnings</p>
+                <div className="bg-white p-5 rounded-xl shadow border-l-4 border-blue-500">
+                    📦 Stock <br />
+                    <span className="text-2xl font-bold">{stats.totalStock || 0}</span>
+                </div>
+
+                <div className="bg-white p-5 rounded-xl shadow border-l-4 border-yellow-500">
+                    📈 Profit <br />
+                    <span className="text-2xl font-bold">৳{stats.profit || 0}</span>
                 </div>
 
             </div>
@@ -114,7 +105,7 @@ const AdminHome = () => {
             {/* ================= CHARTS ================= */}
             <div className="flex flex-col md:flex-row gap-10">
 
-                {/* BAR CHART */}
+                {/* BAR */}
                 <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
                         <BarChart data={safeProducts}>
@@ -129,7 +120,7 @@ const AdminHome = () => {
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE CHART */}
+                {/* PIE */}
                 <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
                         <PieChart>
@@ -150,6 +141,9 @@ const AdminHome = () => {
                     </ResponsiveContainer>
                 </div>
 
+            </div>
+            <div className="mt-10">
+                <MonthlyReport />
             </div>
 
         </div>

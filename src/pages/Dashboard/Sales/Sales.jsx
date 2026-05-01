@@ -1,61 +1,86 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useAdmin from "../../../hooks/useAdmin";
+import Swal from "sweetalert2";
 
 const Sales = () => {
     const axiosSecure = useAxiosSecure();
     const [sales, setSales] = useState([]);
-
-    const fetchSales = async () => {
-        const res = await axiosSecure.get("/sales");
-        setSales(res.data);
-    };
+    const [isAdmin] = useAdmin();
 
     useEffect(() => {
-        fetchSales();
-    }, []);
+        axiosSecure.get("/sales")
+            .then(res => setSales(res.data))
+            .catch(err => console.log(err));
+    }, [axiosSecure]);
 
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
-            title: "Delete?",
+    // ✅ DELETE FUNCTION
+    const handleDelete = (id) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Delete this sale?",
             icon: "warning",
             showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosSecure.delete(`/sales/${id}`)
+                    .then(() => {
+                        setSales(prev => prev.filter(item => item._id !== id));
+                        Swal.fire("Deleted!", "Sale removed.", "success");
+                    });
+            }
         });
-
-        if (confirm.isConfirmed) {
-            await axiosSecure.delete(`/sales/${id}`);
-            fetchSales();
-            Swal.fire("Deleted!", "Sale removed", "success");
-        }
     };
 
     return (
         <div className="p-5">
-            <h2 className="text-2xl font-bold mb-5">
-                Sales ({sales.length})
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Sales</h2>
 
-            <div className="grid gap-4">
-                {sales.map((item) => (
-                    <div key={item._id} className="card p-4 shadow">
-                        <h3 className="font-bold">{item.name}</h3>
+            <table className="table w-full bg-white">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Weight</th>
+                        <th>Total</th>
+                        {isAdmin && <th>Action</th>}
+                    </tr>
+                </thead>
 
-                        <p>Sell: ৳{item.sellPrice}</p>
-                        <p className="text-green-600">
-                            Profit: ৳{item.profit}
-                        </p>
+                <tbody>
+                    {sales.map((item) => (
+                        <tr key={item._id}>
+                            <td>{item.name}</td>
 
-                        <p>Status: {item.status}</p>
+                            <td>
+                                {item.vori}v {item.ana}a {item.rati}r {item.point}p
+                            </td>
 
-                        <button
-                            onClick={() => handleDelete(item._id)}
-                            className="btn btn-error mt-2"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                ))}
-            </div>
+                            <td>৳ {item.total}</td>
+
+                            {isAdmin && (
+                                <td className="flex gap-2">
+                                    {/* EDIT */}
+                                    <button
+                                        className="btn btn-sm btn-warning"
+                                        onClick={() => alert("Edit Page banate hobe")}
+                                    >
+                                        Edit
+                                    </button>
+
+                                    {/* DELETE */}
+                                    <button
+                                        className="btn btn-sm btn-error"
+                                        onClick={() => handleDelete(item._id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            )}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

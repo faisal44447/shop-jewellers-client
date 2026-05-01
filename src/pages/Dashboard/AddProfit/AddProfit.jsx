@@ -17,7 +17,6 @@ const AddProfit = () => {
       return;
     }
 
-    // Prepare the data to send
     const data = {
       amount: Number(amount),
       note: note || "",
@@ -25,24 +24,24 @@ const AddProfit = () => {
     };
 
     try {
-      // Use the proper endpoint
-      const profitRes = await axiosSecure.post("/profits", data);
+      const res = await axiosSecure.post("/profits", data);
 
-      if (profitRes.data.success) {
-        // Clear the form
+      if (res.data.success) {
+        Swal.fire("Success", "Profit added", "success");
+
         setAmount("");
         setNote("");
         setDateTime("");
 
-        Swal.fire("Success", "Profit added successfully", "success");
         navigate("/dashboard/profit-list");
       }
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Failed to add profit", "error");
-    }
-  };
 
+    } catch (err) {
+      console.log(err);
+      Swal.fire("Error", "Failed", "error");
+    }
+  }; 
+  
   return (
     <div className="p-5 mt-10 max-w-md mx-auto">
       <h2 className="text-3xl font-bold mb-5">➕ Add Profit</h2>

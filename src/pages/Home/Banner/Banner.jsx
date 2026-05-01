@@ -6,7 +6,7 @@ const Banner = ({ goldData }) => {
     const bdtFormatter = (price) => price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || "0.00";
 
     return (
-        <div className="mt-8">
+        <div>
             {/* 📢 Marquee Section */}
             <div className="bg-black text-yellow-400 py-2 overflow-hidden border-b border-yellow-600/30">
                 <marquee behavior="scroll" direction="left" className="font-medium tracking-wide">

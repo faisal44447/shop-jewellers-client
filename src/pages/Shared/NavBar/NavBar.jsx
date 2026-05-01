@@ -1,14 +1,25 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { CartContext } from "../../../providers/CartProvider";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
 import Swal from "sweetalert2";
 import ljiCON from "../../../assets/ljIcon.JPG";
 
 const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
     const { cart } = useContext(CartContext);
+
+    const [open, setOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     const handleLogOut = () => {
         logOut().then(() => {
@@ -22,64 +33,98 @@ const NavBar = () => {
     };
 
     const navStyle = ({ isActive }) =>
-        isActive
-            ? "text-orange-400 border-b-2 border-orange-400 pb-1"
-            : "text-white hover:text-orange-400";
+        isActive ? "nav-link-active" : "nav-link-base";
+
+    const menu = (
+        <>
+            <NavLink to="/" className={navStyle} onClick={() => setOpen(false)}>Home</NavLink>
+
+            {user && (
+                <>
+                    <NavLink to="/dashboard" className={navStyle} onClick={() => setOpen(false)}>
+                        Dashboard
+                    </NavLink>
+                    <NavLink to="/dashboard/product-card-page" className={navStyle} onClick={() => setOpen(false)}>
+                        Products
+                    </NavLink>
+                </>
+            )}
+        </>
+    );
 
     return (
-        <div className="navbar fixed top-0 z-50 bg-black/80 backdrop-blur-md px-6 shadow-lg">
+        <div className={`navbar-glow fixed top-0 w-full z-50 transition-all duration-300 
+            ${scrolled ? "py-2 shadow-xl bg-black/80 backdrop-blur-xl" : "py-4"} max-w-7xl mx-auto mb-5
+        `}>
 
-            {/* LEFT */}
-            <div className="navbar-start">
+            <div className=" flex justify-between items-center px-6">
+
+                {/* LEFT */}
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={ljiCON} className="w-12 h-12 rounded-full" />
-                    <span className="text-white font-bold">LJ Shop</span>
+                    <img src={ljiCON} className="w-10 h-10 rounded-full" />
+                    <span className="text-white font-bold">Laivin Jewellers</span>
                 </Link>
-            </div>
 
-            {/* CENTER */}
-            <div className="navbar-center hidden lg:flex gap-8">
-                <NavLink to="/" className={navStyle}>Home</NavLink>
+                {/* DESKTOP MENU */}
+                <div className="hidden lg:flex gap-8">
+                    {menu}
+                </div>
 
-                {user && (
-                    <>
-                        <NavLink to="/dashboard" className={navStyle}>Dashboard</NavLink>
-                        <NavLink to="/dashboard/product-card-page" className={navStyle}>
-                            Products
-                        </NavLink>
-                    </>
-                )}
-            </div>
+                {/* RIGHT */}
+                <div className="flex items-center gap-4">
 
-            {/* RIGHT */}
-            <div className="navbar-end flex items-center gap-4">
+                    {/* CART */}
+                    {user && (
+                        <Link to="/dashboard/cart" className="relative">
+                            <FaShoppingCart className="text-2xl text-orange-400" />
 
-                {/* CART ICON */}
-                {user && (
-                    <NavLink to="/dashboard/cart" className="relative">
-                        <FaShoppingCart className="text-2xl text-red-500" />
+                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 rounded-full animate-pulse">
+                                {cart?.length || 0}
+                            </span>
+                        </Link>
+                    )}
 
-                        {/* BADGE */}
-                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 rounded-full">
-                            {cart?.length || 0}
-                        </span>
-                    </NavLink>
-                )}
+                    {/* USER */}
+                    {user && (
+                        <div className="relative group">
+                            <img
+                                src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
+                                className="w-10 h-10 rounded-full ring-2 ring-orange-400 cursor-pointer"
+                            />
 
-                {user ? (
+                            <div className="absolute hidden group-hover:block top-12 right-0 bg-black text-white text-xs px-3 py-1 rounded">
+                                {user?.displayName || "User"}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* BUTTON */}
+                    {user ? (
+                        <button onClick={handleLogOut} className="btn-glow px-4 py-1 rounded text-white">
+                            Logout
+                        </button>
+                    ) : (
+                        <Link to="/login" className="btn-glow px-4 py-1 rounded text-white">
+                            Login
+                        </Link>
+                    )}
+
+                    {/* MOBILE MENU BUTTON */}
                     <button
-                        onClick={handleLogOut}
-                        className="btn btn-sm bg-red-500 text-white"
+                        className="lg:hidden text-white text-xl"
+                        onClick={() => setOpen(!open)}
                     >
-                        Logout
+                        {open ? <FaTimes /> : <FaBars />}
                     </button>
-                ) : (
-                    <Link to="/login" className="btn btn-sm bg-orange-500 text-white">
-                        Login
-                    </Link>
-                )}
-
+                </div>
             </div>
+
+            {/* MOBILE MENU */}
+            {open && (
+                <div className="lg:hidden bg-black/90 backdrop-blur-xl px-6 py-4 flex flex-col gap-4">
+                    {menu}
+                </div>
+            )}
         </div>
     );
 };

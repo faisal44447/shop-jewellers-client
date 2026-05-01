@@ -6,39 +6,34 @@ import Home from "../pages/Home/Home/Home";
 import Login from "../pages/Login/Login";
 import SignUp from "../pages/SignUp/SignUp";
 
-import UserHome from "../pages/Dashboard/UserHome/UserHome";
-import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
-import AddProduct from "../pages/Dashboard/AddProduct/AddProduct";
-import ManageProduct from "../pages/Dashboard/ManageProduct/ManageProduct";
-import Products from "../pages/Dashboard/Products/Products";
-import Cart from "../pages/Dashboard/Cart/Cart";
-
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 
-import Expenses from "../pages/Dashboard/Expenses/Expenses";
-import ExpensesDetailsToDo from "../pages/Dashboard/Expenses/ExpensesDetailsToDo";
-import ExpenseList from "../pages/Dashboard/ExpenseList/ExpenseList";
-
-import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
+// USER
+import UserHome from "../pages/Dashboard/UserHome/UserHome";
+import Products from "../pages/Dashboard/Products/Products";
+import Cart from "../pages/Dashboard/Cart/Cart";
 import HowladList from "../pages/Dashboard/HowladNewa/HowladList";
-import HowladNewa from "../pages/Dashboard/HowladNewa/HowladNewa";
-
-import PaboTaka from "../pages/Dashboard/PaboTaka/PaboTaka";
 import PaboTakaList from "../pages/Dashboard/PaboTaka/PaboTakaList";
 
-import ProductCard from "../pages/Dashboard/ProductCard/ProductCard";
-import ProductCardPage from "../pages/Dashboard/ProductCardPage/ProductCardPage";
-
-import SellProduct from "../pages/Dashboard/SellProduct/SellProduct";
+// ADMIN
+import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
+import AddProduct from "../pages/Dashboard/AddProduct/AddProduct";
+import ManageProduct from "../pages/Dashboard/ManageProduct/ManageProduct";
 import Sales from "../pages/Dashboard/Sales/Sales";
-
+import ExpenseList from "../pages/Dashboard/ExpenseList/ExpenseList";
+import ProfitList from "../pages/Dashboard/AddProfit/ProfitList";
 import StaffList from "../pages/Dashboard/StaffList/StaffList";
-import StaffSalaryCard from "../pages/Dashboard/StaffSalaryCard/StaffSalaryCard";
-
-import AddProfit from "../pages/Dashboard/AddProfit/AddProfit";
-import ProfitList from '../pages/Dashboard/AddProfit/ProfitList';
 import AddStaff from "../pages/Dashboard/AddStaff/AddStaff";
+import AddProfit from "../pages/Dashboard/AddProfit/AddProfit";
+import HowladNewa from "../pages/Dashboard/HowladNewa/HowladNewa";
+import PaboTaka from "../pages/Dashboard/PaboTaka/PaboTaka";
+
+// OPTIONAL (error fix)
+import ProductCardPage from "../pages/Dashboard/ProductCardPage/ProductCardPage";
+import EditProduct from '../pages/Dashboard/EditProduct/EditProduct';
+import Expenses from '../pages/Dashboard/Expenses/Expenses';
+import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
 
 export const router = createBrowserRouter([
     {
@@ -59,43 +54,42 @@ export const router = createBrowserRouter([
             </PrivateRoute>
         ),
         children: [
+            // ===== USER + ADMIN (COMMON) =====
             { index: true, element: <UserHome /> },
-
-            // USER
             { path: "userHome", element: <UserHome /> },
             { path: "products", element: <Products /> },
-            { path: "product-card-page", element: <ProductCardPage /> },
             { path: "cart", element: <Cart /> },
-
+            { path: "howlad-list", element: <HowladList /> },
+            { path: "paboTaka-list", element: <PaboTakaList /> },
             { path: "expenses", element: <Expenses /> },
-            { path: "expense-details", element: <ExpensesDetailsToDo /> },
+            { path: "expenses-detailsToDo", element: <Expenses /> },
 
-            { path: "howlad-newa", element: <HowladNewa /> },
-            { path: "paboTaka", element: <PaboTaka /> },
+            // ✅ ERROR FIX ROUTE
+            { path: "product-card-page", element: <ProductCardPage /> },
 
-            { path: "product-card", element: <ProductCard /> },
-            { path: "sell-product", element: <SellProduct /> },
-
-            // ADMIN
+            // ===== ADMIN ONLY =====
             { path: "adminHome", element: <AdminRoute><AdminHome /></AdminRoute> },
             { path: "add-product", element: <AdminRoute><AddProduct /></AdminRoute> },
             { path: "manage-product", element: <AdminRoute><ManageProduct /></AdminRoute> },
-
-            { path: "expense-list", element: <AdminRoute><ExpenseList /></AdminRoute> },
-            { path: "howlad-list", element: <AdminRoute><HowladList /></AdminRoute> },
-            { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },
-
-            { path: "paboTaka-list", element: <AdminRoute><PaboTakaList /></AdminRoute> },
-
             { path: "sales", element: <AdminRoute><Sales /></AdminRoute> },
-            { path: "staff-list", element: <AdminRoute><StaffList /></AdminRoute> },
-
-            { path: "edit-staff", element: <AdminRoute><EditStaff /></AdminRoute> },
-
-            { path: "add-profit", element: <AdminRoute><AddProfit /></AdminRoute> },
+            { path: "expense-list", element: <AdminRoute><ExpenseList /></AdminRoute> },
             { path: "profit-list", element: <AdminRoute><ProfitList /></AdminRoute> },
+            { path: "add-profit", element: <AdminRoute><AddProfit /></AdminRoute> },
+            { path: "staff-list", element: <AdminRoute><StaffList /></AdminRoute> },
+            { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },
+            { path: "howlad-newa", element: <AdminRoute><HowladNewa /></AdminRoute> },
+            { path: "paboTaka", element: <AdminRoute><PaboTaka /></AdminRoute> },
+            {
+                path: "/dashboard/edit/:id",
+                element: <AdminRoute><EditProduct /></AdminRoute>,
+            },
+            {
+                path: "/dashboard/edit-staff/:id",
+                element: <EditStaff />
+            },
         ],
     },
 ]);
 
 export default router;
+

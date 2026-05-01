@@ -19,8 +19,6 @@ const HowladNewa = () => {
             await axiosSecure.post("/transactions", {
                 ...form,
                 amount: Number(form.amount),
-
-                // ✅ FIXED (NO TIME SHIFT)
                 createdAt: form.date
                     ? new Date(form.date).toISOString()
                     : new Date().toISOString()
@@ -41,41 +39,43 @@ const HowladNewa = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-5 mt-10 space-y-3">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
 
             <input
-                value={form.name}
+                value={form.name || ""}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Name"
-                onChange={e => setForm({ ...form, name: e.target.value })}
                 className="input input-bordered w-full"
             />
 
             <input
-                type="number"
-                value={form.amount}
+                value={form.amount || ""}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 placeholder="Amount"
-                onChange={e => setForm({ ...form, amount: e.target.value })}
+                type="number"
                 className="input input-bordered w-full"
             />
 
-            {/* ✅ DATE TIME */}
             <input
                 type="datetime-local"
-                value={form.date}
-                onChange={e => setForm({ ...form, date: e.target.value })}
+                value={form.date || ""}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
                 className="input input-bordered w-full"
             />
 
             <select
                 value={form.type}
-                onChange={e => setForm({ ...form, type: e.target.value })}
+                onChange={(e) => setForm({ ...form, type: e.target.value })}
                 className="select select-bordered w-full"
             >
                 <option value="loan">➕ Howlad Nise</option>
                 <option value="given">➖ Howlad Dise</option>
             </select>
 
-            <button className="btn btn-primary w-full">Save</button>
+            <button className="btn btn-primary w-full">
+                Save
+            </button>
+
         </form>
     );
 };

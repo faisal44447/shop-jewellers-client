@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useAdmin from "../../../hooks/useAdmin";
+import { formatDateTime } from "../../../hooks/formatDateTime.js";
 
 const ProfitList = () => {
     const [profits, setProfits] = useState([]);
     const axiosSecure = useAxiosSecure();
+    const [isAdmin] = useAdmin();
 
+    // LOAD PROFITS
     const fetchProfits = async () => {
         try {
             const res = await axiosSecure.get("/profits");
-            setProfits(res.data);
+            setProfits(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
-            console.error(err);
-            Swal.fire("Error", "Failed to fetch profits", "error");
+            Swal.fire("Error", "Failed to load profits", "error");
         }
     };
 
@@ -21,73 +24,114 @@ const ProfitList = () => {
         fetchProfits();
     }, []);
 
-    const handleDeleteProfit = (id) => {
+    // DELETE
+    const handleDelete = (id) => {
         Swal.fire({
             title: "Delete Profit?",
-            text: "This will reduce cash too!",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, delete it!"
         }).then(async (result) => {
             if (result.isConfirmed) {
-                try {
-                    await axiosSecure.delete(`/profits/${id}`);
-                    fetchProfits();
-                    Swal.fire("Deleted!", "Profit removed.", "success");
-                } catch (err) {
-                    console.error(err);
-                    Swal.fire("Error", "Failed to delete profit.", "error");
-                }
+                await axiosSecure.delete(`/profits/${id}`);
+                fetchProfits();
+                Swal.fire("Deleted!", "", "success");
             }
         });
     };
 
-    const formatDateTime = (dateString) => {
-        if (!dateString) return "No date";
-        const d = new Date(dateString);
-        let hours = d.getHours();
-        const minutes = d.getMinutes().toString().padStart(2, "0");
-        const ampm = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12 || 12;
-        return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()} ${hours}:${minutes} ${ampm}`;
+    // EDIT
+    const handleEdit = async (item) => {
+        const { value } = await Swal.fire({
+            title: "Edit Profit",
+            html: `
+                <input id="note" class="swal2-input" placeholder="Note" value="${item.note || ""}">
+                <input id="amount" type="number" class="swal2-input" value="${item.amount}">
+            `,
+            showCancelButton: true,
+            preConfirm: () => ({
+                note: document.getElementById("note").value,
+                amount: Number(document.getElementById("amount").value)
+            })
+        });
+
+        if (value) {
+            await axiosSecure.patch(`/profits/${item._id}`, value);
+            fetchProfits();
+            Swal.fire("Updated!", "Profit updated", "success");
+        }
     };
 
     return (
         <div className="p-6 mt-10">
-            <h2 className="text-3xl font-bold text-center mb-6">💸 Profit List</h2>
+
+            <h2 className="text-3xl font-bold text-center mb-6">
+                💸 Profit List
+            </h2>
 
             <div className="overflow-x-auto">
+
                 <table className="table w-full">
+
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Note</th>
                             <th>Amount</th>
                             <th>Date & Time</th>
-                            <th>Action</th>
+                            {isAdmin && <th>Action</th>}
                         </tr>
                     </thead>
 
                     <tbody>
-                        {profits.map((item, index) => (
-                            <tr key={item._id}>
-                                <td>{index + 1}</td>
-                                <td>{item.note || "-"}</td>
-                                <td className="text-green-600 font-bold">৳ {item.amount}</td>
-                                <td>{formatDateTime(item.createdAt)}</td>
-                                <td>
-                                    <button
-                                        className="btn btn-error btn-xs"
-                                        onClick={() => handleDeleteProfit(item._id)}
-                                    >
-                                        <FaTrashAlt />
-                                    </button>
+                        {profits.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" className="text-center">
+                                    ❌ No Profit Data
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            profits.map((item, index) => (
+                                <tr key={item._id}>
+                                    <td>{index + 1}</td>
+                                    <td>{item.note || "—"}</td>
+
+                                    <td className="text-green-600 font-bold">
+                                        ৳ {item.amount}
+                                    </td>
+
+                                    {/* ✅ DATE FIX */}
+                                    <td>
+                                        {formatDateTime(item.createdAt)}
+                                    </td>
+
+                                    {isAdmin && (
+                                        <td className="flex gap-2">
+
+                                            <button
+                                                onClick={() => handleEdit(item)}
+                                                className="btn btn-warning btn-xs"
+                                            >
+                                                <FaEdit />
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleDelete(item._id)}
+                                                className="btn btn-error btn-xs"
+                                            >
+                                                <FaTrashAlt />
+                                            </button>
+
+                                        </td>
+                                    )}
+                                </tr>
+                            ))
+                        )}
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
     );
 };

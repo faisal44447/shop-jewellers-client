@@ -1,40 +1,65 @@
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
-import useAdmin from "../../../hooks/useAdmin";
-
 const StaffSalaryCard = ({ staff, handleDelete, handleEdit }) => {
-    const [isAdmin] = useAdmin(); // ✅ FIX
 
-    const remaining = staff.monthlySalary - staff.totalTaken;
+    const formatDate = (date) => {
+        if (!date) return "No date";
+        return new Date(date).toLocaleString("bn-BD");
+    };
+
+    const weeklyTotal =
+        (staff.w1 || 0) +
+        (staff.w2 || 0) +
+        (staff.w3 || 0) +
+        (staff.w4 || 0);
 
     return (
-        <div className="rounded-2xl shadow-lg p-5 bg-gradient-to-br from-gray-900 to-gray-800 text-white hover:scale-105 transition duration-300">
+        <div className="rounded-2xl shadow-lg p-5 bg-gray-900 text-white border border-gray-700">
 
-            <div className="flex justify-between items-center mb-3">
-                <h2 className="text-xl font-bold">{staff.name}</h2>
-                <span className="bg-yellow-500 text-black px-2 py-1 rounded text-xs">
-                    {staff.month}
-                </span>
-            </div>
+            {/* NAME */}
+            <h2 className="text-xl font-bold">{staff.name}</h2>
 
-            <p className="text-sm">💰 Salary: ৳{staff.monthlySalary}</p>
-            <p className="text-sm">📉 Taken: ৳{staff.totalTaken}</p>
-
-            <p className="text-green-400 font-semibold mt-2">
-                💵 Balance: ৳{staff.monthlySalary - staff.totalTaken}
+            {/* DATE + TIME */}
+            <p className="text-xs text-gray-400 mt-1">
+                📅 {formatDate(staff.createdAt)}
             </p>
 
-            <div className="text-xs text-gray-300 mt-2">
-                📆 {staff.submissionDate} <br />
-                ⏰ {staff.submissionTime}
+            {/* MONTH */}
+            <p className="text-sm text-yellow-400 mt-1">
+                📆 {staff.month}
+            </p>
+
+            {/* SALARY */}
+            <p className="mt-2">💰 Salary: ৳{staff.monthlySalary}</p>
+            <p>💸 Withdrawal: ৳{staff.totalTaken}</p>
+
+            {/* WEEKLY */}
+            <div className="mt-3 text-sm text-gray-300">
+                <p>Week 1: ৳{staff.w1 || 0}</p>
+                <p>Week 2: ৳{staff.w2 || 0}</p>
+                <p>Week 3: ৳{staff.w3 || 0}</p>
+                <p>Week 4: ৳{staff.w4 || 0}</p>
             </div>
 
+            {/* TOTAL */}
+            <p className="text-yellow-400 mt-2">
+                Weekly Total: ৳{weeklyTotal}
+            </p>
+
+            {/* BALANCE */}
+            <p className="text-green-400 font-bold mt-2">
+                Balance: ৳{(staff.monthlySalary || 0) - (staff.totalTaken || 0)}
+            </p>
+
+            {/* BUTTONS */}
             <div className="flex justify-end gap-2 mt-4">
-                <button className="btn btn-sm bg-yellow-500 text-black border-none">
+
+                <button onClick={() => handleEdit(staff)} className="btn btn-warning btn-sm">
                     Edit
                 </button>
-                <button className="btn btn-sm bg-red-500 border-none">
+
+                <button onClick={() => handleDelete(staff._id)} className="btn btn-error btn-sm">
                     Delete
                 </button>
+
             </div>
 
         </div>

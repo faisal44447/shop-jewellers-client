@@ -9,74 +9,125 @@ const EditStaff = () => {
     const navigate = useNavigate();
 
     const [staff, setStaff] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // 🔥 load single staff
+    // ================= LOAD SINGLE STAFF =================
     useEffect(() => {
-        axiosSecure.get(`/staffs`)
-            .then(res => {
-                const found = res.data.find(s => s._id === id);
-                setStaff(found);
-            });
+        const fetchStaff = async () => {
+            try {
+                const res = await axiosSecure.get(`/staffs/${id}`);
+                setStaff(res.data);
+            } catch (err) {
+                console.error(err);
+                Swal.fire("Error", "Failed to load staff", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStaff();
     }, [id, axiosSecure]);
 
-    // 🔥 update
+    // ================= UPDATE STAFF =================
     const handleUpdate = async (e) => {
         e.preventDefault();
         const form = e.target;
 
+        const name = form.name.value.trim();
+        const salary = Number(form.salary.value);
+        const taken = Number(form.taken.value);
+
+        // ✅ VALIDATION
+        if (!name || isNaN(salary) || isNaN(taken)) {
+            return Swal.fire(
+                "Error",
+                "Please fill all fields correctly",
+                "error"
+            );
+        }
+
         const updatedData = {
             name: form.name.value,
-            monthlySalary: parseFloat(form.salary.value),
-            totalTaken: parseFloat(form.taken.value),
+            monthlySalary: Number(form.salary.value),
+            totalTaken: Number(form.taken.value),
+            month: staff?.month || "",   // ✅ SAFE
         };
 
         try {
             const res = await axiosSecure.put(`/staffs/${id}`, updatedData);
 
             if (res.data.modifiedCount > 0) {
-                Swal.fire("Success!", "Updated successfully", "success");
-                navigate('/staff-records');
+                Swal.fire("Success", "Staff updated successfully", "success");
+                navigate("/dashboard/staff-list");
+            } else {
+                Swal.fire("Info", "No changes were made", "info");
             }
         } catch (err) {
             console.error(err);
-            Swal.fire("Error!", "Update failed", "error");
+            Swal.fire("Error", "Update failed", "error");
         }
     };
 
-    if (!staff) return <p className="text-center mt-10">Loading...</p>;
+    // ================= LOADING =================
+    if (loading) {
+        return (
+            <p className="text-center mt-10 text-lg">
+                Loading...
+            </p>
+        );
+    }
+
+    if (!staff) {
+        return (
+            <p className="text-center mt-10 text-red-500">
+                Staff not found
+            </p>
+        );
+    }
 
     return (
         <div className="p-10 max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold mb-5 text-center">Edit Staff</h2>
+
+            <h2 className="text-3xl font-bold mb-5 text-center">
+                Edit Staff
+            </h2>
 
             <form onSubmit={handleUpdate} className="space-y-4">
 
+                {/* NAME */}
                 <input
                     defaultValue={staff.name}
                     name="name"
                     className="input input-bordered w-full"
+                    placeholder="Name"
                     required
                 />
 
+                {/* SALARY */}
                 <input
                     defaultValue={staff.monthlySalary}
                     name="salary"
                     type="number"
                     className="input input-bordered w-full"
+                    placeholder="Monthly Salary"
                     required
                 />
 
+                {/* TAKEN */}
                 <input
                     defaultValue={staff.totalTaken}
                     name="taken"
                     type="number"
                     className="input input-bordered w-full"
+                    placeholder="Total Taken"
                     required
                 />
 
+                {/* BUTTON */}
                 <button className="btn btn-primary w-full">
-                    Update
+                    Update Staff
                 </button>
+
             </form>
         </div>
     );

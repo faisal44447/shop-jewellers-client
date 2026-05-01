@@ -4,90 +4,80 @@
 
 @layer components {
 
-  /* Navbar glow background */
-.navbar-glow {
-  position: relative;
-  background: linear-gradient(
-    135deg,
-    #7c2d12,   /* deep orange dark */
-    #9a3412,
-    #c2410c
-  );
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(251, 146, 60, 0.4);
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
+  /* ================= NAVBAR ================= */
+  .navbar-glow {
+    position: relative;
+    background: linear-gradient(135deg,
+        #7c2d12,
+        #9a3412,
+        #c2410c);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(251, 146, 60, 0.4);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
 
-.navbar-glow::before {
-  content: "";
-  position: absolute;
-  inset: -50% -60%;
-  opacity: 0.25;
-  pointer-events: none;
-  background: radial-gradient(
-    circle,
-    rgba(251, 146, 60, 0.5),
-    transparent 70%
-  );
-}
+  .navbar-glow::before {
+    content: "";
+    position: absolute;
+    inset: -50% -60%;
+    opacity: 0.25;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(251, 146, 60, 0.5),
+        transparent 70%);
+  }
 
-/* BUTTON */
-.btn-glow {
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
-  transition: 0.3s ease;
-  border: none;
-}
+  /* ================= BUTTON ================= */
+  .btn-glow {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
+    transition: 0.3s ease;
+    border: none;
+  }
 
-.btn-glow:hover {
-  background: linear-gradient(135deg, #ea580c, #c2410c);
-  box-shadow: 0 0 25px rgba(249, 115, 22, 0.9);
-  transform: translateY(-1px);
-}
+  .btn-glow:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.9);
+    transform: translateY(-1px);
+  }
 
-/* NAV LINK */
-.nav-link-base {
-  position: relative;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  transition: all 0.3s ease;
-  color: #fff7ed;
-}
+  /* ================= NAV LINK ================= */
+  .nav-link-base {
+    position: relative;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: 0.3s;
+  }
 
-/* HOVER */
-.nav-link-base:hover {
-  color: #fdba74;
-  text-shadow: 0 0 12px rgba(251, 146, 60, 0.9);
-}
+  /* underline animation */
+  .nav-link-base::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    background: #fdba74;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: 0.3s;
+  }
 
-/* ACTIVE */
-.nav-link-active {
-  color: #fdba74 !important;
-  text-shadow: 0 0 12px rgba(251, 146, 60, 0.9);
-}
+  .nav-link-base:hover::after {
+    transform: scaleX(1);
+  }
 
-/* UNDERLINE */
-.nav-link-base::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 0%;
-  height: 2px;
-  background: #fdba74;
-  transition: 0.3s;
-  box-shadow: 0 0 10px rgba(251, 146, 60, 0.8);
-}
+  .nav-link-active {
+    color: #fdba74;
+  }
 
-.nav-link-base:hover::after {
-  width: 100%;
-}
-
-.nav-link-active::after {
-  width: 100%;
-}
+  /* ================= ACTIVE LINK ================= */
+  .nav-link-active {
+    color: #fdba74 !important;
+    text-shadow: 0 0 12px rgba(251, 146, 60, 0.9);
+    transform: scaleX(1);
+  }
 
 }

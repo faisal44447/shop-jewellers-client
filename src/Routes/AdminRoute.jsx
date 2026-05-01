@@ -8,24 +8,17 @@ const AdminRoute = ({ children }) => {
     const location = useLocation();
 
     if (loading || isAdminLoading) {
-        return (
-            <div className="flex justify-center mt-10">
-                <span className="loading loading-spinner text-warning"></span>
-            </div>
-        );
+        return <span className="loading loading-spinner"></span>;
     }
 
-    // ❌ login না থাকলে login page এ পাঠাবে
     if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // ❌ admin না হলে user dashboard এ পাঠাবে
     if (!isAdmin) {
         return <Navigate to="/dashboard/userHome" replace />;
     }
 
-    // ✅ admin হলে access
     return children;
 };
 
