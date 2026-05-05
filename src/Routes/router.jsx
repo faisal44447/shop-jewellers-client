@@ -34,6 +34,7 @@ import HowladNewa from "../pages/Dashboard/HowladNewa/HowladNewa";
 import PaboTaka from "../pages/Dashboard/PaboTaka/PaboTaka";
 import EditProduct from "../pages/Dashboard/EditProduct/EditProduct";
 import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
+import AllUsers from '../pages/Dashboard/AllUsers/AllUsers';
 
 export const router = createBrowserRouter([
   {
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
 
       { path: "howlad-newa", element: <HowladNewa /> },
       { path: "paboTaka", element: <PaboTaka /> },
+      { path: "all-users", element: <AllUsers /> },
 
       // EDIT
       { path: "edit/:id", element: <AdminRoute><EditProduct /></AdminRoute> },

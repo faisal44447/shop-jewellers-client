@@ -1,148 +1,117 @@
 import { useEffect, useState } from "react";
-import { FaTrashAlt, FaEdit } from "react-icons/fa";
-import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import Swal from "sweetalert2";
+import { formatDateTime } from "../../../utils/formatDateTime";
 import useAdmin from "../../../hooks/useAdmin";
-import { formatDateTime } from "../../../utils/formatDateTime.js";
 
-const ProfitList = () => {
-    const [profits, setProfits] = useState([]);
-    const axiosSecure = useAxiosSecure();
+const PaboTakaList = () => {
+    const [list, setList] = useState([]);
     const [isAdmin] = useAdmin();
+    const axiosSecure = useAxiosSecure();
 
-    // LOAD PROFITS
-    const fetchProfits = async () => {
-        try {
-            const res = await axiosSecure.get("/profits");
-            setProfits(Array.isArray(res.data) ? res.data : []);
-        } catch (err) {
-            Swal.fire("Error", "Failed to load profits", "error");
-        }
+    const fetchData = async () => {
+        const res = await axiosSecure.get("/receivables");
+        setList(res.data);
     };
 
     useEffect(() => {
-        fetchProfits();
-    }, [axiosSecure]);
+        fetchData();
+    }, []);
 
     // DELETE
-    const handleDelete = (id) => {
-        Swal.fire({
-            title: "Delete Profit?",
+    const handleDelete = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Are you sure?",
             icon: "warning",
             showCancelButton: true,
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                await axiosSecure.delete(`/profits/${id}`).catch(() => {
-                    Swal.fire("Error", "Delete failed", "error");
-                });
-                fetchProfits();
-                Swal.fire("Deleted!", "Profit deleted", "success");
-            }
         });
 
+        if (confirm.isConfirmed) {
+            await axiosSecure.delete(`/receivables/${id}`);
+            fetchData();
+        }
     };
 
     // EDIT
     const handleEdit = async (item) => {
+        const currentDate = item.createdAt
+            ? new Date(item.createdAt).toISOString().slice(0, 16)
+            : "";
+
         const { value } = await Swal.fire({
-            title: "Edit Profit",
+            title: "Edit Data",
             html: `
-                <input id="note" class="swal2-input" placeholder="Note" value="${item.note || ""}">
+                <input id="name" class="swal2-input" value="${item.name}">
                 <input id="amount" type="number" class="swal2-input" value="${item.amount}">
+                <input id="date" type="datetime-local" class="swal2-input" value="${currentDate}">
             `,
-            showCancelButton: true,
             preConfirm: () => ({
-                note: document.getElementById("note").value,
-                amount: Number(document.getElementById("amount").value)
+                name: document.getElementById("name").value,
+                amount: Number(document.getElementById("amount").value),
+                date: document.getElementById("date").value
             })
         });
 
         if (value) {
-            await axiosSecure.patch(`/profits/${item._id}`, value);
-            fetchProfits();
-            Swal.fire("Updated!", "Profit updated", "success");
+            await axiosSecure.patch(`/receivables/${item._id}`, value);
+            fetchData();
         }
     };
 
     return (
-        <div className="p-6 mt-10">
+        <div className="p-5 mt-10">
+            <h2 className="text-2xl font-bold mb-4">📋 Pabo Taka List</h2>
 
-            <h2 className="text-3xl font-bold text-center mb-6">
-                💸 Profit List
-            </h2>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Date & Time</th>
+                        {isAdmin && <th>Action</th>}
+                    </tr>
+                </thead>
 
-            <div className="overflow-x-auto">
+                <tbody>
+                    {list.map((item, index) => {
+                        const dt = formatDateTime(item.createdAt);
 
-                <table className="table w-full">
+                        return (
+                            <tr key={item._id}>
+                                <td>{index + 1}</td>
+                                <td>{item.name}</td>
+                                <td>৳ {item.amount}</td>
 
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Note</th>
-                            <th>Amount</th>
-                            <th>Date & Time</th>
-                            {isAdmin && <th>Action</th>}
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {profits.length === 0 ? (
-                            <tr>
-                                <td colSpan="5" className="text-center">
-                                    ❌ No Profit Data
+                                <td>
+                                    {dt.date} <br />
+                                    {dt.time}
                                 </td>
-                            </tr>
-                        ) : (
-                            profits.map((item, index) => (
-                                <tr key={item._id}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.note || "—"}</td>
 
-                                    <td className="text-green-600 font-bold">
-                                        ৳ {item.amount}
-                                    </td>
-
+                                {isAdmin && (
                                     <td>
-                                        {(() => {
-                                            const dt = formatDateTime(item.createdAt);
-                                            return (
-                                                <>
-                                                    {dt.date} <br />
-                                                    {dt.time}
-                                                </>
-                                            );
-                                        })()}
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="btn btn-xs btn-warning mr-2"
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleDelete(item._id)}
+                                            className="btn btn-xs btn-error"
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
-                                    {isAdmin && (
-                                        <td className="flex gap-2">
-
-                                            <button
-                                                onClick={() => handleEdit(item)}
-                                                className="btn btn-warning btn-xs"
-                                            >
-                                                <FaEdit />
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleDelete(item._id)}
-                                                className="btn btn-error btn-xs"
-                                            >
-                                                <FaTrashAlt />
-                                            </button>
-
-                                        </td>
-                                    )}
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-
-                </table>
-
-            </div>
-
+                                )}
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 };
 
-export default ProfitList;
+export default PaboTakaList;

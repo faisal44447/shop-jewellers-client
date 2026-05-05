@@ -2,9 +2,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import useAdmin from "../../../hooks/useAdmin";
 
 const ExpenseList = () => {
     const [list, setList] = useState([]);
+    const [isAdmin] = useAdmin();
 
     const fetchExpenses = async () => {
         const res = await axios.get("http://localhost:5000/expenses");
@@ -137,25 +139,21 @@ const ExpenseList = () => {
                                             : "No Date"}
                                 </td>
 
-                                {/* ✏️ EDIT */}
-                                <td>
-                                    <button
-                                        onClick={() => handleEdit(item)}
-                                        className="btn btn-xs btn-warning"
-                                    >
-                                        <FaEdit />
-                                    </button>
-                                </td>
+                                {isAdmin && (
+                                    <td>
+                                        <button onClick={() => handleEdit(item)} className="btn btn-xs btn-warning">
+                                            <FaEdit />
+                                        </button>
+                                    </td>
+                                )}
 
-                                {/* ❌ DELETE */}
-                                <td>
-                                    <button
-                                        onClick={() => handleDelete(item._id)}
-                                        className="btn btn-xs btn-error"
-                                    >
-                                        <FaTrash />
-                                    </button>
-                                </td>
+                                {isAdmin && (
+                                    <td>
+                                        <button onClick={() => handleDelete(item._id)} className="btn btn-xs btn-error">
+                                            <FaTrash />
+                                        </button>
+                                    </td>
+                                )}
 
                             </tr>
                         ))}

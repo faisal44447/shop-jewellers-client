@@ -64,12 +64,25 @@ const Dashboard = () => {
                             </NavLink>
 
                             <NavLink to="/dashboard/howlad-list" className={linkStyle}>
-                                <FaMoneyBill /> Howlad
+                                <FaMoneyBill /> Howlad List
                             </NavLink>
 
                             <NavLink to="/dashboard/paboTaka-list" className={linkStyle}>
-                                <FaMoneyBill /> Pabo Taka
+                                <FaMoneyBill /> Pabo Taka List
                             </NavLink>
+
+                            <NavLink to="/dashboard/expense-list" className={linkStyle}>
+                                <FaMoneyBill /> Expenses List
+                            </NavLink>
+
+                            <NavLink to="/dashboard/profit-list" className={linkStyle}>
+                                💸 Profit List
+                            </NavLink>
+
+                            <NavLink to="/dashboard/staff-list" className={linkStyle}>
+                                <FaUsers /> Staff List
+                            </NavLink>
+
                         </>
                     )}
 
@@ -82,6 +95,10 @@ const Dashboard = () => {
 
                             <NavLink to="/dashboard/userHome" className={linkStyle}>
                                 <FaHome /> User View
+                            </NavLink>
+
+                            <NavLink to="/dashboard/all-users" className={linkStyle}>
+                                <FaUsers /> All Users
                             </NavLink>
 
                             <NavLink to="/dashboard/add-product" className={linkStyle}>
