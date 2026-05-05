@@ -17,17 +17,22 @@ const SignUp = () => {
 
             await updateUserProfile(data.name, "");
 
-            const userInfo = {
+            // save user
+            await axiosPublic.post("/users", {
                 name: data.name,
                 email: data.email,
-                role: data.email === 'md9897653@gmail.com' ? 'admin' : 'user'
-            };
+                role: data.email === "md9897653@gmail.com" ? "admin" : "user",
+            });
 
-            await axiosPublic.post('/users', userInfo);
+            // JWT TOKEN
+            const tokenRes = await axiosPublic.post("/jwt", {
+                email: data.email,
+            });
+
+            localStorage.setItem("access-token", tokenRes.data.token);
 
             Swal.fire("Success", "User created", "success");
-            reset();
-            navigate('/');
+            navigate("/");
 
         } catch (err) {
             Swal.fire("Error", err.message, "error");

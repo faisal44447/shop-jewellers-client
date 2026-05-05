@@ -66,7 +66,7 @@ const SellProduct = () => {
                     >
                         <h3>{p.name}</h3>
                         <p>Stock: {p.stock}</p>
-                        <p>Price: {p.sellPrice}</p>
+                        <p>Price: ৳ {Number(p.sellPrice ?? 0)}</p>
                     </div>
                 ))}
             </div>

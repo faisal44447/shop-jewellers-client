@@ -26,8 +26,12 @@ const AdminHome = () => {
     const axiosSecure = useAxiosSecure();
     const [isAdmin = false, isAdminLoading] = useAdmin();
 
-    // ================= DASHBOARD =================
-    const { data: stats = {} } = useQuery({
+    // ================= DASHBOARD STATS =================
+    const {
+        data: stats = {},
+        isLoading: statsLoading,
+        isError,
+    } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
@@ -35,16 +39,8 @@ const AdminHome = () => {
         },
     });
 
-    // ================= PRODUCTS =================
-    const { data: products = [], isLoading } = useQuery({
-        queryKey: ["products"],
-        queryFn: async () => {
-            const res = await axiosSecure.get("/products");
-            return res.data;
-        },
-    });
-
-    if (isAdminLoading || isLoading) {
+    // ================= LOADING =================
+    if (isAdminLoading || statsLoading) {
         return (
             <div className="flex justify-center items-center h-96">
                 <span className="loading loading-spinner loading-lg"></span>
@@ -52,12 +48,14 @@ const AdminHome = () => {
         );
     }
 
-    const safeProducts = Array.isArray(products) ? products : [];
-
-    const pieChartData = safeProducts.map((p) => ({
-        name: p.name,
-        value: (p.sellPrice || 0) - (p.buyPrice || 0),
-    }));
+    // ================= ERROR =================
+    if (isError) {
+        return (
+            <p className="text-center text-red-500 mt-10">
+                ❌ Failed to load dashboard data
+            </p>
+        );
+    }
 
     return (
         <div className="p-5">

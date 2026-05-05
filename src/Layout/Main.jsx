@@ -5,7 +5,10 @@ import Footer from '../pages/Shared/Footer/Footer';
 const Main = () => {
     return (
         <div>
-            <NavBar />
+            <div className="mx-auto max-w-7xl items-center justify-items-center">
+                <NavBar />
+            </div>
+
             <div className="pt-20">
                 <Outlet />
             </div>

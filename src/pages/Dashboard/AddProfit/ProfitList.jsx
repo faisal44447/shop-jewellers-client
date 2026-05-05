@@ -3,7 +3,7 @@ import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAdmin from "../../../hooks/useAdmin";
-import { formatDateTime } from "../../../hooks/formatDateTime.js";
+import { formatDateTime } from "../../../utils/formatDateTime.js";
 
 const ProfitList = () => {
     const [profits, setProfits] = useState([]);
@@ -22,7 +22,7 @@ const ProfitList = () => {
 
     useEffect(() => {
         fetchProfits();
-    }, []);
+    }, [axiosSecure]);
 
     // DELETE
     const handleDelete = (id) => {
@@ -32,11 +32,14 @@ const ProfitList = () => {
             showCancelButton: true,
         }).then(async (result) => {
             if (result.isConfirmed) {
-                await axiosSecure.delete(`/profits/${id}`);
+                await axiosSecure.delete(`/profits/${id}`).catch(() => {
+                    Swal.fire("Error", "Delete failed", "error");
+                });
                 fetchProfits();
-                Swal.fire("Deleted!", "", "success");
+                Swal.fire("Deleted!", "Profit deleted", "success");
             }
         });
+
     };
 
     // EDIT
@@ -99,11 +102,17 @@ const ProfitList = () => {
                                         ৳ {item.amount}
                                     </td>
 
-                                    {/* ✅ DATE FIX */}
                                     <td>
-                                        {formatDateTime(item.createdAt)}
+                                        {(() => {
+                                            const dt = formatDateTime(item.createdAt);
+                                            return (
+                                                <>
+                                                    {dt.date} <br />
+                                                    {dt.time}
+                                                </>
+                                            );
+                                        })()}
                                     </td>
-
                                     {isAdmin && (
                                         <td className="flex gap-2">
 

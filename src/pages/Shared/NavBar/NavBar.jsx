@@ -44,8 +44,11 @@ const NavBar = () => {
                     <NavLink to="/dashboard" className={navStyle} onClick={() => setOpen(false)}>
                         Dashboard
                     </NavLink>
-                    <NavLink to="/dashboard/product-card-page" className={navStyle} onClick={() => setOpen(false)}>
+                    <NavLink to="/dashboard/product-card-page" className={navStyle}>
                         Products
+                    </NavLink>
+                     <NavLink to="/dashboard/sell" className={navStyle}>
+                        Sell
                     </NavLink>
                 </>
             )}

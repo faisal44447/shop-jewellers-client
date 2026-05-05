@@ -13,10 +13,14 @@ const Cart = () => {
     const handleSellItem = async (item) => {
         try {
             const payload = {
-                ...item,
-                sellPrice: Number(editPrice[item._id] || item.sellPrice || item.buyPrice),
-                quantity: item.quantity || 1,
+                productId: item._id,   // ✅ IMPORTANT FIX
+                quantity: Number(item.quantity || 1),
+                sellPrice: Number(
+                    editPrice[item._id] || item.sellPrice || item.buyPrice
+                ),
             };
+
+            console.log("SELL PAYLOAD:", payload);
 
             const res = await axiosSecure.post("/sell", payload);
 
@@ -25,7 +29,12 @@ const Cart = () => {
                 Swal.fire("Success", "Sold successfully", "success");
             }
         } catch (err) {
-            Swal.fire("Error", "Sell failed", "error");
+            console.log("SELL ERROR:", err.response?.data);
+            Swal.fire(
+                "Error",
+                err.response?.data?.message || "Sell failed",
+                "error"
+            );
         }
     };
 

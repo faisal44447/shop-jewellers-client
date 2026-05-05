@@ -2,75 +2,47 @@ import { useEffect, useState } from "react";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
 import useAdmin from "../../../hooks/useAdmin";
+import { formatDateTime } from "../../../utils/formatDateTime";
 
 const PaboTakaList = () => {
-    const [isAdmin] = useAdmin();
     const [list, setList] = useState([]);
+    const [isAdmin] = useAdmin();
     const axiosSecure = useAxiosSecure();
 
-    // LOAD DATA
-    const fetchPabo = async () => {
-        try {
-            const res = await axiosSecure.get("/receivables");
-            setList(res.data);
-        } catch (err) {
-            console.log(err);
-        }
+    const fetchData = async () => {
+        const res = await axiosSecure.get("/receivables");
+        setList(res.data);
     };
 
     useEffect(() => {
-        fetchPabo();
+        fetchData();
     }, []);
+
+    // DELETE
+    const handleDelete = async (id) => {
+        await axiosSecure.delete(`/receivables/${id}`);
+        fetchData();
+    };
 
     // EDIT
     const handleEdit = async (item) => {
-        const name = prompt("Edit Name", item.name);
-        const amount = prompt("Edit Amount", item.amount);
-
-        if (!name || !amount) return;
-
-        try {
-            const res = await axiosSecure.patch(`/receivables/${item._id}`, {
-                name,
-                amount: Number(amount)
-            });
-
-            if (res.data.success) {
-                Swal.fire("Updated!", "Data updated successfully", "success");
-                fetchPabo();
-            }
-
-        } catch (err) {
-            console.log(err);
-            Swal.fire("Error", "Update failed", "error");
-        }
-    };
-
-    // DELETE
-    const handleDeletePabo = async (id) => {
-        const result = await Swal.fire({
-            title: "Are you sure?",
-            text: "This action cannot be undone!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!",
+        const { value } = await Swal.fire({
+            title: "Edit Data",
+            html: `
+                <input id="name" class="swal2-input" value="${item.name}">
+                <input id="amount" type="number" class="swal2-input" value="${item.amount}">
+                <input id="date" type="datetime-local" class="swal2-input">
+            `,
+            preConfirm: () => ({
+                name: document.getElementById("name").value,
+                amount: Number(document.getElementById("amount").value),
+                date: document.getElementById("date").value
+            })
         });
 
-        if (!result.isConfirmed) return;
-
-        try {
-            const res = await axiosSecure.delete(`/receivables/${id}`);
-
-            if (res.data?.success || res.data?.deletedCount > 0) {
-                Swal.fire("Deleted!", "Item removed successfully", "success");
-                fetchPabo();
-            }
-
-        } catch (error) {
-            console.log(error);
-            Swal.fire("Error", "Delete failed", "error");
+        if (value) {
+            await axiosSecure.patch(`/receivables/${item._id}`, value);
+            fetchData();
         }
     };
 
@@ -78,29 +50,30 @@ const PaboTakaList = () => {
         <div className="p-5 mt-10">
             <h2 className="text-2xl font-bold mb-4">📋 Pabo Taka List</h2>
 
-            <div className="overflow-x-auto">
-                <table className="table table-xs">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Date & Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
-                    <tbody>
-                        {list.map((item, index) => (
+                <tbody>
+                    {list.map((item, index) => {
+                        const dt = formatDateTime(item.createdAt);
+
+                        return (
                             <tr key={item._id}>
                                 <td>{index + 1}</td>
                                 <td>{item.name}</td>
                                 <td>৳ {item.amount}</td>
 
                                 <td>
-                                    {item.createdAt
-                                        ? new Date(item.createdAt).toLocaleString()
-                                        : "No Date"}
+                                    {dt.date} <br />
+                                    {dt.time}
                                 </td>
 
                                 <td>
@@ -114,7 +87,7 @@ const PaboTakaList = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => handleDeletePabo(item._id)}
+                                                onClick={() => handleDelete(item._id)}
                                                 className="btn btn-xs btn-error"
                                             >
                                                 Delete
@@ -123,11 +96,10 @@ const PaboTakaList = () => {
                                     )}
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-
-                </table>
-            </div>
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 };

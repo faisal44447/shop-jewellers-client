@@ -14,18 +14,23 @@ const SocialLogin = () => {
             const result = await googleSignIn();
             const user = result.user;
 
-            // ✅ এখানেই role add করো
-            const userInfo = {
+            // ✅ 1. Save user to DB
+            await axiosPublic.post("/users", {
                 email: user.email,
                 name: user.displayName,
-                role: "user"
-            };
+                role: "user",
+            });
 
-            await axiosPublic.post('/users', userInfo).catch(() => { });
+            // ✅ 2. Get JWT token
+            const jwtRes = await axiosPublic.post("/jwt", {
+                email: user.email,
+            });
+
+            // ✅ 3. Save token
+            localStorage.setItem("access-token", jwtRes.data.token);
 
             Swal.fire("Success", "Google Login Successful", "success");
-
-            navigate('/');
+            navigate("/");
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -35,9 +40,8 @@ const SocialLogin = () => {
         <div className="p-6">
             <div className="divider">OR</div>
 
-            <button onClick={handleGoogleSignIn} className="btn w-full bg-black/40 border-yellow-500 text-white mt-2 hover:bg-yellow-500 hover:text-black">
-                <FaGoogle className="text-red-500 mr-2" />
-                Google Login
+            <button onClick={handleGoogleSignIn} className="btn w-full">
+                <div className="btn btn-sm text-red-400"><FaGoogle></FaGoogle></div> Google Login
             </button>
         </div>
     );

@@ -1,32 +1,27 @@
 import { useState } from "react";
-import axios from "axios";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const PaboTaka = () => {
+    const axiosSecure = useAxiosSecure();
+
     const [form, setForm] = useState({
         name: "",
-        amount: ""
+        amount: "",
+        date: ""
     });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            await axios.post("http://localhost:5000/receivables", {
-                ...form,
-                amount: Number(form.amount)
-            });
+        await axiosSecure.post("/receivables", form);
 
-            alert("✅ Added");
+        alert("✅ Added");
 
-            // 🔥 reset
-            setForm({
-                name: "",
-                amount: ""
-            });
-
-        } catch (err) {
-            console.log(err);
-        }
+        setForm({
+            name: "",
+            amount: "",
+            date: ""
+        });
     };
 
     return (
@@ -47,6 +42,7 @@ const PaboTaka = () => {
             />
 
             <input
+                type="number"
                 value={form.amount}
                 placeholder="Amount"
                 onChange={e => setForm({ ...form, amount: e.target.value })}

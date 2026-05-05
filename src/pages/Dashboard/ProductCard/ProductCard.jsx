@@ -25,11 +25,18 @@ const ProductCard = ({ product }) => {
     return (
         <div className="card bg-base-100 shadow-xl p-4">
 
-            <img src={product.image} className="h-40 object-cover" />
+            {/* 🔥 SAFE IMAGE FIX */}
+            <img
+                src={product?.image || "https://via.placeholder.com/300"}
+                alt={product?.name}
+                className="w-full h-40 object-cover rounded"
+            />
 
-            <h2 className="font-bold">{product.name}</h2>
+            <h2 className="font-bold mt-2">
+                {product?.name}
+            </h2>
 
-            <p>Buy: ৳{product.buyPrice}</p>
+            <p>Buy: ৳{product?.buyPrice}</p>
 
             <input
                 className="input input-bordered w-full my-2"

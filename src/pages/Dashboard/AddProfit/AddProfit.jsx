@@ -12,36 +12,32 @@ const AddProfit = () => {
   const navigate = useNavigate();
 
   const handleAddProfit = async () => {
-    if (!amount) {
-      Swal.fire("Error", "Amount is required", "error");
-      return;
+    if (!amount || Number(amount) <= 0) {
+      return Swal.fire("Error", "Valid amount required", "error");
     }
 
-    const data = {
-      amount: Number(amount),
-      note: note || "",
-      createdAt: dateTime ? new Date(dateTime) : new Date()
-    };
-
     try {
+      const data = {
+        amount: Number(amount),
+        note: note || "",
+        createdAt: dateTime ? new Date(dateTime) : new Date(),
+      };
+
       const res = await axiosSecure.post("/profits", data);
 
       if (res.data.success) {
         Swal.fire("Success", "Profit added", "success");
-
         setAmount("");
         setNote("");
         setDateTime("");
-
         navigate("/dashboard/profit-list");
       }
-
     } catch (err) {
       console.log(err);
       Swal.fire("Error", "Failed", "error");
     }
-  }; 
-  
+  };
+
   return (
     <div className="p-5 mt-10 max-w-md mx-auto">
       <h2 className="text-3xl font-bold mb-5">➕ Add Profit</h2>

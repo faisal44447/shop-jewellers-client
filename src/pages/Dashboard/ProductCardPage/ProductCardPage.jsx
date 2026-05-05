@@ -9,16 +9,26 @@ const ProductCardPage = () => {
     useEffect(() => {
         axiosSecure.get("/products")
             .then(res => {
-                const stock = res.data.filter(p => p.status === "stock");
-                setProducts(stock);
+                // ✅ SAFE FIX (no empty issue)
+                setProducts(res.data || []);
+            })
+            .catch(err => {
+                console.log(err);
+                setProducts([]);
             });
-    }, []);
+    }, [axiosSecure]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 p-5">
-            {products.map(p => (
-                <ProductCard key={p._id} product={p} />
-            ))}
+            {products.length > 0 ? (
+                products.map(p => (
+                    <ProductCard key={p._id} product={p} />
+                ))
+            ) : (
+                <p className="text-center col-span-3 text-gray-500">
+                    No products found
+                </p>
+            )}
         </div>
     );
 };

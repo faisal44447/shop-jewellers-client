@@ -20,34 +20,43 @@ const Products = () => {
         fetchProducts();
     }, [axiosSecure]);
 
-    const handleDelete = (id) => {
-        Swal.fire({
+    const handleDelete = async (product) => {
+        const result = await Swal.fire({
             title: "Are you sure?",
-            text: "Product will be deleted!",
+            text: `Delete "${product.name}"? This action cannot be undone!`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    const res = await axiosSecure.delete(`/products/${id}`);
 
-                    if (res.data.deletedCount > 0 || res.data.success) {
-                        fetchProducts();
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel",
 
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "Product deleted successfully.",
-                            icon: "success"
-                        });
-                    }
-                } catch (err) {
-                    console.log(err);
-                }
-            }
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
         });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await axiosSecure.delete(`/products/${product._id}`);
+
+                if (res.data.deletedCount > 0 || res.data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Deleted!",
+                        text: `${product.name} deleted successfully`,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+
+                    refetch();
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to delete product",
+                });
+            }
+        }
     };
 
     return (
