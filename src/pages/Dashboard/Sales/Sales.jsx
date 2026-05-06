@@ -35,7 +35,7 @@ const Sales = () => {
 
     return (
         <div className="p-5">
-            <h2 className="text-xl font-bold mb-4">Sales</h2>
+            <h2 className="text-3xl font-bold mb-10 text-center">Sales  ({sales.length})</h2>
 
             <table className="table w-full bg-white">
                 <thead>

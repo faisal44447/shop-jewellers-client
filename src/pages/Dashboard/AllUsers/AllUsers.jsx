@@ -2,20 +2,20 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { FaTrashAlt, FaUsers } from "react-icons/fa";
 import Swal from "sweetalert2";
+import useAdmin from "../../../hooks/useAdmin";
 
 const AllUsers = () => {
   const axiosSecure = useAxiosSecure();
+  const [isAdmin] = useAdmin();
 
-  // ✅ GET USERS (correct place)
   const { data: users = [], refetch, isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const res = await axiosSecure.get("/users");
-      return res.data;
+      return res.data || [];
     },
   });
 
-  // ✅ LOADING STATE
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -24,51 +24,46 @@ const AllUsers = () => {
     );
   }
 
-  // ✅ MAKE ADMIN
-  const handleMakeAdmin = (user) => {
-    axiosSecure
-      .patch(`/users/admin/${user._id}`)
-      .then((res) => {
-        if (res.data.modifiedCount > 0) {
-          refetch();
-          Swal.fire("Success", `${user.name} is now Admin`, "success");
-        }
-      })
-      .catch(() => {
-        Swal.fire("Error", "Failed to update role", "error");
-      });
+  // MAKE ADMIN
+  const handleMakeAdmin = async (user) => {
+    try {
+      const res = await axiosSecure.patch(`/users/admin/${user._id}`);
+
+      if (res.data.modifiedCount > 0 || res.data.success) {
+        refetch();
+        Swal.fire("Success", `${user.name} is now Admin`, "success");
+      }
+    } catch (err) {
+      Swal.fire("Error", "Failed to make admin", "error");
+    }
   };
 
-  // ✅ DELETE USER
-  const handleDeleteUser = (user) => {
-    Swal.fire({
+  // DELETE USER
+  const handleDeleteUser = async (user) => {
+    const confirm = await Swal.fire({
       title: "Are you sure?",
       text: "This user will be deleted!",
       icon: "warning",
       showCancelButton: true,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axiosSecure
-          .delete(`/users/${user._id}`)
-          .then((res) => {
-            if (res.data.deletedCount > 0) {
-              refetch();
-              Swal.fire("Deleted!", "User removed", "success");
-            }
-          })
-          .catch(() => {
-            Swal.fire("Error", "Delete failed", "error");
-          });
-      }
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes delete it",
     });
+
+    if (confirm.isConfirmed) {
+      const res = await axiosSecure.delete(`/users/${user._id}`);
+
+      if (res.data.deletedCount > 0) {
+        refetch();
+        Swal.fire("Deleted!", "User removed", "success");
+      }
+    }
   };
 
   return (
     <div>
-      <div className="flex justify-evenly my-4">
-        <h2 className="text-3xl">All Users</h2>
-        <h2 className="text-3xl">Total Users: {users.length}</h2>
-      </div>
+      <h2 className="text-3xl font-bold mb-5 text-center">
+        All Users: {users.length}
+      </h2>
 
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
@@ -93,22 +88,26 @@ const AllUsers = () => {
                   {user.role === "admin" ? (
                     "Admin"
                   ) : (
-                    <button
-                      onClick={() => handleMakeAdmin(user)}
-                      className="btn btn-sm bg-orange-500 text-white"
-                    >
-                      <FaUsers />
-                    </button>
+                    isAdmin && (
+                      <button
+                        onClick={() => handleMakeAdmin(user)}
+                        className="btn btn-sm bg-orange-500 text-white"
+                      >
+                        <FaUsers />
+                      </button>
+                    )
                   )}
                 </td>
 
                 <td>
-                  <button
-                    onClick={() => handleDeleteUser(user)}
-                    className="btn btn-ghost btn-sm"
-                  >
-                    <FaTrashAlt className="text-red-600" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      className="btn btn-ghost btn-sm"
+                    >
+                      <FaTrashAlt className="text-red-600" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -4,34 +4,49 @@ import { AuthContext } from "../../providers/AuthProvider";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Eye, EyeOff } from "lucide-react";
+import SocialLogin from "../../components/SocialLogin/SocialLogin";
 
 const SignUp = () => {
-    const { register, handleSubmit, reset } = useForm();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors }
+    } = useForm();
+
     const { createUser, updateUserProfile } = useContext(AuthContext);
     const axiosPublic = useAxiosPublic();
     const navigate = useNavigate();
 
+    // ✅ PASSWORD SHOW/HIDE STATE
+    const [showPass, setShowPass] = useState(false);
+
     const onSubmit = async (data) => {
         try {
-            const res = await createUser(data.email, data.password);
+            // create user
+            await createUser(data.email, data.password);
 
+            // update profile
             await updateUserProfile(data.name, "");
 
-            // save user
+            // save user in DB
             await axiosPublic.post("/users", {
                 name: data.name,
                 email: data.email,
-                role: data.email === "md9897653@gmail.com" ? "admin" : "user",
+                role:
+                    data.email === "md9897653@gmail.com"
+                        ? "admin"
+                        : "user",
             });
 
-            // JWT TOKEN
+            // JWT token
             const tokenRes = await axiosPublic.post("/jwt", {
                 email: data.email,
             });
 
             localStorage.setItem("access-token", tokenRes.data.token);
 
-            Swal.fire("Success", "User created", "success");
+            Swal.fire("Success", "User created successfully", "success");
             navigate("/");
 
         } catch (err) {
@@ -40,76 +55,90 @@ const SignUp = () => {
     };
 
     return (
-        <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800 -mt-20 py-10">
+        <div className="hero min-h-screen flex items-center justify-center bg-gray-900">
 
-            <div className="card w-full max-w-sm p-[2px] rounded-2xl 
-            bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 
-            shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
+            <div className="card w-96 bg-black/70 p-5 text-white rounded-xl shadow-lg">
 
-                <form onSubmit={handleSubmit(onSubmit)}
-                    className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
+                <h2 className="text-2xl font-bold text-center mb-5 text-yellow-400">
+                    Create Account
+                </h2>
 
-                    <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">
-                        Create Account
-                    </h2>
+                <form onSubmit={handleSubmit(onSubmit)}>
 
-                    {/* Name */}
+                    {/* NAME */}
                     <input
                         {...register("name", { required: true })}
-                        placeholder="Full Name"
-                        className="input input-bordered bg-black/40 border-yellow-500 
-                    focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-4"
+                        placeholder="Name"
+                        className="input input-bordered w-full mb-3 text-black"
                     />
+                    {errors.name && (
+                        <p className="text-red-400 text-sm mb-2">
+                            Name is required
+                        </p>
+                    )}
 
-                    {/* Email */}
+                    {/* EMAIL */}
                     <input
                         {...register("email", { required: true })}
                         placeholder="Email"
-                        className="input input-bordered bg-black/40 border-yellow-500 
-                    focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-2"
+                        className="input input-bordered w-full mb-3 text-black focus:ring-2 focus:ring-yellow-400"
                     />
+                    {errors.email && (
+                        <p className="text-red-400 text-sm mb-2">
+                            Email is required
+                        </p>
+                    )}
 
-                    {/* Password */}
-                    <div className="relative mt-2">
+                    {/* PASSWORD */}
+                    <div className="relative mb-3">
                         <input
-                            {...register("password", { required: true, minLength: 6 })}
+                            {...register("password", {
+                                required: true,
+                                minLength: 6,
+                            })}
                             type={showPass ? "text" : "password"}
                             placeholder="Password"
-                            className="input input-bordered w-full bg-black/40 border-yellow-500 text-white"
+                            className="input input-bordered w-full pr-10 text-black focus:ring-2 focus:ring-yellow-400"
                         />
+
+                        {/* ICON TOGGLE */}
                         <button
                             type="button"
                             onClick={() => setShowPass(!showPass)}
-                            className="absolute right-3 top-3 text-yellow-400 text-sm"
+                            className="absolute right-3 top-3 text-yellow-400"
                         >
-                            {showPass ? "Hide" : "Show"}
+                            {showPass ? (
+                                <EyeOff size={18} />
+                            ) : (
+                                <Eye size={18} />
+                            )}
                         </button>
                     </div>
 
+                    {/* PASSWORD ERROR */}
                     {errors.password && (
-                        <p className="text-red-400 text-sm mt-1">
+                        <p className="text-red-400 text-sm mb-2">
                             Password must be at least 6 characters
                         </p>
                     )}
 
-                    {/* Button */}
-                    <button
-                        type="submit"
-                        className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 
-                    border-none text-black font-bold shadow-lg 
-                    hover:scale-105 hover:shadow-yellow-500/50 transition-all duration-300"
-                    >
-                        Create Account
+                    {/* SUBMIT */}
+                    <button className="btn btn-warning w-full">
+                        Sign Up
                     </button>
-
-                    {/* Login link */}
-                    <p className="text-sm mt-3 text-center">
-                        Already have an account?{" "}
-                        <Link to="/login" className="text-yellow-400 font-bold hover:underline">
-                            Login
-                        </Link>
-                    </p>
                 </form>
+
+                {/* LOGIN LINK */}
+                <p className="text-center mt-3 text-sm">
+                    Already have account?{" "}
+                    <Link to="/login" className="text-yellow-400">
+                        Login
+                    </Link>
+                </p>
+
+                {/* SOCIAL LOGIN */}
+                <SocialLogin />
+
             </div>
         </div>
     );

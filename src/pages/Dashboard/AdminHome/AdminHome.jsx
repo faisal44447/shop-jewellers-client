@@ -17,6 +17,7 @@ import {
     ResponsiveContainer,
     Tooltip,
 } from "recharts";
+
 import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
 
 const colors = ["#22c55e", "#ef4444", "#3b82f6", "#f59e0b"];
@@ -24,20 +25,35 @@ const colors = ["#22c55e", "#ef4444", "#3b82f6", "#f59e0b"];
 const AdminHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const [isAdmin = false, isAdminLoading] = useAdmin();
+    const [isAdmin, isAdminLoading] = useAdmin();
 
-    // ================= DASHBOARD STATS =================
-    const {
-        data: stats = {},
-        isLoading: statsLoading,
-        isError,
-    } = useQuery({
+    // ================= DASHBOARD =================
+    const { data: stats = {}, isLoading: statsLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
             return res.data;
         },
     });
+
+    // ================= PRODUCTS (for charts) =================
+    const { data: products = [] } = useQuery({
+        queryKey: ["products"],
+        queryFn: async () => {
+            const res = await axiosSecure.get("/products");
+            return res.data;
+        },
+    });
+
+    // ================= SAFE DATA =================
+    const safeProducts = Array.isArray(products) ? products : [];
+
+    const pieChartData = [
+        { name: "Revenue", value: stats.totalSales || 0 },
+        { name: "Expense", value: stats.totalExpense || 0 },
+        { name: "Profit", value: stats.profit || 0 },
+        { name: "Stock", value: stats.totalStock || 0 },
+    ];
 
     // ================= LOADING =================
     if (isAdminLoading || statsLoading) {
@@ -59,6 +75,7 @@ const AdminHome = () => {
 
     return (
         <div className="p-5">
+
             {/* PROFILE */}
             <div className="flex items-center gap-4 mb-6">
                 <img
@@ -68,6 +85,7 @@ const AdminHome = () => {
                             : user?.photoURL || "https://i.ibb.co/2n0Q5Yc/default-user.png"
                     }
                     className="w-16 h-16 rounded-full border"
+                    alt="user"
                 />
 
                 <h2 className="text-2xl md:text-3xl font-bold">
@@ -75,7 +93,7 @@ const AdminHome = () => {
                 </h2>
             </div>
 
-            {/* ================= STATS ================= */}
+            {/* STATS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
 
                 <div className="bg-white p-5 rounded-xl shadow border-l-4 border-green-500">
@@ -100,10 +118,10 @@ const AdminHome = () => {
 
             </div>
 
-            {/* ================= CHARTS ================= */}
+            {/* CHARTS */}
             <div className="flex flex-col md:flex-row gap-10">
 
-                {/* BAR */}
+                {/* BAR CHART */}
                 <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
                         <BarChart data={safeProducts}>
@@ -118,7 +136,7 @@ const AdminHome = () => {
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE */}
+                {/* PIE CHART */}
                 <div className="w-full md:w-1/2 h-[320px] bg-white rounded-xl shadow p-3">
                     <ResponsiveContainer>
                         <PieChart>
@@ -140,6 +158,8 @@ const AdminHome = () => {
                 </div>
 
             </div>
+
+            {/* MONTHLY REPORT */}
             <div className="mt-10">
                 <MonthlyReport />
             </div>

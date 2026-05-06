@@ -48,7 +48,7 @@ const PaboTakaList = () => {
 
     return (
         <div className="p-5 mt-10">
-            <h2 className="text-2xl font-bold mb-4">📋 Pabo Taka List</h2>
+            <h2 className="text-3xl font-bold mb-10 text-center">📋 Pabo Taka List  ({list.length})</h2>
 
             <table className="table">
                 <thead>

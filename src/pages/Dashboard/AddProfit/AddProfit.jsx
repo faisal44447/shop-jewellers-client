@@ -40,7 +40,7 @@ const AddProfit = () => {
 
   return (
     <div className="p-5 mt-10 max-w-md mx-auto">
-      <h2 className="text-3xl font-bold mb-5">➕ Add Profit</h2>
+      <h2 className="text-3xl font-bold mb-5 text-center">➕ Add Profit</h2>
 
       <div className="mb-4">
         <label className="block font-bold mb-2">Amount</label>

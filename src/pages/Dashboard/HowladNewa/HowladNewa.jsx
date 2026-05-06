@@ -39,44 +39,47 @@ const HowladNewa = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <div>
+            <h2 className="text-3xl font-bold mb-5 text-center">Add New Howlad</h2>
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
 
-            <input
-                value={form.name || ""}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Name"
-                className="input input-bordered w-full"
-            />
+                <input
+                    value={form.name || ""}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Name"
+                    className="input input-bordered w-full"
+                />
 
-            <input
-                value={form.amount || ""}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                placeholder="Amount"
-                type="number"
-                className="input input-bordered w-full"
-            />
+                <input
+                    value={form.amount || ""}
+                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                    placeholder="Amount"
+                    type="number"
+                    className="input input-bordered w-full"
+                />
 
-            <input
-                type="datetime-local"
-                value={form.date || ""}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="input input-bordered w-full"
-            />
+                <input
+                    type="datetime-local"
+                    value={form.date || ""}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    className="input input-bordered w-full"
+                />
 
-            <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="select select-bordered w-full"
-            >
-                <option value="loan">➕ Howlad Nise</option>
-                <option value="given">➖ Howlad Dise</option>
-            </select>
+                <select
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    className="select select-bordered w-full"
+                >
+                    <option value="loan">➕ Howlad Nise</option>
+                    <option value="given">➖ Howlad Dise</option>
+                </select>
 
-            <button className="btn btn-primary w-full">
-                Save
-            </button>
+                <button className="btn btn-primary w-full">
+                    Save
+                </button>
 
-        </form>
+            </form>
+        </div>
     );
 };
 

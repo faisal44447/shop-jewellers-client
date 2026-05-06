@@ -118,7 +118,7 @@ const Dashboard = () => {
                             </NavLink>
 
                             <NavLink to="/dashboard/cart" className={linkStyle}>
-                                <FaShoppingCart /> Cart
+                                <FaShoppingCart /> Cart ({cart?.length || 0})
                             </NavLink>
 
                             <NavLink to="/dashboard/expenses" className={linkStyle}>

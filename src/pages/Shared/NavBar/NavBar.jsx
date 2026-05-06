@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { CartContext } from "../../../providers/CartProvider";
-import { FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
+import { FaShoppingCart } from "react-icons/fa";
 import Swal from "sweetalert2";
 import ljiCON from "../../../assets/ljIcon.JPG";
 
@@ -10,7 +10,6 @@ const NavBar = () => {
     const { user, logOut } = useContext(AuthContext);
     const { cart } = useContext(CartContext);
 
-    const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -27,107 +26,122 @@ const NavBar = () => {
                 icon: "success",
                 title: "Logged out!",
                 timer: 1200,
-                showConfirmButton: false
+                showConfirmButton: false,
             });
         });
     };
 
     const navStyle = ({ isActive }) =>
-        isActive ? "nav-link-active" : "nav-link-base";
-
-    const menu = (
-        <>
-            <NavLink to="/" className={navStyle} onClick={() => setOpen(false)}>Home</NavLink>
-
-            {user && (
-                <>
-                    <NavLink to="/dashboard" className={navStyle} onClick={() => setOpen(false)}>
-                        Dashboard
-                    </NavLink>
-                    <NavLink to="/dashboard/product-card-page" className={navStyle}>
-                        Products
-                    </NavLink>
-                     <NavLink to="/dashboard/sell" className={navStyle}>
-                        Sell
-                    </NavLink>
-                </>
-            )}
-        </>
-    );
+        isActive ? "text-orange-500 font-bold" : "text-gray-700";
 
     return (
-        <div className={`navbar-glow fixed top-0 w-full z-50 transition-all duration-300 
-            ${scrolled ? "py-2 shadow-xl bg-black/80 backdrop-blur-xl" : "py-4"} max-w-7xl mx-auto mb-5
-        `}>
-
-            <div className=" flex justify-between items-center px-6">
-
-                {/* LEFT */}
+        <div
+            className={`navbar bg-base-100 fixed top-0 w-full z-50 transition-all duration-300 
+      ${scrolled ? "shadow-xl bg-white" : ""}`}
+        >
+            {/* LEFT */}
+            <div className="navbar-start">
                 <Link to="/" className="flex items-center gap-2">
                     <img src={ljiCON} className="w-10 h-10 rounded-full" />
-                    <span className="text-white font-bold">Laivin Jewellers</span>
+                    <span className="font-bold">Laivin Jewellers</span>
                 </Link>
+            </div>
 
-                {/* DESKTOP MENU */}
-                <div className="hidden lg:flex gap-8">
-                    {menu}
-                </div>
+            {/* CENTER MENU */}
+            <div className="navbar-center hidden lg:flex">
+                <ul className="menu menu-horizontal px-1 gap-4">
+                    <li>
+                        <NavLink to="/" className={navStyle}>
+                            Home
+                        </NavLink>
+                    </li>
 
-                {/* RIGHT */}
-                <div className="flex items-center gap-4">
-
-                    {/* CART */}
                     {user && (
-                        <Link to="/dashboard/cart" className="relative">
-                            <FaShoppingCart className="text-2xl text-orange-400" />
-
-                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 rounded-full animate-pulse">
-                                {cart?.length || 0}
-                            </span>
-                        </Link>
+                        <>
+                            <li>
+                                <NavLink to="/dashboard" className={navStyle}>
+                                    Dashboard
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/dashboard/product-card-page" className={navStyle}>
+                                    Products
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/dashboard/sell" className={navStyle}>
+                                    Sell
+                                </NavLink>
+                            </li>
+                        </>
                     )}
+                </ul>
+            </div>
 
-                    {/* USER */}
-                    {user && (
-                        <div className="relative group">
-                            <img
-                                src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
-                                className="w-10 h-10 rounded-full ring-2 ring-orange-400 cursor-pointer"
-                            />
+            {/* RIGHT */}
+            <div className="navbar-end gap-4">
 
-                            <div className="absolute hidden group-hover:block top-12 right-0 bg-black text-white text-xs px-3 py-1 rounded">
-                                {user?.displayName || "User"}
-                            </div>
-                        </div>
-                    )}
+                {/* CART */}
+                {user && (
+                    <Link to="/dashboard/cart" className="relative">
+                        <FaShoppingCart className="text-xl" />
+                        <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 rounded-full">
+                            {cart?.length || 0}
+                        </span>
+                    </Link>
+                )}
 
-                    {/* BUTTON */}
-                    {user ? (
-                        <button onClick={handleLogOut} className="btn-glow px-4 py-1 rounded text-white">
-                            Logout
-                        </button>
-                    ) : (
-                        <Link to="/login" className="btn-glow px-4 py-1 rounded text-white">
-                            Login
-                        </Link>
-                    )}
+                {/* USER */}
+                {user && (
+                    <img
+                        src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
+                        className="w-10 h-10 rounded-full"
+                    />
+                )}
 
-                    {/* MOBILE MENU BUTTON */}
-                    <button
-                        className="lg:hidden text-white text-xl"
-                        onClick={() => setOpen(!open)}
-                    >
-                        {open ? <FaTimes /> : <FaBars />}
+                {/* LOGIN / LOGOUT */}
+                {user ? (
+                    <button onClick={handleLogOut} className="btn btn-sm">
+                        Logout
                     </button>
-                </div>
+                ) : (
+                    <Link to="/login" className="btn btn-sm">
+                        Login
+                    </Link>
+                )}
             </div>
 
             {/* MOBILE MENU */}
-            {open && (
-                <div className="lg:hidden bg-black/90 backdrop-blur-xl px-6 py-4 flex flex-col gap-4">
-                    {menu}
+            <div className="dropdown lg:hidden">
+                <div tabIndex={0} role="button" className="btn btn-ghost">
+                    ☰
                 </div>
-            )}
+
+                <ul
+                    tabIndex={0}
+                    className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+                >
+                    <li>
+                        <NavLink to="/">Home</NavLink>
+                    </li>
+
+                    {user && (
+                        <>
+                            <li>
+                                <NavLink to="/dashboard">Dashboard</NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/dashboard/product-card-page">
+                                    Products
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/dashboard/sell">Sell</NavLink>
+                            </li>
+                        </>
+                    )}
+                </ul>
+            </div>
         </div>
     );
 };

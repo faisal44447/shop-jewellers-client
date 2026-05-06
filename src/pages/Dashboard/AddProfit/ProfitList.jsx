@@ -1,117 +1,176 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
-import { formatDateTime } from "../../../utils/formatDateTime";
 import useAdmin from "../../../hooks/useAdmin";
+import { FaTrash, FaEdit } from "react-icons/fa";
+import { useState } from "react";
 
-const PaboTakaList = () => {
-    const [list, setList] = useState([]);
-    const [isAdmin] = useAdmin();
+const ProfitList = () => {
     const axiosSecure = useAxiosSecure();
+    const [isAdmin] = useAdmin();
 
-    const fetchData = async () => {
-        const res = await axiosSecure.get("/receivables");
-        setList(res.data);
-    };
+    const [editItem, setEditItem] = useState(null);
+    const [editAmount, setEditAmount] = useState("");
+    const [editNote, setEditNote] = useState("");
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    // GET PROFITS
+    const { data: profits = [], refetch, isLoading } = useQuery({
+        queryKey: ["profits"],
+        queryFn: async () => {
+            const res = await axiosSecure.get("/profits");
+            return res.data;
+        },
+    });
 
     // DELETE
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
+    const handleDelete = (id) => {
+        Swal.fire({
             title: "Are you sure?",
+            text: "This profit will be deleted!",
             icon: "warning",
             showCancelButton: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosSecure.delete(`/profits/${id}`).then((res) => {
+                    if (res.data.success) {
+                        Swal.fire("Deleted!", "Profit removed", "success");
+                        refetch();
+                    }
+                });
+            }
         });
+    };
 
-        if (confirm.isConfirmed) {
-            await axiosSecure.delete(`/receivables/${id}`);
-            fetchData();
+    // UPDATE
+    const handleUpdate = async () => {
+        try {
+            const res = await axiosSecure.patch(`/profits/${editItem._id}`, {
+                amount: Number(editAmount),
+                note: editNote,
+            });
+
+            if (res.data.success) {
+                Swal.fire("Success", "Profit updated", "success");
+                setEditItem(null);
+                refetch();
+            }
+        } catch (err) {
+            Swal.fire("Error", "Update failed", "error");
         }
     };
 
-    // EDIT
-    const handleEdit = async (item) => {
-        const currentDate = item.createdAt
-            ? new Date(item.createdAt).toISOString().slice(0, 16)
-            : "";
-
-        const { value } = await Swal.fire({
-            title: "Edit Data",
-            html: `
-                <input id="name" class="swal2-input" value="${item.name}">
-                <input id="amount" type="number" class="swal2-input" value="${item.amount}">
-                <input id="date" type="datetime-local" class="swal2-input" value="${currentDate}">
-            `,
-            preConfirm: () => ({
-                name: document.getElementById("name").value,
-                amount: Number(document.getElementById("amount").value),
-                date: document.getElementById("date").value
-            })
-        });
-
-        if (value) {
-            await axiosSecure.patch(`/receivables/${item._id}`, value);
-            fetchData();
-        }
-    };
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg"></span>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-5 mt-10">
-            <h2 className="text-2xl font-bold mb-4">📋 Pabo Taka List</h2>
+        <div className="p-5">
 
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Amount</th>
-                        <th>Date & Time</th>
-                        {isAdmin && <th>Action</th>}
-                    </tr>
-                </thead>
+            <h2 className="text-3xl font-bold mb-5 text-center">
+                💸 Profit List ({profits.length})
+            </h2>
 
-                <tbody>
-                    {list.map((item, index) => {
-                        const dt = formatDateTime(item.createdAt);
+            <div className="overflow-x-auto">
+                <table className="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Note</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            {isAdmin && <th>Action</th>}
+                        </tr>
+                    </thead>
 
-                        return (
-                            <tr key={item._id}>
+                    <tbody>
+                        {profits.map((p, index) => (
+                            <tr key={p._id}>
                                 <td>{index + 1}</td>
-                                <td>{item.name}</td>
-                                <td>৳ {item.amount}</td>
+                                <td>{p.note}</td>
+                                <td>৳{p.amount}</td>
+                                <td>{new Date(p.createdAt).toLocaleString()}</td>
 
-                                <td>
-                                    {dt.date} <br />
-                                    {dt.time}
-                                </td>
-
+                                {/* ADMIN ONLY ACTION */}
                                 {isAdmin && (
-                                    <td>
+                                    <td className="flex gap-2">
+
+                                        {/* EDIT */}
                                         <button
-                                            onClick={() => handleEdit(item)}
-                                            className="btn btn-xs btn-warning mr-2"
+                                            className="btn btn-sm btn-info"
+                                            onClick={() => {
+                                                setEditItem(p);
+                                                setEditAmount(p.amount);
+                                                setEditNote(p.note);
+                                            }}
                                         >
-                                            Edit
+                                            <FaEdit />
                                         </button>
 
+                                        {/* DELETE */}
                                         <button
-                                            onClick={() => handleDelete(item._id)}
-                                            className="btn btn-xs btn-error"
+                                            className="btn btn-sm btn-error"
+                                            onClick={() => handleDelete(p._id)}
                                         >
-                                            Delete
+                                            <FaTrash />
                                         </button>
+
                                     </td>
                                 )}
                             </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* ================= EDIT MODAL ================= */}
+            {editItem && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-5 rounded w-96">
+
+                        <h2 className="text-xl font-bold mb-3">Edit Profit</h2>
+
+                        <input
+                            className="input input-bordered w-full mb-2"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            placeholder="Amount"
+                        />
+
+                        <input
+                            className="input input-bordered w-full mb-2"
+                            value={editNote}
+                            onChange={(e) => setEditNote(e.target.value)}
+                            placeholder="Note"
+                        />
+
+                        <div className="flex justify-between mt-4">
+
+                            <button
+                                className="btn btn-success"
+                                onClick={handleUpdate}
+                            >
+                                Save
+                            </button>
+
+                            <button
+                                className="btn btn-error"
+                                onClick={() => setEditItem(null)}
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
 
-export default PaboTakaList;
+export default ProfitList;

@@ -114,6 +114,7 @@ const ManageProducts = () => {
 
     return (
         <div className="p-4">
+            <h2 className="text-3xl font-bold mb-10 text-center">Manage Products  ({products.length})</h2>
             <table className="table w-full">
                 <thead>
                     <tr>

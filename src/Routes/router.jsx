@@ -34,7 +34,8 @@ import HowladNewa from "../pages/Dashboard/HowladNewa/HowladNewa";
 import PaboTaka from "../pages/Dashboard/PaboTaka/PaboTaka";
 import EditProduct from "../pages/Dashboard/EditProduct/EditProduct";
 import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
-import AllUsers from '../pages/Dashboard/AllUsers/AllUsers';
+import AllUsers from "../pages/Dashboard/AllUsers/AllUsers";
+
 
 export const router = createBrowserRouter([
   {

@@ -9,6 +9,7 @@ import {
 } from "react-simple-captcha";
 import Swal from "sweetalert2";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [disabled, setDisabled] = useState(true);
@@ -38,95 +39,100 @@ const Login = () => {
     const password = form.password.value;
 
     try {
-      // ✅ Firebase login
       const result = await signIn(email, password);
       const user = result.user;
 
-      // ✅ Get JWT token
       const res = await axiosPublic.post("/jwt", {
         email: user.email,
       });
 
       localStorage.setItem("access-token", res.data.token);
 
-      // ✅ Save user in DB (optional)
-      const userInfo = {
+      await axiosPublic.post("/users", {
         email: user.email,
         name: user.displayName || "User",
-      };
-
-      await axiosPublic.post("/users", userInfo);
+      });
 
       Swal.fire("Success", "Login Successful", "success");
       navigate(from, { replace: true });
+
     } catch (err) {
       Swal.fire("Error", err.message, "error");
     }
   };
 
   return (
-    <div className="hero min-h-screen pt-24 bg-gradient-to-br from-gray-900 via-black to-gray-800 -mt-20 py-10">
-      <div className="card w-full max-w-sm p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-lg">
+    <div className="hero min-h-screen flex items-center justify-center bg-gray-900">
+
+      {/* 🔥 MATCHED SIGNUP STYLE CARD */}
+      <div className="card w-96 p-[2px] rounded-2xl 
+        bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 
+        shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
 
         <form
           onSubmit={handleLogin}
-          className="card-body rounded-2xl bg-black/70 text-white"
+          className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white"
         >
-          <h2 className="text-3xl font-bold text-center text-yellow-400">
+          <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">
             Welcome Back
           </h2>
 
-          {/* Email */}
+          {/* EMAIL */}
           <input
             name="email"
             type="email"
             placeholder="Email"
-            className="input input-bordered mt-4"
+            className="input input-bordered bg-black/40 border-yellow-500 
+            focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-4"
             required
           />
 
-          {/* Password */}
-          <div className="relative mt-2">
+          {/* PASSWORD */}
+          <div className="relative mt-3">
             <input
               name="password"
               type={showPass ? "text" : "password"}
               placeholder="Password"
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-black/40 border-yellow-500 
+              text-white pr-10"
               required
             />
+
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-3 text-sm"
+              className="absolute right-3 top-3 text-yellow-400"
             >
-              {showPass ? "Hide" : "Show"}
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
-          {/* Captcha */}
+          {/* CAPTCHA */}
           <div className="form-control mt-3">
             <LoadCanvasTemplate />
             <input
               onBlur={handleValidateCaptcha}
               type="text"
               placeholder="type captcha"
-              className="input input-bordered mt-2"
+              className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
             />
           </div>
 
-          {/* Button */}
+          {/* LOGIN BTN */}
           <button
             type="submit"
             disabled={disabled}
-            className="btn mt-5 bg-yellow-400 text-black font-bold"
+            className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 
+            border-none text-black font-bold shadow-lg 
+            hover:scale-105 transition-all"
           >
             Login
           </button>
 
-          {/* Signup */}
+          {/* SIGNUP LINK */}
           <p className="text-sm mt-3 text-center">
             New here?{" "}
-            <Link to="/signup" className="text-yellow-400 font-bold">
+            <Link to="/signup" className="text-yellow-400 font-bold hover:underline">
               Create account
             </Link>
           </p>
