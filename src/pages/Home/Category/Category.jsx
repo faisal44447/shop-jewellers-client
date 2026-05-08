@@ -1,10 +1,9 @@
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import "swiper/css/pagination";
-import "swiper/css/autoplay"; // অটো-প্লে এর CSS ইমপোর্ট করুন
+import { Swiper, SwiperSlide } from "swiper/react";
 
-// Autoplay মডিউলটি ইমপোর্ট করুন
-import { Pagination, Autoplay } from 'swiper/modules';
+import "swiper/css";
+import "swiper/css/pagination";
+
+import { Pagination, Autoplay } from "swiper/modules";
 
 import slide1 from "../../../assets/Slide 1.jpg";
 import slide2 from "../../../assets/Slide 2.jpg";
@@ -19,39 +18,49 @@ const Category = () => {
 
     return (
         <div className="min-h-[80vh] flex flex-col items-center justify-center bg-gradient-to-r from-black to-gray-900 text-white py-10">
+
             <h1 className="text-4xl md:text-6xl font-bold text-center mb-12">
-                Welcome to <span className="text-red-500">Laivin Jewellers</span>
+                Welcome to <span className="text-yellow-500">Laivin Jewellers</span>
             </h1>
 
             <div className="w-full max-w-6xl px-4">
+
                 <Swiper
                     slidesPerView={1}
-                    spaceBetween={30}
-                    // অটো-প্লে কনফিগারেশন
+                    spaceBetween={25}
+                    loop={true}
                     autoplay={{
-                        delay: 2500, // ২.৫ সেকেন্ড পর পর স্লাইড পরিবর্তন হবে
-                        disableOnInteraction: false, // মাউস দিয়ে নাড়াচাড়া করলেও অটো-প্লে বন্ধ হবে না
+                        delay: 2500,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
                     }}
                     pagination={{ clickable: true }}
                     breakpoints={{
                         640: { slidesPerView: 2 },
                         1024: { slidesPerView: 3 },
                     }}
-                    modules={[Pagination, Autoplay]} // এখানে Autoplay মডিউলটি যোগ করা হয়েছে
+                    modules={[Pagination, Autoplay]}
                     className="mySwiper"
                 >
+
                     {slides.map((img, index) => (
-                        <SwiperSlide key={index} className="pb-14">
-                            <div className="h-72 md:h-80 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-                                <img 
-                                    className="w-full h-full object-cover transform hover:scale-110 transition duration-500" 
-                                    src={img} 
-                                    alt={`Jewellery ${index + 1}`} 
+                        <SwiperSlide key={index} className="pb-12">
+
+                            <div className="h-72 md:h-80 rounded-xl overflow-hidden shadow-2xl border border-gray-800 group">
+
+                                <img
+                                    className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                                    src={img}
+                                    alt={`Jewellery ${index + 1}`}
                                 />
+
                             </div>
+
                         </SwiperSlide>
                     ))}
+
                 </Swiper>
+
             </div>
         </div>
     );

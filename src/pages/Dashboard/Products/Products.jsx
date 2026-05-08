@@ -1,113 +1,133 @@
 import { FaTrashAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
+
+import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Products = () => {
-    const [products, setProducts] = useState([]);
     const axiosSecure = useAxiosSecure();
 
-    const fetchProducts = async () => {
-        try {
+    // ================= FETCH PRODUCTS =================
+    const {
+        data: products = [],
+        refetch,
+        isLoading,
+    } = useQuery({
+        queryKey: ["products"],
+        queryFn: async () => {
             const res = await axiosSecure.get("/products");
-            setProducts(res.data || []);
-        } catch (err) {
-            console.log(err);
-        }
-    };
+            return Array.isArray(res.data) ? res.data : [];
+        },
+    });
 
-    useEffect(() => {
-        fetchProducts();
-    }, [axiosSecure]);
-
+    // ================= DELETE =================
     const handleDelete = async (product) => {
-        const result = await Swal.fire({
+        const confirm = await Swal.fire({
             title: "Are you sure?",
             text: `Delete "${product.name}"? This action cannot be undone!`,
             icon: "warning",
             showCancelButton: true,
-
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "Cancel",
-
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
         });
 
-        if (result.isConfirmed) {
-            try {
-                const res = await axiosSecure.delete(`/products/${product._id}`);
+        if (!confirm.isConfirmed) return;
 
-                if (res.data.deletedCount > 0 || res.data.success) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Deleted!",
-                        text: `${product.name} deleted successfully`,
-                        timer: 1500,
-                        showConfirmButton: false,
-                    });
+        try {
+            const res = await axiosSecure.delete(
+                `/products/${product._id}`
+            );
 
-                    refetch();
-                }
-            } catch (error) {
+            if (res.data?.deletedCount || res.data?.success) {
                 Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Failed to delete product",
+                    icon: "success",
+                    title: "Deleted!",
+                    text: `${product.name} deleted successfully`,
+                    timer: 1200,
+                    showConfirmButton: false,
                 });
+
+                refetch();
             }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+            });
         }
     };
 
-    return (
-        <div className="mt-10">
-
-            <div className="flex justify-evenly mb-8">
-                <h2 className="text-4xl text-center font-bold">
-                    All Products: {products.length}
-                </h2>
+    // ================= LOADING =================
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg text-red-500"></span>
             </div>
+        );
+    }
 
-            <div className="overflow-x-auto">
-                <table className="table w-full">
+    return (
+        <div className="p-5 mt-10">
 
-                    <thead>
+            {/* TITLE */}
+            <h2 className="text-3xl font-bold text-center mb-8">
+                📦 All Products ({products.length})
+            </h2>
+
+            {/* TABLE */}
+            <div className="overflow-x-auto bg-white rounded-xl shadow">
+
+                <table className="table">
+
+                    <thead className="bg-gray-100">
                         <tr>
                             <th>#</th>
                             <th>Image</th>
                             <th>Name</th>
                             <th>Karat</th>
                             <th>Weight</th>
-                            <th>Buy</th>
+                            <th>Buy Price</th>
                             <th>Action</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {products.map((item, index) => (
-                            <tr key={item._id}>
-                                <th>{index + 1}</th>
+                            <tr key={item._id} className="hover">
+
+                                <td>{index + 1}</td>
 
                                 <td>
                                     <div className="avatar">
-                                        <div className="mask mask-squircle w-12 h-12">
+                                        <div className="w-12 rounded">
                                             <img src={item.image} alt="product" />
                                         </div>
                                     </div>
                                 </td>
 
-                                <td>{item.name}</td>
+                                <td className="font-medium">
+                                    {item.name}
+                                </td>
+
                                 <td>{item.karat}</td>
 
                                 <td>
-                                    {item.vori}ভরি {item.ana}আনা {item.rati}রতি {item.point}পয়েন্ট
+                                    {item.vori} ভরি{" "}
+                                    {item.ana} আনা{" "}
+                                    {item.rati} রতি{" "}
+                                    {item.point} পয়েন্ট
                                 </td>
 
-                                <td>৳{item.buyPrice}</td>
+                                <td className="text-green-600 font-bold">
+                                    ৳ {item.buyPrice}
+                                </td>
 
                                 <td>
                                     <button
-                                        onClick={() => handleDelete(item._id)}
+                                        onClick={() =>
+                                            handleDelete(item)
+                                        }
                                         className="btn btn-sm btn-error text-white"
                                     >
                                         <FaTrashAlt />
@@ -119,6 +139,7 @@ const Products = () => {
                     </tbody>
 
                 </table>
+
             </div>
 
         </div>

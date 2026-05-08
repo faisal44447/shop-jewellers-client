@@ -16,6 +16,7 @@ const AllUsers = () => {
     },
   });
 
+  // ================= LOADING =================
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -24,51 +25,75 @@ const AllUsers = () => {
     );
   }
 
-  // MAKE ADMIN
+  // ================= MAKE ADMIN =================
   const handleMakeAdmin = async (user) => {
     try {
-      const res = await axiosSecure.patch(`/users/admin/${user._id}`);
+      const res = await axiosSecure.patch(
+        `/users/admin/${user._id}`
+      );
 
-      if (res.data.modifiedCount > 0 || res.data.success) {
-        refetch();
-        Swal.fire("Success", `${user.name} is now Admin`, "success");
+      if (res.data?.modifiedCount > 0 || res.data?.success) {
+        await refetch();
+
+        Swal.fire({
+          icon: "success",
+          title: `${user.name} is now Admin`,
+          timer: 1200,
+          showConfirmButton: false,
+        });
       }
     } catch (err) {
       Swal.fire("Error", "Failed to make admin", "error");
     }
   };
 
-  // DELETE USER
+  // ================= DELETE USER =================
   const handleDeleteUser = async (user) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
-      text: "This user will be deleted!",
+      text: `${user.name} will be deleted permanently!`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       confirmButtonText: "Yes delete it",
     });
 
-    if (confirm.isConfirmed) {
-      const res = await axiosSecure.delete(`/users/${user._id}`);
+    if (!confirm.isConfirmed) return;
 
-      if (res.data.deletedCount > 0) {
-        refetch();
-        Swal.fire("Deleted!", "User removed", "success");
+    try {
+      const res = await axiosSecure.delete(
+        `/users/${user._id}`
+      );
+
+      if (res.data?.deletedCount > 0) {
+        await refetch();
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "User removed successfully",
+          timer: 1200,
+          showConfirmButton: false,
+        });
       }
+    } catch (err) {
+      Swal.fire("Error", "Delete failed", "error");
     }
   };
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-5 text-center">
-        All Users: {users.length}
+    <div className="p-4">
+
+      {/* HEADER */}
+      <h2 className="text-3xl font-bold mb-6 text-center">
+        👥 All Users ({users.length})
       </h2>
 
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
+
           <thead>
-            <tr>
+            <tr className="text-black">
               <th>#</th>
               <th>Name</th>
               <th>Email</th>
@@ -77,43 +102,65 @@ const AllUsers = () => {
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="text-orange-500">
             {users.map((user, index) => (
               <tr key={user._id}>
-                <th>{index + 1}</th>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
 
+                <td className="text-black">{index + 1}</td>
+                <td className="font-medium">
+                  {user.name}
+                </td>
+                <td className="text-black">{user.email}</td>
+
+                {/* ROLE */}
                 <td>
                   {user.role === "admin" ? (
-                    "Admin"
+                    <span className="badge badge-success text-white">
+                      Admin
+                    </span>
                   ) : (
-                    isAdmin && (
-                      <button
-                        onClick={() => handleMakeAdmin(user)}
-                        className="btn btn-sm bg-orange-500 text-white"
-                      >
-                        <FaUsers />
-                      </button>
-                    )
+                    <span className="badge badge-warning">
+                      User
+                    </span>
                   )}
                 </td>
 
-                <td>
-                  {isAdmin && (
+                {/* ACTION */}
+                <td className="flex gap-2">
+
+                  {/* MAKE ADMIN */}
+                  {isAdmin && user.role !== "admin" && (
                     <button
-                      onClick={() => handleDeleteUser(user)}
-                      className="btn btn-ghost btn-sm"
+                      onClick={() =>
+                        handleMakeAdmin(user)
+                      }
+                      className="btn btn-sm bg-orange-500 text-white"
                     >
-                      <FaTrashAlt className="text-red-600" />
+                      <FaUsers />
                     </button>
                   )}
+
+                  {/* DELETE */}
+                  {isAdmin && (
+                    <button
+                      onClick={() =>
+                        handleDeleteUser(user)
+                      }
+                      className="btn btn-sm btn-error"
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  )}
+
                 </td>
+
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
+
     </div>
   );
 };

@@ -5,7 +5,7 @@ import Footer from '../pages/Shared/Footer/Footer';
 const Main = () => {
     return (
         <div>
-            <div className="mx-auto max-w-7xl items-center justify-items-center">
+            <div className="mx-auto max-w-7xl items-center justify-items-center text-black">
                 <NavBar />
             </div>
 

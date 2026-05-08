@@ -1,173 +1,134 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
 import useAdmin from "../../../hooks/useAdmin";
-import { FaTrash, FaEdit } from "react-icons/fa";
-import { useState } from "react";
+import { formatDateTime } from "../../../utils/formatDateTime";
 
 const ProfitList = () => {
     const axiosSecure = useAxiosSecure();
+    const [profits, setProfits] = useState([]);
     const [isAdmin] = useAdmin();
 
-    const [editItem, setEditItem] = useState(null);
-    const [editAmount, setEditAmount] = useState("");
-    const [editNote, setEditNote] = useState("");
-
-    // GET PROFITS
-    const { data: profits = [], refetch, isLoading } = useQuery({
-        queryKey: ["profits"],
-        queryFn: async () => {
+    // ================= FETCH =================
+    const fetchProfits = async () => {
+        try {
             const res = await axiosSecure.get("/profits");
-            return res.data;
-        },
-    });
+            setProfits(Array.isArray(res.data) ? res.data : []);
+        } catch (error) {
+            console.log("Fetch error:", error);
+        }
+    };
 
-    // DELETE
-    const handleDelete = (id) => {
-        Swal.fire({
+    useEffect(() => {
+        fetchProfits();
+    }, []);
+
+    // ================= DELETE =================
+    const handleDelete = async (id) => {
+        const confirm = await Swal.fire({
             title: "Are you sure?",
             text: "This profit will be deleted!",
             icon: "warning",
             showCancelButton: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axiosSecure.delete(`/profits/${id}`).then((res) => {
-                    if (res.data.success) {
-                        Swal.fire("Deleted!", "Profit removed", "success");
-                        refetch();
-                    }
-                });
-            }
+            confirmButtonText: "Yes delete",
         });
-    };
 
-    // UPDATE
-    const handleUpdate = async () => {
+        if (!confirm.isConfirmed) return;
+
         try {
-            const res = await axiosSecure.patch(`/profits/${editItem._id}`, {
-                amount: Number(editAmount),
-                note: editNote,
+            await axiosSecure.delete(`/profits/${id}`);
+
+            Swal.fire({
+                icon: "success",
+                title: "Deleted successfully",
+                timer: 1200,
+                showConfirmButton: false,
             });
 
-            if (res.data.success) {
-                Swal.fire("Success", "Profit updated", "success");
-                setEditItem(null);
-                refetch();
-            }
-        } catch (err) {
-            Swal.fire("Error", "Update failed", "error");
+            fetchProfits();
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Delete failed",
+            });
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-96">
-                <span className="loading loading-spinner loading-lg"></span>
-            </div>
-        );
-    }
+    // ================= TOTAL =================
+    const totalProfit = profits.reduce(
+        (sum, p) => sum + Number(p.amount || 0),
+        0
+    );
 
     return (
         <div className="p-5">
 
-            <h2 className="text-3xl font-bold mb-5 text-center">
-                💸 Profit List ({profits.length})
+            {/* HEADER */}
+            <h2 className="text-3xl font-bold text-center mb-6 text-green-500">
+                💰 Profit List ({profits.length})
             </h2>
 
+            {/* TOTAL */}
+            <div className="text-center mb-6">
+                <span className="badge badge-success p-3 text-white text-lg">
+                    Total Profit: ৳ {totalProfit}
+                </span>
+            </div>
+
+            {/* TABLE */}
             <div className="overflow-x-auto">
-                <table className="table table-zebra w-full">
+                <table className="table w-full">
+
                     <thead>
-                        <tr>
+                        <tr className="text-green-500">
                             <th>#</th>
-                            <th>Note</th>
                             <th>Amount</th>
-                            <th>Date</th>
+                            <th>Note</th>
+                            <th>Date & Time</th>
                             {isAdmin && <th>Action</th>}
                         </tr>
                     </thead>
 
                     <tbody>
-                        {profits.map((p, index) => (
-                            <tr key={p._id}>
-                                <td>{index + 1}</td>
-                                <td>{p.note}</td>
-                                <td>৳{p.amount}</td>
-                                <td>{new Date(p.createdAt).toLocaleString()}</td>
+                        {profits.map((item, index) => {
+                            const dt = formatDateTime(item.createdAt);
 
-                                {/* ADMIN ONLY ACTION */}
-                                {isAdmin && (
-                                    <td className="flex gap-2">
+                            return (
+                                <tr key={item._id} className="hover">
 
-                                        {/* EDIT */}
-                                        <button
-                                            className="btn btn-sm btn-info"
-                                            onClick={() => {
-                                                setEditItem(p);
-                                                setEditAmount(p.amount);
-                                                setEditNote(p.note);
-                                            }}
-                                        >
-                                            <FaEdit />
-                                        </button>
+                                    <td className="text-black">{index + 1}</td>
 
-                                        {/* DELETE */}
-                                        <button
-                                            className="btn btn-sm btn-error"
-                                            onClick={() => handleDelete(p._id)}
-                                        >
-                                            <FaTrash />
-                                        </button>
-
+                                    <td className="text-green-600 font-bold">
+                                        ৳ {item.amount}
                                     </td>
-                                )}
-                            </tr>
-                        ))}
+
+                                    <td className="text-orange-600">
+                                        {item.note || "-"}
+                                    </td>
+
+                                    <td className="text-black">
+                                        {dt?.date} <br />
+                                        {dt?.time}
+                                    </td>
+
+                                    {isAdmin && (
+                                        <td>
+                                            <button
+                                                onClick={() => handleDelete(item._id)}
+                                                className="btn btn-xs btn-error text-white"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    )}
+
+                                </tr>
+                            );
+                        })}
                     </tbody>
+
                 </table>
             </div>
-
-            {/* ================= EDIT MODAL ================= */}
-            {editItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-5 rounded w-96">
-
-                        <h2 className="text-xl font-bold mb-3">Edit Profit</h2>
-
-                        <input
-                            className="input input-bordered w-full mb-2"
-                            value={editAmount}
-                            onChange={(e) => setEditAmount(e.target.value)}
-                            placeholder="Amount"
-                        />
-
-                        <input
-                            className="input input-bordered w-full mb-2"
-                            value={editNote}
-                            onChange={(e) => setEditNote(e.target.value)}
-                            placeholder="Note"
-                        />
-
-                        <div className="flex justify-between mt-4">
-
-                            <button
-                                className="btn btn-success"
-                                onClick={handleUpdate}
-                            >
-                                Save
-                            </button>
-
-                            <button
-                                className="btn btn-error"
-                                onClick={() => setEditItem(null)}
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
-
-                    </div>
-                </div>
-            )}
 
         </div>
     );

@@ -1,58 +1,139 @@
 import { useState } from "react";
+import Swal from "sweetalert2";
+
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const PaboTaka = () => {
     const axiosSecure = useAxiosSecure();
 
+    const [loading, setLoading] = useState(false);
+
     const [form, setForm] = useState({
         name: "",
         amount: "",
-        date: ""
+        date: "",
     });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        await axiosSecure.post("/receivables", form);
-
-        alert("✅ Added");
-
+    // ================= HANDLE CHANGE =================
+    const handleChange = (e) => {
         setForm({
-            name: "",
-            amount: "",
-            date: ""
+            ...form,
+            [e.target.name]: e.target.value,
         });
     };
 
+    // ================= SUBMIT =================
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // validation
+        if (!form.name || !form.amount) {
+            return Swal.fire({
+                icon: "error",
+                title: "Name & Amount required",
+            });
+        }
+
+        try {
+            setLoading(true);
+
+            const payload = {
+                name: form.name,
+                amount: Number(form.amount),
+                createdAt: form.date
+                    ? new Date(form.date)
+                    : new Date(),
+            };
+
+            const res = await axiosSecure.post(
+                "/receivables",
+                payload
+            );
+
+            if (
+                res?.data?.insertedId ||
+                res?.data?.success ||
+                res?.data?.acknowledged
+            ) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Added Successfully",
+                    timer: 1200,
+                    showConfirmButton: false,
+                });
+
+                setForm({
+                    name: "",
+                    amount: "",
+                    date: "",
+                });
+            } else {
+                throw new Error("Add failed");
+            }
+
+        } catch (error) {
+            console.error(error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Failed to add",
+            });
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div>
-            <h2 className="text-3xl font-bold mb-5 text-center">Add New Pabo Taka</h2>
-            <form onSubmit={handleSubmit} className="p-5 mt-10 space-y-3">
+        <div className="min-h-screen flex justify-center items-center bg-gray-100">
 
-                <input
-                    type="datetime-local"
-                    value={form.date}
-                    onChange={e => setForm({ ...form, date: e.target.value })}
-                    className="input input-bordered w-full"
-                />
+            <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
 
-                <input
-                    value={form.name}
-                    placeholder="Name"
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="input input-bordered w-full"
-                />
+                {/* TITLE */}
+                <h2 className="text-3xl font-bold mb-6 text-center text-green-600">
+                    💰 Add Pabo Taka
+                </h2>
 
-                <input
-                    type="number"
-                    value={form.amount}
-                    placeholder="Amount"
-                    onChange={e => setForm({ ...form, amount: e.target.value })}
-                    className="input input-bordered w-full"
-                />
+                {/* FORM */}
+                <form onSubmit={handleSubmit} className="space-y-4">
 
-                <button className="btn btn-primary w-full">Add</button>
-            </form>
+                    <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        placeholder="Name"
+                        className="input input-bordered w-full text-black"
+                    />
+
+                    <input
+                        name="amount"
+                        type="number"
+                        value={form.amount}
+                        onChange={handleChange}
+                        placeholder="Amount"
+                        className="input input-bordered w-full text-black"
+                    />
+
+                    <input
+                        name="date"
+                        type="datetime-local"
+                        value={form.date}
+                        onChange={handleChange}
+                        className="input input-bordered w-full text-black"
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-primary w-full"
+                    >
+                        {loading ? "Adding..." : "Add"}
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
     );
 };

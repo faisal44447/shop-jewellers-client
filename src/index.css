@@ -2,82 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-
-  /* ================= NAVBAR ================= */
-  .navbar-glow {
-    position: relative;
-    background: linear-gradient(135deg,
-        #7c2d12,
-        #9a3412,
-        #c2410c);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(251, 146, 60, 0.4);
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-
-  .navbar-glow::before {
-    content: "";
-    position: absolute;
-    inset: -50% -60%;
-    opacity: 0.25;
-    pointer-events: none;
-    background: radial-gradient(circle,
-        rgba(251, 146, 60, 0.5),
-        transparent 70%);
-  }
-
-  /* ================= BUTTON ================= */
-  .btn-glow {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
-    transition: 0.3s ease;
-    border: none;
-  }
-
-  .btn-glow:hover {
-    background: linear-gradient(135deg, #ea580c, #c2410c);
-    box-shadow: 0 0 25px rgba(249, 115, 22, 0.9);
-    transform: translateY(-1px);
-  }
-
-  /* ================= NAV LINK ================= */
-  .nav-link-base {
-    position: relative;
+body {
+    background: #070b14;
     color: white;
-    font-weight: 600;
-    text-transform: uppercase;
+}
+
+/* ===== GLASS CARD SYSTEM ===== */
+.card-glass {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+/* ===== BUTTON ===== */
+.btn-glow {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
     transition: 0.3s;
-  }
+}
 
-  /* underline animation */
-  .nav-link-base::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -4px;
-    width: 100%;
-    height: 2px;
-    background: #fdba74;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: 0.3s;
-  }
+.btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.8);
+}
 
-  .nav-link-base:hover::after {
-    transform: scaleX(1);
-  }
+/* ===== NAV LINK ===== */
+.nav-link-base {
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
 
-  .nav-link-active {
-    color: #fdba74;
-  }
+.nav-link-base:hover {
+    background: rgba(255,255,255,0.08);
+}
 
-  /* ================= ACTIVE LINK ================= */
-  .nav-link-active {
-    color: #fdba74 !important;
-    text-shadow: 0 0 12px rgba(251, 146, 60, 0.9);
-    transform: scaleX(1);
-  }
-
+.nav-link-active {
+    background: #f97316;
+    color: black !important;
 }

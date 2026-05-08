@@ -14,19 +14,18 @@ const SocialLogin = () => {
             const result = await googleSignIn();
             const user = result.user;
 
-            // ✅ 1. Save user to DB
+            // ================= SAVE USER =================
             await axiosPublic.post("/users", {
                 email: user.email,
                 name: user.displayName,
                 role: "user",
             });
 
-            // ✅ 2. Get JWT token
+            // ================= GET JWT =================
             const jwtRes = await axiosPublic.post("/jwt", {
                 email: user.email,
             });
 
-            // ✅ 3. Save token
             localStorage.setItem("access-token", jwtRes.data.token);
 
             Swal.fire("Success", "Google Login Successful", "success");
@@ -38,11 +37,18 @@ const SocialLogin = () => {
 
     return (
         <div className="p-6">
+
             <div className="divider">OR</div>
 
-            <button onClick={handleGoogleSignIn} className="btn w-full">
-                <div className="btn btn-sm text-red-400"><FaGoogle></FaGoogle></div> Google Login
+            {/* CLEAN BUTTON */}
+            <button
+                onClick={handleGoogleSignIn}
+                className="btn w-full flex items-center gap-2 justify-center bg-white text-black hover:bg-gray-200"
+            >
+                <FaGoogle className="text-red-500 text-lg" />
+                Continue with Google
             </button>
+
         </div>
     );
 };

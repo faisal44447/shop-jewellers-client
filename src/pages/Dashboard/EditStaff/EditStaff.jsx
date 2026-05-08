@@ -37,7 +37,7 @@ const EditStaff = () => {
         const salary = Number(form.salary.value);
         const taken = Number(form.taken.value);
 
-        // ✅ VALIDATION
+        // ✅ validation fix
         if (!name || isNaN(salary) || isNaN(taken)) {
             return Swal.fire(
                 "Error",
@@ -47,18 +47,27 @@ const EditStaff = () => {
         }
 
         const updatedData = {
-            name: form.name.value,
-            monthlySalary: Number(form.salary.value),
-            totalTaken: Number(form.taken.value),
-            month: staff?.month || "",   // ✅ SAFE
+            name,
+            monthlySalary: salary,
+            totalTaken: taken,
+            month: staff?.month || "",
+            year: staff?.year || new Date().getFullYear(),
+            submissionDate: staff?.submissionDate || "",
+            submissionTime: staff?.submissionTime || "",
         };
 
         try {
             const res = await axiosSecure.put(`/staffs/${id}`, updatedData);
 
-            if (res.data.modifiedCount > 0) {
-                Swal.fire("Success", "Staff updated successfully", "success");
-                navigate("/dashboard/staff-list");
+            // safer check
+            if (res.data?.modifiedCount > 0 || res.data?.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Updated!",
+                    text: "Staff updated successfully",
+                }).then(() => {
+                    navigate("/dashboard/staff-list");
+                });
             } else {
                 Swal.fire("Info", "No changes were made", "info");
             }

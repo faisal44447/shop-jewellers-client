@@ -8,70 +8,89 @@ const EditProduct = () => {
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
 
+  const [loading, setLoading] = useState(true);
+
   const [product, setProduct] = useState({
     name: "",
     karat: "",
-    vori: "",
-    ana: "",
-    rati: "",
-    point: "",
-    buyPrice: "",
-    sellPrice: ""
+    vori: 0,
+    ana: 0,
+    rati: 0,
+    point: 0,
+    buyPrice: 0,
+    sellPrice: 0,
   });
 
-  // ✅ LOAD PRODUCT
+  // ================= LOAD PRODUCT =================
   useEffect(() => {
-    axiosSecure.get(`/products/${id}`)
-      .then(res => {
-        setProduct(res.data);
-      })
-      .catch(() => {
-        Swal.fire("❌ Error", "Failed to load product", "error");
-      });
+    const fetchProduct = async () => {
+      try {
+        const res = await axiosSecure.get(`/products/${id}`);
+        const data = res.data || {};
+
+        setProduct({
+          name: data.name || "",
+          karat: data.karat || "",
+          vori: data.vori || 0,
+          ana: data.ana || 0,
+          rati: data.rati || 0,
+          point: data.point || 0,
+          buyPrice: data.buyPrice || 0,
+          sellPrice: data.sellPrice || 0,
+        });
+      } catch (error) {
+        Swal.fire("Error", "Failed to load product", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id, axiosSecure]);
 
-  // ✅ INPUT CHANGE
+  // ================= HANDLE CHANGE =================
   const handleChange = (e) => {
-    setProduct({
-      ...product,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+
+    setProduct((prev) => ({
+      ...prev,
+      [name]:
+        name === "name" || name === "karat"
+          ? value
+          : Number(value),
+    }));
   };
 
-  // ✅ UPDATE
+  // ================= UPDATE =================
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (!product.name || !product.karat || !product.buyPrice) {
-      Swal.fire("⚠️ সব field fill করো");
-      return;
+    if (!product.name || !product.karat) {
+      return Swal.fire("Warning", "Name and Karat required", "warning");
     }
-
-    const updatedData = {
-      name: product.name,
-      karat: product.karat,
-      vori: Number(product.vori || 0),
-      ana: Number(product.ana || 0),
-      rati: Number(product.rati || 0),
-      point: Number(product.point || 0),
-      buyPrice: Number(product.buyPrice || 0),
-      sellPrice: Number(product.sellPrice || 0),
-    };
 
     try {
-      const res = await axiosSecure.patch(`/products/${id}`, updatedData);
+      const res = await axiosSecure.patch(`/products/${id}`, product);
 
       if (res.data.modifiedCount > 0) {
-        Swal.fire("✅ Updated!", "Product updated successfully", "success");
+        Swal.fire("Success", "Product updated successfully", "success");
         navigate("/dashboard/manage-product");
       } else {
-        Swal.fire("⚠️ No changes detected");
+        Swal.fire("Info", "No changes detected", "info");
       }
-
-    } catch (err) {
-      Swal.fire("❌ Error", "Update failed", "error");
+    } catch (error) {
+      Swal.fire("Error", "Update failed", "error");
     }
   };
+
+  // ================= LOADING =================
+  if (loading) {
+    return (
+      <p className="text-center mt-10 text-lg">
+        Loading product...
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto mt-10 bg-white p-6 rounded-xl shadow">
@@ -88,6 +107,7 @@ const EditProduct = () => {
           onChange={handleChange}
           placeholder="Product Name"
           className="input input-bordered w-full"
+          required
         />
 
         <input
@@ -96,9 +116,10 @@ const EditProduct = () => {
           onChange={handleChange}
           placeholder="Karat"
           className="input input-bordered w-full"
+          required
         />
 
-        {/* 🔥 VORI SYSTEM */}
+        {/* WEIGHT */}
         <div className="grid grid-cols-4 gap-2">
           <input name="vori" value={product.vori} onChange={handleChange} placeholder="Vori" className="input input-bordered" />
           <input name="ana" value={product.ana} onChange={handleChange} placeholder="Ana" className="input input-bordered" />

@@ -11,14 +11,15 @@ const Cart = () => {
     const [editPrice, setEditPrice] = useState({});
 
     useEffect(() => {
-        setLocalCart(cart);
+        setLocalCart(cart || []);
     }, [cart]);
 
     // ================= QTY =================
     const updateQty = (id, type) => {
         const updated = localCart.map((item) => {
             if (item._id === id) {
-                const qty = item.quantity || 1;
+                const qty = Number(item.quantity || 1);
+
                 return {
                     ...item,
                     quantity: type === "inc" ? qty + 1 : Math.max(1, qty - 1),
@@ -36,10 +37,10 @@ const Cart = () => {
         const qty = Number(item.quantity || 1);
 
         const price = Number(
-            editPrice[item._id] ?? item.sellPrice ?? item.buyPrice
+            editPrice[item._id] || item.sellPrice || item.buyPrice || 0
         );
 
-        if (!price || price <= 0) {
+        if (price <= 0) {
             return Swal.fire("Error", "Invalid price", "error");
         }
 
@@ -52,59 +53,98 @@ const Cart = () => {
 
             const res = await axiosSecure.post("/sales", payload);
 
-            if (res.data.success) {
+            if (res.data?.success) {
                 removeFromCart(item._id);
-                Swal.fire("Success", "Sold successfully", "success");
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Sold successfully",
+                    timer: 1200,
+                    showConfirmButton: false,
+                });
+
+                // update local UI instantly
+                setLocalCart((prev) =>
+                    prev.filter((p) => p._id !== item._id)
+                );
             }
         } catch (err) {
-            console.log(err.response?.data);
-
             Swal.fire(
                 "Error",
-                err.response?.data?.message || "Sale failed",
+                err?.response?.data?.message || "Sale failed",
                 "error"
             );
         }
     };
 
     // ================= TOTAL =================
-    const total = localCart.reduce(
-        (sum, item) =>
-            sum +
-            Number(item.sellPrice || item.buyPrice || 0) *
-            (item.quantity || 1),
-        0
-    );
+    const total = localCart.reduce((sum, item) => {
+        const price = Number(item.sellPrice || item.buyPrice || 0);
+        const qty = Number(item.quantity || 1);
+        return sum + price * qty;
+    }, 0);
+
+    // ================= EMPTY STATE =================
+    if (localCart.length === 0) {
+        return (
+            <div className="p-10 text-center text-gray-500">
+                🛒 Cart is empty
+            </div>
+        );
+    }
 
     return (
         <div className="p-6">
+
             <h2 className="text-2xl font-bold mb-6 text-center">
                 🛒 Cart ({localCart.length})
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {localCart.map((item) => (
-                    <div key={item._id} className="card shadow p-4">
-                        <img src={item.image} className="h-32 object-cover" />
 
-                        <h2 className="font-bold mt-2">{item.name}</h2>
+                {localCart.map((item) => (
+                    <div key={item._id} className="card shadow p-4 text-black">
+
+                        <img
+                            src={item.image}
+                            className="h-32 w-full object-cover rounded"
+                            alt={item.name}
+                        />
+
+                        <h2 className="font-bold mt-2 text-orange-500">
+                            {item.name}
+                        </h2>
 
                         {/* QTY */}
-                        <div className="flex gap-2 mt-2">
-                            <button onClick={() => updateQty(item._id, "dec")}>-</button>
+                        <div className="flex items-center gap-3 mt-2">
+                            <button
+                                onClick={() => updateQty(item._id, "dec")}
+                                className="btn btn-xs"
+                            >
+                                -
+                            </button>
+
                             <span>{item.quantity || 1}</span>
-                            <button onClick={() => updateQty(item._id, "inc")}>+</button>
+
+                            <button
+                                onClick={() => updateQty(item._id, "inc")}
+                                className="btn btn-xs"
+                            >
+                                +
+                            </button>
                         </div>
 
                         {/* PRICE */}
                         <input
                             type="number"
-                            className="border w-full mt-2"
-                            defaultValue={item.sellPrice || item.buyPrice}
+                            className="border w-full mt-2 p-2 rounded text-black"
+                            defaultValue={
+                                item.sellPrice || item.buyPrice
+                            }
                             onChange={(e) =>
                                 setEditPrice({
                                     ...editPrice,
-                                    [item._id]: e.target.value,
+                                    [item._id]: Number(e.target.value),
                                 })
                             }
                         />
@@ -119,18 +159,27 @@ const Cart = () => {
 
                         {/* REMOVE */}
                         <button
-                            onClick={() => removeFromCart(item._id)}
+                            onClick={() => {
+                                removeFromCart(item._id);
+                                setLocalCart((prev) =>
+                                    prev.filter((p) => p._id !== item._id)
+                                );
+                            }}
                             className="btn btn-error w-full mt-2"
                         >
                             Remove
                         </button>
+
                     </div>
                 ))}
+
             </div>
 
-            <h3 className="text-center mt-6 text-xl">
-                Total: ৳{total}
+            {/* TOTAL */}
+            <h3 className="text-center mt-6 text-xl font-bold">
+                Total: ৳ {total}
             </h3>
+
         </div>
     );
 };

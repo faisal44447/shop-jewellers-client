@@ -2,146 +2,424 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import { FaPlus } from "react-icons/fa";
+
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
-const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY;
+// ================= IMAGE HOSTING =================
+const image_hosting_key =
+    import.meta.env.VITE_IMAGE_HOSTING_KEY;
+
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const AddProduct = () => {
-    const { register, handleSubmit, reset } = useForm();
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm();
+
     const axiosPublic = useAxiosPublic();
     const axiosSecure = useAxiosSecure();
 
     const [loading, setLoading] = useState(false);
 
-    // ✅ ONLY image upload function
+    // ================= IMAGE UPLOAD =================
     const uploadImage = async (file) => {
+
         const formData = new FormData();
+
         formData.append("image", file);
 
-        const res = await axiosPublic.post(image_hosting_api, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
+        const res = await axiosPublic.post(
+            image_hosting_api,
+            formData,
+            {
+                headers: {
+                    "Content-Type":
+                        "multipart/form-data",
+                },
+            }
+        );
 
         if (res?.data?.success) {
             return res.data.data.display_url;
-        } else {
-            throw new Error("Image upload failed");
         }
+
+        throw new Error("Image upload failed");
     };
 
+    // ================= SUBMIT =================
     const onSubmit = async (data) => {
+
         try {
+
             setLoading(true);
 
-            // ✅ image validation
-            if (!data.image || data.image.length === 0) {
-                return Swal.fire("Error", "Image is required", "error");
+            // ================= IMAGE VALIDATION =================
+            if (
+                !data.image ||
+                data.image.length === 0
+            ) {
+                return Swal.fire(
+                    "Error",
+                    "Product image is required",
+                    "error"
+                );
             }
 
-            // ✅ date + time safe
+            // ================= DATE TIME =================
             const fullDateTime =
                 data.date && data.time
-                    ? new Date(`${data.date}T${data.time}`)
+                    ? new Date(
+                        `${data.date}T${data.time}`
+                    )
                     : new Date();
 
-            // ✅ upload image first
-            const imageUrl = await uploadImage(data.image[0]);
+            // ================= UPLOAD IMAGE =================
+            const imageUrl = await uploadImage(
+                data.image[0]
+            );
 
-            // ✅ create product object
+            // ================= PRODUCT DATA =================
             const productData = {
                 name: data.name,
+                category: data.category,
                 karat: data.karat,
-                vori: parseFloat(data.vori) || 0,
-                ana: parseFloat(data.ana) || 0,
-                rati: parseFloat(data.rati) || 0,
-                point: parseFloat(data.point) || 0,
-                buyPrice: parseFloat(data.buyPrice) || 0,
+
+                vori:
+                    parseFloat(data.vori) || 0,
+
+                ana:
+                    parseFloat(data.ana) || 0,
+
+                rati:
+                    parseFloat(data.rati) || 0,
+
+                point:
+                    parseFloat(data.point) || 0,
+
+                stock:
+                    parseInt(data.stock) || 0,
+
+                buyPrice:
+                    parseFloat(data.buyPrice) || 0,
+
+                sellPrice:
+                    parseFloat(data.sellPrice) || 0,
+
                 image: imageUrl,
+
                 createdAt: fullDateTime,
             };
 
-            // ✅ send to backend
-            const productRes = await axiosSecure.post("/products", productData);
+            // ================= SAVE PRODUCT =================
+            const productRes =
+                await axiosSecure.post(
+                    "/products",
+                    productData
+                );
 
-            // ✅ correct success check
-            if (productRes?.data?.insertedId || productRes?.data?.acknowledged || productRes?.data?.success) {
+            if (
+                productRes?.data?.insertedId ||
+                productRes?.data?.acknowledged ||
+                productRes?.data?.success
+            ) {
+
                 reset();
-                Swal.fire("Success", "Product Added Successfully", "success");
+
+                Swal.fire({
+                    icon: "success",
+                    title:
+                        "Product Added Successfully",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+
             } else {
-                throw new Error("Product not added");
+
+                throw new Error(
+                    "Failed to add product"
+                );
+
             }
 
         } catch (error) {
-            console.error("Add Product Error:", error);
-            Swal.fire(
-                "Error",
-                error?.message || "Failed to add product",
-                "error"
+
+            console.error(
+                "Add Product Error:",
+                error
             );
+
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text:
+                    error?.message ||
+                    "Failed to add product",
+            });
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
     return (
-        <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl mt-10 font-bold text-center my-6">
-                ➕ Add Product
-            </h2>
+        <div className="min-h-screen bg-gray-100 py-10 px-4">
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8">
 
-                <input
-                    {...register("name", { required: true })}
-                    placeholder="Product Name"
-                    className="input input-bordered w-full"
-                />
+                {/* TITLE */}
+                <div className="text-center mb-8">
 
-                <input
-                    {...register("karat", { required: true })}
-                    placeholder="Karat"
-                    className="input input-bordered w-full"
-                />
+                    <h2 className="text-4xl font-bold text-orange-500">
+                        ➕ Add New Product
+                    </h2>
 
-                <div className="grid grid-cols-4 gap-2">
-                    <input {...register("vori")} placeholder="Vori" className="input input-bordered" />
-                    <input {...register("ana")} placeholder="Ana" className="input input-bordered" />
-                    <input {...register("rati")} placeholder="Rati" className="input input-bordered" />
-                    <input {...register("point")} placeholder="Point" className="input input-bordered" />
+                    <p className="text-gray-500 mt-2">
+                        Add your jewellery products easily
+                    </p>
+
                 </div>
 
-                <input
-                    type="number"
-                    {...register("buyPrice", { required: true })}
-                    placeholder="Buy Price"
-                    className="input input-bordered w-full"
-                />
-
-                <div className="flex gap-2">
-                    <input type="date" {...register("date")} className="input input-bordered w-full" />
-                    <input type="time" {...register("time")} className="input input-bordered w-full" />
-                </div>
-
-                <input
-                    type="file"
-                    accept="image/*"
-                    {...register("image", { required: true })}
-                    className="file-input file-input-bordered w-full"
-                />
-
-                <button
-                    disabled={loading}
-                    className="btn btn-primary w-full"
+                {/* FORM */}
+                <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="space-y-6"
                 >
-                    {loading ? "Uploading..." : "Add Product"}
-                    <FaPlus className="ml-2" />
-                </button>
 
-            </form>
+                    {/* PRODUCT NAME */}
+                    <div>
+
+                        <label className="font-semibold text-gray-700">
+                            Product Name
+                        </label>
+
+                        <input
+                            type="text"
+                            placeholder="Enter product name"
+                            {...register("name", {
+                                required:
+                                    "Product name is required",
+                            })}
+                            className="input input-bordered w-full mt-2 text-black"
+                        />
+
+                        {errors.name && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.name.message}
+                            </p>
+                        )}
+
+                    </div>
+
+                    {/* CATEGORY + KARAT */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Category
+                            </label>
+
+                            <input
+                                type="text"
+                                placeholder="Gold Ring / Necklace"
+                                {...register("category")}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                        </div>
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Karat
+                            </label>
+
+                            <input
+                                type="text"
+                                placeholder="22K"
+                                {...register("karat", {
+                                    required:
+                                        "Karat is required",
+                                })}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                            {errors.karat && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.karat.message}
+                                </p>
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    {/* WEIGHT */}
+                    <div>
+
+                        <label className="font-semibold text-gray-700">
+                            Product Weight
+                        </label>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Vori"
+                                {...register("vori")}
+                                className="input input-bordered"
+                            />
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Ana"
+                                {...register("ana")}
+                                className="input input-bordered"
+                            />
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Rati"
+                                {...register("rati")}
+                                className="input input-bordered"
+                            />
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Point"
+                                {...register("point")}
+                                className="input input-bordered"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* PRICE */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Buy Price
+                            </label>
+
+                            <input
+                                type="number"
+                                placeholder="৳ Buy Price"
+                                {...register("buyPrice", {
+                                    required:
+                                        "Buy price is required",
+                                })}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                        </div>
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Stock
+                            </label>
+
+                            <input
+                                type="number"
+                                placeholder="Stock Quantity"
+                                {...register("stock")}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* DATE TIME */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Date
+                            </label>
+
+                            <input
+                                type="date"
+                                {...register("date")}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                        </div>
+
+                        <div>
+
+                            <label className="font-semibold text-gray-700">
+                                Time
+                            </label>
+
+                            <input
+                                type="time"
+                                {...register("time")}
+                                className="input input-bordered w-full mt-2 text-black"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* IMAGE */}
+                    <div>
+
+                        <label className="font-semibold text-gray-700">
+                            Product Image
+                        </label>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            {...register("image", {
+                                required:
+                                    "Product image is required",
+                            })}
+                            className="file-input file-input-bordered w-full mt-2 text-black"
+                        />
+
+                        {errors.image && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.image.message}
+                            </p>
+                        )}
+
+                    </div>
+
+                    {/* BUTTON */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn bg-orange-500 hover:bg-orange-600 text-white border-none w-full text-lg"
+                    >
+
+                        {loading
+                            ? "Uploading..."
+                            : "Add Product"}
+
+                        <FaPlus className="ml-2" />
+
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
     );
 };

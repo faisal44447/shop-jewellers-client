@@ -1,64 +1,174 @@
 import { useState } from "react";
-import axios from "axios";
+import Swal from "sweetalert2";
+
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Expenses = () => {
+    const axiosSecure = useAxiosSecure();
+
     const [form, setForm] = useState({
         title: "",
         amount: "",
         category: "",
         date: "",
-        time: ""
+        time: "",
     });
 
+    const [loading, setLoading] = useState(false);
+
+    // ================= HANDLE CHANGE =================
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value,
+        });
     };
 
+    // ================= SUBMIT =================
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // validation
+        if (!form.title || !form.amount) {
+            return Swal.fire({
+                icon: "error",
+                title: "Title & Amount required",
+            });
+        }
+
         try {
-            const fullDateTime = new Date(`${form.date}T${form.time}`);
+            setLoading(true);
 
-            await axios.post("http://localhost:5000/expenses", {
-                ...form,
+            const fullDateTime =
+                form.date && form.time
+                    ? new Date(
+                        `${form.date}T${form.time}`
+                    )
+                    : new Date();
+
+            const expenseData = {
+                title: form.title,
+                category: form.category,
                 amount: Number(form.amount),
-                createdAt: fullDateTime
-            });
+                createdAt: fullDateTime,
+            };
 
-            alert("✅ Expense Added");
+            const res = await axiosSecure.post(
+                "/expenses",
+                expenseData
+            );
 
-            setForm({
-                title: "",
-                amount: "",
-                category: "",
-                date: "",
-                time: ""
-            });
+            if (
+                res?.data?.insertedId ||
+                res?.data?.acknowledged ||
+                res?.data?.success
+            ) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Expense Added Successfully",
+                    timer: 1200,
+                    showConfirmButton: false,
+                });
+
+                setForm({
+                    title: "",
+                    amount: "",
+                    category: "",
+                    date: "",
+                    time: "",
+                });
+            } else {
+                throw new Error("Expense not added");
+            }
 
         } catch (error) {
-            console.log(error);
-            alert("Expense add failed ❌");
+            console.error(error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Expense add failed",
+            });
+
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold mb-4 text-center">Add New Expense</h2>
-            <form onSubmit={handleSubmit} className="p-5 mt-10 space-y-3">
+        <div className="min-h-screen flex justify-center items-center bg-gray-100">
 
-                <input name="title" value={form.title} onChange={handleChange} placeholder="Expense Title" className="input input-bordered w-full" />
+            <div className="w-full max-w-xl bg-white p-6 rounded-2xl shadow-lg">
 
-                <input name="amount" value={form.amount} onChange={handleChange} placeholder="Amount" className="input input-bordered w-full" />
+                {/* TITLE */}
+                <h2 className="text-3xl font-bold mb-6 text-center text-red-500">
+                    💸 Add New Expense
+                </h2>
 
-                <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="input input-bordered w-full" />
+                {/* FORM */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-4"
+                >
 
-                <input type="date" name="date" value={form.date} onChange={handleChange} className="input input-bordered w-full" />
+                    <input
+                        name="title"
+                        value={form.title}
+                        onChange={handleChange}
+                        placeholder="Expense Title"
+                        className="input input-bordered w-full text-black"
+                    />
 
-                <input type="time" name="time" value={form.time} onChange={handleChange} className="input input-bordered w-full" />
+                    <input
+                        name="amount"
+                        value={form.amount}
+                        onChange={handleChange}
+                        placeholder="Amount"
+                        type="number"
+                        className="input input-bordered w-full text-black"
+                    />
 
-                <button className="btn btn-error w-full">Add Expense</button>
-            </form>
+                    <input
+                        name="category"
+                        value={form.category}
+                        onChange={handleChange}
+                        placeholder="Category (e.g. Rent, Salary)"
+                        className="input input-bordered w-full text-black"
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+
+                        <input
+                            type="date"
+                            name="date"
+                            value={form.date}
+                            onChange={handleChange}
+                            className="input input-bordered w-full text-black"
+                        />
+
+                        <input
+                            type="time"
+                            name="time"
+                            value={form.time}
+                            onChange={handleChange}
+                            className="input input-bordered w-full text-black"
+                        />
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-error w-full text-white"
+                    >
+                        {loading
+                            ? "Adding..."
+                            : "Add Expense"}
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
     );
 };

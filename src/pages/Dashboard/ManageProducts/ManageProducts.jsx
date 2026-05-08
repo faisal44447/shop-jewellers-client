@@ -1,22 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
+
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { formatDateTime } from "../../../utils/formatDateTime";
 
 const ManageProducts = () => {
     const axiosSecure = useAxiosSecure();
 
-    const { data: products = [], refetch } = useQuery({
+    // ================= FETCH =================
+    const {
+        data: products = [],
+        refetch,
+        isLoading,
+    } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
             const res = await axiosSecure.get("/products");
-            return res.data;
+            return Array.isArray(res.data) ? res.data : [];
         },
     });
 
     // ================= EDIT =================
     const handleEdit = async (product) => {
-        const oldDate = product.createdAt
+        const oldDate = product?.createdAt
             ? new Date(product.createdAt)
             : null;
 
@@ -28,15 +34,17 @@ const ManageProducts = () => {
             ? oldDate.toTimeString().slice(0, 5)
             : "";
 
-        const { value: formValues } = await Swal.fire({
-            title: `Edit ${product.name}`,
-            html:
-                `<input id="name" class="swal2-input" value="${product.name || ""}" />` +
-                `<input id="price" type="number" class="swal2-input" value="${product.sellPrice || 0}" />` +
-                `<input id="stock" type="number" class="swal2-input" value="${product.stock || 0}" />` +
-                `<input id="date" type="date" class="swal2-input" value="${defaultDate}" />` +
-                `<input id="time" type="time" class="swal2-input" value="${defaultTime}" />`,
-            focusConfirm: false,
+        const { value } = await Swal.fire({
+            title: `✏️ Edit ${product.name}`,
+            html: `
+                <input id="name" class="swal2-input" value="${product.name || ""}" placeholder="Name">
+                <input id="price" type="number" class="swal2-input" value="${product.sellPrice || 0}" placeholder="Price">
+                <input id="stock" type="number" class="swal2-input" value="${product.stock || 0}" placeholder="Stock">
+                <input id="date" type="date" class="swal2-input" value="${defaultDate}">
+                <input id="time" type="time" class="swal2-input" value="${defaultTime}">
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Update",
             preConfirm: () => {
                 const name = document.getElementById("name").value;
                 const price = document.getElementById("price").value;
@@ -45,7 +53,7 @@ const ManageProducts = () => {
                 const time = document.getElementById("time").value;
 
                 if (!name || !price || !stock) {
-                    Swal.showValidationMessage("All fields are required!");
+                    Swal.showValidationMessage("All fields are required");
                     return;
                 }
 
@@ -61,107 +69,165 @@ const ManageProducts = () => {
             },
         });
 
-        if (!formValues) return;
+        if (!value) return;
 
-        await axiosSecure.patch(`/products/${product._id}`, formValues);
+        try {
+            await axiosSecure.patch(
+                `/products/${product._id}`,
+                value
+            );
 
-        Swal.fire({
-            icon: "success",
-            title: "Updated!",
-            text: `${product.name} updated successfully`,
-            timer: 1500,
-            showConfirmButton: false,
-        });
+            Swal.fire({
+                icon: "success",
+                title: "Updated Successfully",
+                timer: 1200,
+                showConfirmButton: false,
+            });
 
-        refetch();
+            refetch();
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Update Failed",
+            });
+        }
     };
 
     // ================= DELETE =================
     const handleDelete = async (product) => {
-        const result = await Swal.fire({
+        const confirm = await Swal.fire({
             title: "Are you sure?",
-            text: `Delete "${product.name}"? This action cannot be undone!`,
+            text: `Delete "${product.name}"?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "Cancel",
             confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
         });
 
-        if (result.isConfirmed) {
-            try {
-                await axiosSecure.delete(`/products/${product._id}`);
+        if (!confirm.isConfirmed) return;
 
-                Swal.fire({
-                    icon: "success",
-                    title: "Deleted!",
-                    text: `${product.name} deleted successfully`,
-                    timer: 1500,
-                    showConfirmButton: false,
-                });
+        try {
+            await axiosSecure.delete(
+                `/products/${product._id}`
+            );
 
-                refetch();
-            } catch {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Failed to delete product",
-                });
-            }
+            Swal.fire({
+                icon: "success",
+                title: "Deleted Successfully",
+                timer: 1200,
+                showConfirmButton: false,
+            });
+
+            refetch();
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+            });
         }
     };
 
+    // ================= LOADING =================
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg text-blue-500"></span>
+            </div>
+        );
+    }
+
     return (
-        <div className="p-4">
-            <h2 className="text-3xl font-bold mb-10 text-center">Manage Products  ({products.length})</h2>
-            <table className="table w-full">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Stock</th>
-                        <th>Price</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+        <div className="p-5">
 
-                <tbody>
-                    {products.map((p) => {
-                        const formatted = formatDateTime(p.createdAt);
+            {/* TITLE */}
+            <h2 className="text-3xl font-bold mb-8 text-center text-blue-600">
+                📦 Manage Products ({products.length})
+            </h2>
 
-                        return (
-                            <tr key={p._id}>
-                                <td>{p.name}</td>
-                                <td>{p.stock ?? 0}</td>
+            {/* TABLE */}
+            <div className="overflow-x-auto bg-white rounded-xl shadow">
 
-                                {/* 🔥 FIXED PRICE */}
-                                <td>৳ {Number(p.sellPrice ?? p.price ?? 0)}</td>
+                <table className="table">
 
-                                <td>{formatted?.date || "-"}</td>
-                                <td>{formatted?.time || "-"}</td>
+                    <thead className="bg-blue-100 text-blue-600">
+                        <tr>
+                            <th>Name</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
-                                <td className="space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(p)}
-                                        className="btn btn-sm btn-info"
-                                    >
-                                        Edit
-                                    </button>
+                    <tbody>
+                        {products.map((p) => {
+                            const formatted =
+                                formatDateTime(
+                                    p.createdAt
+                                );
 
-                                    <button
-                                        onClick={() => handleDelete(p)}
-                                        className="btn btn-sm btn-error"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                            return (
+                                <tr key={p._id} className="hover">
+
+                                    <td className="font-medium text-orange-500">
+                                        {p.name}
+                                    </td>
+
+                                    <td className="text-black">{p.stock ?? 0}</td>
+
+                                    <td className="text-green-600 font-bold">
+                                        ৳{" "}
+                                        {Number(
+                                            p.sellPrice ??
+                                            p.price ??
+                                            0
+                                        )}
+                                    </td>
+
+                                    <td className="text-black">
+                                        {formatted?.date ||
+                                            "-"}
+                                    </td>
+
+                                    <td className="text-black">
+                                        {formatted?.time ||
+                                            "-"}
+                                    </td>
+
+                                    <td className="flex gap-2">
+
+                                        <button
+                                            onClick={() =>
+                                                handleEdit(p)
+                                            }
+                                            className="btn btn-xs btn-info"
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                handleDelete(p)
+                                            }
+                                            className="btn btn-xs btn-error"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
     );
 };

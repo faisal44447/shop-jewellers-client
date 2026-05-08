@@ -11,46 +11,56 @@ const SignUp = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors }
+        formState: { errors },
     } = useForm();
 
     const { createUser, updateUserProfile } = useContext(AuthContext);
     const axiosPublic = useAxiosPublic();
     const navigate = useNavigate();
 
-    // ✅ PASSWORD SHOW/HIDE STATE
     const [showPass, setShowPass] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const onSubmit = async (data) => {
         try {
-            // create user
-            await createUser(data.email, data.password);
+            setLoading(true);
 
-            // update profile
+            // CREATE USER
+            const result = await createUser(data.email, data.password);
+
+            if (!result?.user) throw new Error("User creation failed");
+
+            // UPDATE PROFILE
             await updateUserProfile(data.name, "");
 
-            // save user in DB
+            // SAVE USER IN DB
             await axiosPublic.post("/users", {
                 name: data.name,
                 email: data.email,
-                role:
-                    data.email === "md9897653@gmail.com"
-                        ? "admin"
-                        : "user",
+                role: "user", // 🔥 removed hardcoded admin logic
             });
 
-            // JWT token
+            // GET JWT
             const tokenRes = await axiosPublic.post("/jwt", {
                 email: data.email,
             });
 
-            localStorage.setItem("access-token", tokenRes.data.token);
+            if (tokenRes?.data?.token) {
+                localStorage.setItem("access-token", tokenRes.data.token);
+            }
 
-            Swal.fire("Success", "User created successfully", "success");
+            Swal.fire("Success", "Account created successfully", "success");
+
             navigate("/");
 
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+            Swal.fire(
+                "Error",
+                err?.message || "Something went wrong",
+                "error"
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,7 +79,7 @@ const SignUp = () => {
                     <input
                         {...register("name", { required: true })}
                         placeholder="Name"
-                        className="input input-bordered w-full mb-3 text-black"
+                        className="input input-bordered w-full mb-2 text-black"
                     />
                     {errors.name && (
                         <p className="text-red-400 text-sm mb-2">
@@ -81,7 +91,7 @@ const SignUp = () => {
                     <input
                         {...register("email", { required: true })}
                         placeholder="Email"
-                        className="input input-bordered w-full mb-3 text-black focus:ring-2 focus:ring-yellow-400"
+                        className="input input-bordered w-full mb-2 text-black"
                     />
                     {errors.email && (
                         <p className="text-red-400 text-sm mb-2">
@@ -90,7 +100,7 @@ const SignUp = () => {
                     )}
 
                     {/* PASSWORD */}
-                    <div className="relative mb-3">
+                    <div className="relative mb-2">
                         <input
                             {...register("password", {
                                 required: true,
@@ -98,24 +108,18 @@ const SignUp = () => {
                             })}
                             type={showPass ? "text" : "password"}
                             placeholder="Password"
-                            className="input input-bordered w-full pr-10 text-black focus:ring-2 focus:ring-yellow-400"
+                            className="input input-bordered w-full pr-10 text-black"
                         />
 
-                        {/* ICON TOGGLE */}
                         <button
                             type="button"
                             onClick={() => setShowPass(!showPass)}
                             className="absolute right-3 top-3 text-yellow-400"
                         >
-                            {showPass ? (
-                                <EyeOff size={18} />
-                            ) : (
-                                <Eye size={18} />
-                            )}
+                            {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                     </div>
 
-                    {/* PASSWORD ERROR */}
                     {errors.password && (
                         <p className="text-red-400 text-sm mb-2">
                             Password must be at least 6 characters
@@ -123,8 +127,11 @@ const SignUp = () => {
                     )}
 
                     {/* SUBMIT */}
-                    <button className="btn btn-warning w-full">
-                        Sign Up
+                    <button
+                        disabled={loading}
+                        className="btn btn-warning w-full"
+                    >
+                        {loading ? "Creating..." : "Sign Up"}
                     </button>
                 </form>
 
@@ -142,7 +149,6 @@ const SignUp = () => {
             </div>
         </div>
     );
-
 };
 
 export default SignUp;

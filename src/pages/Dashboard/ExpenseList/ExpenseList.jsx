@@ -1,23 +1,43 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { FaEdit, FaTrash } from "react-icons/fa";
+
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAdmin from "../../../hooks/useAdmin";
 
 const ExpenseList = () => {
     const [list, setList] = useState([]);
-    const [isAdmin] = useAdmin();
+    const [loading, setLoading] = useState(false);
 
+    const [isAdmin] = useAdmin();
+    const axiosSecure = useAxiosSecure();
+
+    // ================= FETCH =================
     const fetchExpenses = async () => {
-        const res = await axios.get("http://localhost:5000/expenses");
-        setList(res.data);
+        try {
+            setLoading(true);
+
+            const res = await axiosSecure.get("/expenses");
+            setList(Array.isArray(res.data) ? res.data : []);
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Failed to load expenses",
+            });
+
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         fetchExpenses();
     }, []);
 
-    // ❌ DELETE
+    // ================= DELETE =================
     const handleDelete = async (id) => {
         const confirm = await Swal.fire({
             title: "Are you sure?",
@@ -25,123 +45,133 @@ const ExpenseList = () => {
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
+            confirmButtonText: "Yes, delete it!",
         });
 
-        if (confirm.isConfirmed) {
-            await axios.delete(`http://localhost:5000/expenses/${id}`);
+        if (!confirm.isConfirmed) return;
 
-            await Swal.fire({
-                title: "Deleted!",
-                text: "Expense removed",
+        try {
+            await axiosSecure.delete(`/expenses/${id}`);
+
+            Swal.fire({
                 icon: "success",
-                timer: 1500,
-                showConfirmButton: false
+                title: "Deleted successfully",
+                timer: 1200,
+                showConfirmButton: false,
             });
 
             fetchExpenses();
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Delete failed",
+            });
         }
     };
 
-    // ✏️ EDIT
+    // ================= EDIT =================
     const handleEdit = async (item) => {
-        const currentDate = item.createdAt
+        const currentDate = item?.createdAt
             ? new Date(item.createdAt).toISOString().slice(0, 16)
             : "";
 
-        const { value: formValues } = await Swal.fire({
+        const { value } = await Swal.fire({
             title: "✏️ Edit Expense",
-            html:
-                `<input id="title" class="swal2-input" value="${item.title}" placeholder="Title">` +
-                `<input id="amount" class="swal2-input" value="${item.amount}" placeholder="Amount">` +
-                `<input id="date" type="datetime-local" class="swal2-input" value="${currentDate}">`,
+            html: `
+                <input id="title" class="swal2-input" value="${item.title}" placeholder="Title">
+                <input id="amount" type="number" class="swal2-input" value="${item.amount}" placeholder="Amount">
+                <input id="date" type="datetime-local" class="swal2-input" value="${currentDate}">
+            `,
             showCancelButton: true,
             confirmButtonText: "Update",
-            focusConfirm: false,
-            preConfirm: () => {
-                return {
-                    title: document.getElementById("title").value,
-                    amount: Number(document.getElementById("amount").value),
-                    createdAt: new Date(document.getElementById("date").value)
-                };
-            }
+            preConfirm: () => ({
+                title: document.getElementById("title").value,
+                amount: Number(document.getElementById("amount").value),
+                createdAt: new Date(document.getElementById("date").value),
+            }),
         });
 
-        if (formValues) {
-            await axios.patch(
-                `https://jewellers-shop-server.vercel.app/expenses/${item._id}`,
-                formValues
+        if (!value) return;
+
+        try {
+            await axiosSecure.patch(
+                `/expenses/${item._id}`,
+                value
             );
 
-            await Swal.fire({
-                title: "Updated!",
-                text: "Expense updated successfully",
+            Swal.fire({
                 icon: "success",
-                timer: 1500,
-                showConfirmButton: false
+                title: "Updated successfully",
+                timer: 1200,
+                showConfirmButton: false,
             });
 
             fetchExpenses();
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Update failed",
+            });
         }
     };
 
+    // ================= LOADING =================
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg text-red-500"></span>
+            </div>
+        );
+    }
+
     return (
         <div className="p-5">
-            <h2 className="text-3xl font-bold mb-10 text-center">💸 Expense List  ({list.length})</h2>
 
-            <div className="overflow-x-auto">
-                <table className="table table-xs">
-                    <thead>
+            {/* TITLE */}
+            <h2 className="text-3xl font-bold mb-10 text-center text-red-500">
+                💸 Expense List ({list.length})
+            </h2>
+
+            {/* TABLE */}
+            <div className="overflow-x-auto bg-white rounded-xl shadow">
+
+                <table className="table">
+
+                    <thead className="bg-red-100 text-red-600">
                         <tr>
                             <th>#</th>
-                            <th>Title</th>
+                            <th className="text-orange-500">Title</th>
                             <th>Amount</th>
-                            <th>Date & Time</th>
-                            <th>Edit</th>
-                            <th>Delete</th>
+                            <th className="text-orange-500">Date & Time</th>
+                            {isAdmin && <th>Edit</th>}
+                            {isAdmin && <th>Delete</th>}
                         </tr>
                     </thead>
 
                     <tbody>
                         {list.map((item, i) => (
-                            <tr key={item._id}>
-                                <th>{i + 1}</th>
-                                <td>{item.title}</td>
-                                <td>৳ {item.amount}</td>
+                            <tr key={item._id} className="hover">
 
-                                <td>
+                                <td className="text-black">{i + 1}</td>
+                                <td className="text-orange-500">{item.title}</td>
+                                <td className="text-green-600 font-semibold">
+                                    ৳ {item.amount}
+                                </td>
+
+                                <td className="text-black">
                                     {item.createdAt
-                                        ? (() => {
-                                            const d = new Date(item.createdAt);
-                                            const day = d.getDate().toString().padStart(2, "0");
-                                            const month = (d.getMonth() + 1).toString().padStart(2, "0");
-                                            const year = d.getFullYear();
-
-                                            let hours = d.getHours();
-                                            const minutes = d.getMinutes().toString().padStart(2, "0");
-                                            const ampm = hours >= 12 ? "PM" : "AM";
-                                            hours = hours % 12 || 12; // 0 হলে 12
-
-                                            return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
-                                        })()
-                                        : item.date
-                                            ? (() => {
-                                                const d = new Date(item.date);
-                                                const day = d.getDate().toString().padStart(2, "0");
-                                                const month = (d.getMonth() + 1).toString().padStart(2, "0");
-                                                const year = d.getFullYear();
-                                                let hours = d.getHours();
-                                                const minutes = d.getMinutes().toString().padStart(2, "0");
-                                                const ampm = hours >= 12 ? "PM" : "AM";
-                                                hours = hours % 12 || 12;
-                                                return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
-                                            })()
-                                            : "No Date"}
+                                        ? new Date(item.createdAt).toLocaleString()
+                                        : "No Date"}
                                 </td>
 
                                 {isAdmin && (
                                     <td>
-                                        <button onClick={() => handleEdit(item)} className="btn btn-xs btn-warning">
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="btn btn-xs btn-warning"
+                                        >
                                             <FaEdit />
                                         </button>
                                     </td>
@@ -149,7 +179,10 @@ const ExpenseList = () => {
 
                                 {isAdmin && (
                                     <td>
-                                        <button onClick={() => handleDelete(item._id)} className="btn btn-xs btn-error">
+                                        <button
+                                            onClick={() => handleDelete(item._id)}
+                                            className="btn btn-xs btn-error"
+                                        >
                                             <FaTrash />
                                         </button>
                                     </td>
@@ -160,7 +193,9 @@ const ExpenseList = () => {
                     </tbody>
 
                 </table>
+
             </div>
+
         </div>
     );
 };

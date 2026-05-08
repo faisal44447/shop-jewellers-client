@@ -5,58 +5,73 @@ const StaffSalaryCard = ({ staff, handleDelete, handleEdit }) => {
         return new Date(date).toLocaleString("bn-BD");
     };
 
+    const safeNumber = (value) => Number(value) || 0;
+
     const weeklyTotal =
-        (staff.w1 || 0) +
-        (staff.w2 || 0) +
-        (staff.w3 || 0) +
-        (staff.w4 || 0);
+        safeNumber(staff.w1) +
+        safeNumber(staff.w2) +
+        safeNumber(staff.w3) +
+        safeNumber(staff.w4);
+
+    const remainingBalance =
+        safeNumber(staff.monthlySalary) - safeNumber(staff.totalTaken);
 
     return (
-        <div className="rounded-2xl shadow-lg p-5 bg-gray-900 text-white border border-gray-700">
+        <div className="rounded-2xl shadow-lg p-5 bg-gray-900 text-white border border-gray-700 hover:scale-[1.01] transition">
 
             {/* NAME */}
-            <h2 className="text-xl font-bold">{staff.name}</h2>
+            <h2 className="text-xl font-bold text-orange-400">
+                {staff?.name || "Unknown Staff"}
+            </h2>
 
-            {/* DATE + TIME */}
+            {/* DATE */}
             <p className="text-xs text-gray-400 mt-1">
-                📅 {formatDate(staff.createdAt)}
+                📅 {formatDate(staff?.createdAt)}
             </p>
 
             {/* MONTH */}
             <p className="text-sm text-yellow-400 mt-1">
-                📆 {staff.month}
+                📆 {staff?.month || "No Month"}
             </p>
 
-            {/* SALARY */}
-            <p className="mt-2">💰 Salary: ৳{staff.monthlySalary}</p>
-            <p>💸 Withdrawal: ৳{staff.totalTaken}</p>
+            {/* SALARY INFO */}
+            <div className="mt-3 space-y-1">
+                <p>💰 Salary: ৳{safeNumber(staff?.monthlySalary)}</p>
+                <p>💸 Withdrawal: ৳{safeNumber(staff?.totalTaken)}</p>
+            </div>
 
-            {/* WEEKLY */}
-            <div className="mt-3 text-sm text-gray-300">
-                <p>Week 1: ৳{staff.w1 || 0}</p>
-                <p>Week 2: ৳{staff.w2 || 0}</p>
-                <p>Week 3: ৳{staff.w3 || 0}</p>
-                <p>Week 4: ৳{staff.w4 || 0}</p>
+            {/* WEEKLY DETAILS */}
+            <div className="mt-3 text-sm text-gray-300 space-y-1">
+                <p>Week 1: ৳{safeNumber(staff?.w1)}</p>
+                <p>Week 2: ৳{safeNumber(staff?.w2)}</p>
+                <p>Week 3: ৳{safeNumber(staff?.w3)}</p>
+                <p>Week 4: ৳{safeNumber(staff?.w4)}</p>
             </div>
 
             {/* TOTAL */}
-            <p className="text-yellow-400 mt-2">
+            <p className="text-yellow-400 mt-2 font-semibold">
                 Weekly Total: ৳{weeklyTotal}
             </p>
 
             {/* BALANCE */}
             <p className="text-green-400 font-bold mt-2">
-                Balance: ৳{(staff.monthlySalary || 0) - (staff.totalTaken || 0)}
+                Balance: ৳{remainingBalance}
             </p>
 
             {/* BUTTONS */}
             <div className="flex justify-end gap-2 mt-4">
 
-                <button onClick={() => handleEdit(staff)} className="btn btn-warning btn-sm">
+                <button
+                    onClick={() => handleEdit?.(staff)}
+                    className="btn btn-warning btn-sm"
+                >
                     Edit
                 </button>
 
-                <button onClick={() => handleDelete(staff._id)} className="btn btn-error btn-sm">
+                <button
+                    onClick={() => handleDelete?.(staff?._id)}
+                    className="btn btn-error btn-sm"
+                >
                     Delete
                 </button>
 

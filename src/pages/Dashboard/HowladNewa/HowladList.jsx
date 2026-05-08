@@ -1,104 +1,184 @@
-import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { useEffect, useState } from "react";
-import useAdmin from "../../../hooks/useAdmin";
 import Swal from "sweetalert2";
 
-const formatDateTime = (date) => {
-    if (!date) return "No Date";
-    return new Date(date).toLocaleString();
-};
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useAdmin from "../../../hooks/useAdmin";
+
+import { FaTrash, FaMoneyBillWave } from "react-icons/fa";
 
 const HowladList = () => {
     const axiosSecure = useAxiosSecure();
     const [list, setList] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const [isAdmin] = useAdmin();
 
+    // ================= FETCH DATA =================
     const fetchData = async () => {
-        const res = await axiosSecure.get("/transactions");
-        setList(res.data);
+        try {
+            setLoading(true);
+
+            const res = await axiosSecure.get(
+                "/transactions"
+            );
+
+            setList(
+                Array.isArray(res.data)
+                    ? res.data
+                    : []
+            );
+
+        } catch (error) {
+            console.error(error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Failed to load data",
+            });
+
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         fetchData();
     }, []);
 
-    // 🗑 DELETE FUNCTION (ADMIN ONLY)
+    // ================= DELETE =================
     const handleDelete = async (id) => {
         const confirm = await Swal.fire({
             title: "Are you sure?",
-            text: "This will delete transaction!",
+            text: "This transaction will be deleted!",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, delete it!"
+            confirmButtonText: "Yes, Delete",
         });
 
-        if (confirm.isConfirmed) {
-            await axiosSecure.delete(`/transactions/${id}`);
-            Swal.fire("Deleted!", "Transaction removed", "success");
+        if (!confirm.isConfirmed) return;
+
+        try {
+            await axiosSecure.delete(
+                `/transactions/${id}`
+            );
+
+            Swal.fire({
+                icon: "success",
+                title: "Deleted Successfully",
+                timer: 1200,
+                showConfirmButton: false,
+            });
+
             fetchData();
+
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Delete failed",
+            });
         }
     };
+
+    // ================= LOADING =================
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <span className="loading loading-spinner loading-lg text-orange-500"></span>
+            </div>
+        );
+    }
 
     return (
         <div className="p-5">
 
-            <h2 className="text-3xl font-bold mb-10 text-center">
-                Howlad List  ({list.length})
+            {/* TITLE */}
+            <h2 className="text-4xl font-bold mb-10 text-center text-orange-500 flex justify-center items-center gap-2">
+
+                <FaMoneyBillWave />
+
+                Howlad List ({list.length})
+
             </h2>
 
-            <table className="table w-full">
+            {/* TABLE */}
+            <div className="overflow-x-auto bg-white rounded-2xl shadow">
 
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Date</th>
+                <table className="table">
 
-                        {/* 👇 ONLY ADMIN HEADER */}
-                        {isAdmin && <th>Action</th>}
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {list.map((item, i) => (
-                        <tr key={item._id} className="hover:bg-gray-50">
-
-                            <td>{i + 1}</td>
-                            <td>{item.name}</td>
-
-                            <td>
-                                {item.type === "loan"
-                                    ? "➕ Howlad Nise"
-                                    : "➖ Howlad Dise"}
-                            </td>
-
-                            <td className={item.type === "loan" ? "text-green-600 font-bold" : "text-red-500 font-bold"}>
-                                ৳ {item.amount}
-                            </td>
-
-                            <td>
-                                {formatDateTime(item.createdAt)}
-                            </td>
-
-                            {/* 👇 ONLY ADMIN BUTTON */}
-                            {isAdmin && (
-                                <td>
-                                    <button
-                                        onClick={() => handleDelete(item._id)}
-                                        className="btn btn-sm btn-error text-white"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            )}
-
+                    <thead className="bg-orange-100 text-orange-600">
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            {isAdmin && <th>Action</th>}
                         </tr>
-                    ))}
-                </tbody>
+                    </thead>
 
-            </table>
+                    <tbody>
+                        {list.map((item, i) => (
+                            <tr key={item._id} className="hover">
+
+                                <td className="text-black">{i + 1}</td>
+
+                                <td className="font-medium text-black">
+                                    {item.name}
+                                </td>
+
+                                <td>
+                                    {item.type === "loan" ? (
+                                        <span className="text-green-600 font-semibold">
+                                            ➕ Howlad Nise
+                                        </span>
+                                    ) : (
+                                        <span className="text-red-500 font-semibold">
+                                            ➖ Howlad Dise
+                                        </span>
+                                    )}
+                                </td>
+
+                                <td
+                                    className={
+                                        item.type === "loan"
+                                            ? "text-green-600 font-bold"
+                                            : "text-red-500 font-bold"
+                                    }
+                                >
+                                    ৳ {item.amount}
+                                </td>
+
+                                <td className="text-black">
+                                    {item.createdAt
+                                        ? new Date(
+                                            item.createdAt
+                                        ).toLocaleString()
+                                        : "No Date"}
+                                </td>
+
+                                {isAdmin && (
+                                    <td>
+                                        <button
+                                            onClick={() =>
+                                                handleDelete(
+                                                    item._id
+                                                )
+                                            }
+                                            className="btn btn-xs btn-error text-white"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </td>
+                                )}
+
+                            </tr>
+                        ))}
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
     );
 };
