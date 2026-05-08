@@ -55,8 +55,16 @@ const Dashboard = () => {
                                 <FaHome /> Home
                             </NavLink>
 
-                            <NavLink to="/dashboard/sell" className={linkStyle}>
+                            <NavLink to="/dashboard/product-card-page" className={linkStyle}>
+                                <FaBoxOpen /> Products
+                            </NavLink>
+
+                            <NavLink to="/dashboard/sales" className={linkStyle}>
                                 🛒 Sell Product
+                            </NavLink>
+
+                            <NavLink to="/dashboard/sold-products" className={linkStyle}>
+                                 🧾 Sold Products
                             </NavLink>
 
                             <NavLink to="/dashboard/cart" className={linkStyle}>
@@ -114,7 +122,11 @@ const Dashboard = () => {
                             </NavLink>
 
                             <NavLink to="/dashboard/sales" className={linkStyle}>
-                                <FaShoppingCart /> Sales
+                                🛒 Sell Product
+                            </NavLink>
+
+                            <NavLink to="/dashboard/sold-products" className={linkStyle}>
+                                 🧾 Sold Products
                             </NavLink>
 
                             <NavLink to="/dashboard/cart" className={linkStyle}>

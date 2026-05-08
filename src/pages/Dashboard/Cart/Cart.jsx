@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { CartContext } from "../../../providers/CartProvider";
@@ -7,84 +7,99 @@ const Cart = () => {
     const { cart, removeFromCart } = useContext(CartContext);
     const axiosSecure = useAxiosSecure();
 
+    const [localCart, setLocalCart] = useState([]);
     const [editPrice, setEditPrice] = useState({});
 
-    // ➕ SELL ITEM
+    useEffect(() => {
+        setLocalCart(cart);
+    }, [cart]);
+
+    // ================= QTY =================
+    const updateQty = (id, type) => {
+        const updated = localCart.map((item) => {
+            if (item._id === id) {
+                const qty = item.quantity || 1;
+                return {
+                    ...item,
+                    quantity: type === "inc" ? qty + 1 : Math.max(1, qty - 1),
+                };
+            }
+            return item;
+        });
+
+        setLocalCart(updated);
+        localStorage.setItem("cart", JSON.stringify(updated));
+    };
+
+    // ================= SELL =================
     const handleSellItem = async (item) => {
+        const qty = Number(item.quantity || 1);
+
+        const price = Number(
+            editPrice[item._id] ?? item.sellPrice ?? item.buyPrice
+        );
+
+        if (!price || price <= 0) {
+            return Swal.fire("Error", "Invalid price", "error");
+        }
+
         try {
             const payload = {
-                productId: item._id,   // ✅ IMPORTANT FIX
-                quantity: Number(item.quantity || 1),
-                sellPrice: Number(
-                    editPrice[item._id] || item.sellPrice || item.buyPrice
-                ),
+                productId: item.productId || item._id,
+                quantity: qty,
+                sellPrice: price,
             };
 
-            console.log("SELL PAYLOAD:", payload);
-
-            const res = await axiosSecure.post("/sell", payload);
+            const res = await axiosSecure.post("/sales", payload);
 
             if (res.data.success) {
                 removeFromCart(item._id);
                 Swal.fire("Success", "Sold successfully", "success");
             }
         } catch (err) {
-            console.log("SELL ERROR:", err.response?.data);
+            console.log(err.response?.data);
+
             Swal.fire(
                 "Error",
-                err.response?.data?.message || "Sell failed",
+                err.response?.data?.message || "Sale failed",
                 "error"
             );
         }
     };
 
-    // ➕ INCREASE QTY
-    const increaseQty = (id) => {
-        const updated = cart.map(item =>
-            item._id === id
-                ? { ...item, quantity: (item.quantity || 1) + 1 }
-                : item
-        );
-        localStorage.setItem("cart", JSON.stringify(updated));
-        window.location.reload();
-    };
-
-    // ➖ DECREASE QTY
-    const decreaseQty = (id) => {
-        const updated = cart.map(item =>
-            item._id === id
-                ? { ...item, quantity: Math.max((item.quantity || 1) - 1, 1) }
-                : item
-        );
-        localStorage.setItem("cart", JSON.stringify(updated));
-        window.location.reload();
-    };
+    // ================= TOTAL =================
+    const total = localCart.reduce(
+        (sum, item) =>
+            sum +
+            Number(item.sellPrice || item.buyPrice || 0) *
+            (item.quantity || 1),
+        0
+    );
 
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold mb-10 text-center">🛒 Cart  ({cart.length})</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+                🛒 Cart ({localCart.length})
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {localCart.map((item) => (
+                    <div key={item._id} className="card shadow p-4">
+                        <img src={item.image} className="h-32 object-cover" />
 
-                {cart.map(item => (
-                    <div key={item._id} className="card bg-base-100 shadow-xl p-4">
+                        <h2 className="font-bold mt-2">{item.name}</h2>
 
-                        <img src={item.image} className="h-32 object-cover rounded" />
-
-                        <h2 className="font-bold">{item.name}</h2>
-
-                        {/* 🔥 QUANTITY CONTROL */}
-                        <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => decreaseQty(item._id)} className="btn btn-xs">-</button>
+                        {/* QTY */}
+                        <div className="flex gap-2 mt-2">
+                            <button onClick={() => updateQty(item._id, "dec")}>-</button>
                             <span>{item.quantity || 1}</span>
-                            <button onClick={() => increaseQty(item._id)} className="btn btn-xs">+</button>
+                            <button onClick={() => updateQty(item._id, "inc")}>+</button>
                         </div>
 
-                        {/* 💰 PRICE EDIT */}
+                        {/* PRICE */}
                         <input
                             type="number"
-                            placeholder="Sell Price"
-                            className="input input-bordered w-full mt-2"
+                            className="border w-full mt-2"
                             defaultValue={item.sellPrice || item.buyPrice}
                             onChange={(e) =>
                                 setEditPrice({
@@ -94,24 +109,28 @@ const Cart = () => {
                             }
                         />
 
+                        {/* SELL */}
                         <button
                             onClick={() => handleSellItem(item)}
-                            className="btn btn-success w-full mt-2"
+                            className="btn btn-success w-full mt-4"
                         >
                             Sell
                         </button>
 
+                        {/* REMOVE */}
                         <button
                             onClick={() => removeFromCart(item._id)}
                             className="btn btn-error w-full mt-2"
                         >
                             Remove
                         </button>
-
                     </div>
                 ))}
-
             </div>
+
+            <h3 className="text-center mt-6 text-xl">
+                Total: ৳{total}
+            </h3>
         </div>
     );
 };

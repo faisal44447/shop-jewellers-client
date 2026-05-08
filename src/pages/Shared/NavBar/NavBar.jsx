@@ -31,17 +31,18 @@ const NavBar = () => {
         });
     };
 
+    // ACTIVE LINK STYLE (using your CSS classes)
     const navStyle = ({ isActive }) =>
-        isActive ? "text-orange-500 font-bold" : "text-gray-700";
+        isActive ? "nav-link-base nav-link-active" : "nav-link-base";
 
     return (
         <div
-            className={`navbar bg-base-100 fixed top-0 w-full z-50 transition-all duration-300 
-      ${scrolled ? "shadow-xl bg-white" : ""}`}
+            className={`navbar navbar-glow fixed top-0 w-full z-50 transition-all duration-300
+            ${scrolled ? "shadow-xl" : ""}`}
         >
             {/* LEFT */}
             <div className="navbar-start">
-                <Link to="/" className="flex items-center gap-2">
+                <Link to="/" className="flex items-center gap-2 text-white">
                     <img src={ljiCON} className="w-10 h-10 rounded-full" />
                     <span className="font-bold">Laivin Jewellers</span>
                 </Link>
@@ -49,7 +50,8 @@ const NavBar = () => {
 
             {/* CENTER MENU */}
             <div className="navbar-center hidden lg:flex">
-                <ul className="menu menu-horizontal px-1 gap-4">
+                <ul className="menu menu-horizontal px-1 gap-6">
+
                     <li>
                         <NavLink to="/" className={navStyle}>
                             Home
@@ -83,7 +85,7 @@ const NavBar = () => {
 
                 {/* CART */}
                 {user && (
-                    <Link to="/dashboard/cart" className="relative">
+                    <Link to="/dashboard/cart" className="relative text-white">
                         <FaShoppingCart className="text-xl" />
                         <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 rounded-full">
                             {cart?.length || 0}
@@ -95,25 +97,25 @@ const NavBar = () => {
                 {user && (
                     <img
                         src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
-                        className="w-10 h-10 rounded-full"
+                        className="w-10 h-10 rounded-full border border-orange-300"
                     />
                 )}
 
                 {/* LOGIN / LOGOUT */}
                 {user ? (
-                    <button onClick={handleLogOut} className="btn btn-sm">
+                    <button onClick={handleLogOut} className="btn-glow btn btn-sm text-white">
                         Logout
                     </button>
                 ) : (
-                    <Link to="/login" className="btn btn-sm">
+                    <Link to="/login" className="btn-glow btn btn-sm text-white">
                         Login
                     </Link>
                 )}
             </div>
 
             {/* MOBILE MENU */}
-            <div className="dropdown lg:hidden">
-                <div tabIndex={0} role="button" className="btn btn-ghost">
+            <div className="dropdown lg:hidden text-white">
+                <div tabIndex={0} role="button" className="btn btn-ghost text-white">
                     ☰
                 </div>
 

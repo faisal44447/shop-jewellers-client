@@ -17,7 +17,6 @@ import HowladList from "../pages/Dashboard/HowladNewa/HowladList";
 import PaboTakaList from "../pages/Dashboard/PaboTaka/PaboTakaList";
 import ProductCard from "../pages/Dashboard/ProductCard/ProductCard";
 import ProductCardPage from "../pages/Dashboard/ProductCardPage/ProductCardPage";
-import SellProduct from "../pages/Dashboard/SellProduct/SellProduct";
 
 // ADMIN
 import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
@@ -35,6 +34,7 @@ import PaboTaka from "../pages/Dashboard/PaboTaka/PaboTaka";
 import EditProduct from "../pages/Dashboard/EditProduct/EditProduct";
 import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
 import AllUsers from "../pages/Dashboard/AllUsers/AllUsers";
+import SoldProducts from "../pages/Dashboard/SoldProducts/SoldProducts";
 
 
 export const router = createBrowserRouter([
@@ -59,13 +59,13 @@ export const router = createBrowserRouter([
       // USER
       { index: true, element: <UserHome /> },
       { path: "userHome", element: <UserHome /> },
+      { path: "sold-products", element: <SoldProducts /> },
 
       { path: "products", element: <Products /> },
       { path: "product-card", element: <ProductCard /> },
       { path: "product-card-page", element: <ProductCardPage /> },
 
       // ✅ SELL PAGE (IMPORTANT FIX)
-      { path: "sell", element: <SellProduct /> },
 
       { path: "cart", element: <Cart /> },
       { path: "howlad-list", element: <HowladList /> },

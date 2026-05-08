@@ -1,82 +1,74 @@
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
-import useAdmin from "../../../hooks/useAdmin";
 import Swal from "sweetalert2";
 
 const Sales = () => {
     const axiosSecure = useAxiosSecure();
-    const [sales, setSales] = useState([]);
-    const [isAdmin] = useAdmin();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        axiosSecure.get("/sales")
-            .then(res => setSales(res.data))
-            .catch(err => console.log(err));
-    }, [axiosSecure]);
+    const { data: sales = [] } = useQuery({
+        queryKey: ["sales"],
+        queryFn: async () => {
+            const res = await axiosSecure.get("/sales");
+            return res.data;
+        },
+    });
 
-    // ✅ DELETE FUNCTION
-    const handleDelete = (id) => {
-        Swal.fire({
-            title: "Are you sure?",
-            text: "Delete this sale?",
+    const handleDelete = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Delete?",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axiosSecure.delete(`/sales/${id}`)
-                    .then(() => {
-                        setSales(prev => prev.filter(item => item._id !== id));
-                        Swal.fire("Deleted!", "Sale removed.", "success");
-                    });
-            }
         });
+
+        if (!confirm.isConfirmed) return;
+
+        await axiosSecure.delete(`/sales/${id}`);
+
+        queryClient.invalidateQueries(["sales"]);
     };
 
     return (
-        <div className="p-5">
-            <h2 className="text-3xl font-bold mb-10 text-center">Sales  ({sales.length})</h2>
+        <div className="p-4">
+            <h2 className="text-2xl font-bold mb-4">
+                Sales ({sales.length})
+            </h2>
 
-            <table className="table w-full bg-white">
+            <table className="table w-full">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Weight</th>
-                        <th>Total</th>
-                        {isAdmin && <th>Action</th>}
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Profit</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {sales.map((item) => (
-                        <tr key={item._id}>
-                            <td>{item.name}</td>
-
-                            <td>
-                                {item.vori}v {item.ana}a {item.rati}r {item.point}p
+                    {sales.map((s) => (
+                        <tr key={s._id}>
+                            {/* PRODUCT WITH IMAGE */}
+                            <td className="flex items-center gap-3">
+                                <img
+                                    src={s.image || "https://via.placeholder.com/50"}
+                                    alt={s.productName}
+                                    className="w-10 h-10 rounded object-cover"
+                                />
+                                <span>{s.productName}</span>
                             </td>
 
-                            <td>৳ {item.total}</td>
+                            <td>{s.quantity}</td>
 
-                            {isAdmin && (
-                                <td className="flex gap-2">
-                                    {/* EDIT */}
-                                    <button
-                                        className="btn btn-sm btn-warning"
-                                        onClick={() => alert("Edit Page banate hobe")}
-                                    >
-                                        Edit
-                                    </button>
+                            <td>৳{s.profit}</td>
 
-                                    {/* DELETE */}
-                                    <button
-                                        className="btn btn-sm btn-error"
-                                        onClick={() => handleDelete(item._id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            )}
+                            <td>
+                                <button
+                                    onClick={() => handleDelete(s._id)}
+                                    className="btn btn-sm btn-error"
+                                >
+                                    Delete
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
