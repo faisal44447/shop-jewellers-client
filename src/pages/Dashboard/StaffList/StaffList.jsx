@@ -141,16 +141,18 @@ const StaffList = () => {
             {/* FILTER */}
             <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
 
+                {/* SEARCH */}
                 <input
                     type="text"
                     placeholder="Search staff..."
-                    className="input input-bordered"
+                    className="input input-bordered w-full max-w-xs text-black focus:outline-none focus:border-orange-500"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
 
+                {/* MONTH FILTER */}
                 <select
-                    className="select select-bordered"
+                    className="select select-bordered text-black"
                     value={monthFilter}
                     onChange={(e) => setMonthFilter(e.target.value)}
                 >
@@ -162,9 +164,14 @@ const StaffList = () => {
                     ))}
                 </select>
 
-                <button onClick={handleDownloadPDF} className="btn btn-success">
+                {/* PDF BUTTON */}
+                <button
+                    onClick={handleDownloadPDF}
+                    className="btn btn-success text-black"
+                >
                     📄 PDF
                 </button>
+
 
                 <div className="flex gap-2">
                     <div className="badge badge-success p-3">
