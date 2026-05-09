@@ -15,7 +15,6 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 const MonthlyReport = () => {
     const axiosSecure = useAxiosSecure();
 
-    // ================= FETCH MONTHLY REPORT =================
     const {
         data: reports = [],
         isLoading,
@@ -24,93 +23,82 @@ const MonthlyReport = () => {
         queryKey: ["monthly-report"],
         queryFn: async () => {
             const res = await axiosSecure.get("/report/monthly");
-
-            return Array.isArray(res.data)
-                ? res.data
-                : [];
+            return Array.isArray(res.data) ? res.data : [];
         },
     });
 
-    // ================= LOADING =================
+    console.log("MONTHLY REPORT:", reports);
+
+    const safeReports = reports.map((item) => ({
+        month: item.month,
+        revenue: item.revenue || 0,
+        expense: item.expense || 0,
+    }));
+
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center h-72 bg-white rounded-2xl shadow-md">
+            <div className="bg-white rounded-2xl shadow-md h-[400px] flex items-center justify-center">
                 <span className="loading loading-spinner loading-lg text-orange-500"></span>
             </div>
         );
     }
 
-    // ================= ERROR =================
     if (isError) {
         return (
-            <div className="flex justify-center items-center h-72 bg-white rounded-2xl shadow-md">
-                <p className="text-red-500 text-lg font-semibold">
+            <div className="bg-white rounded-2xl shadow-md h-[400px] flex items-center justify-center">
+                <p className="text-red-500 font-semibold">
                     ❌ Failed to load monthly report
                 </p>
             </div>
         );
     }
 
-    return (
-        <div className="bg-white rounded-2xl shadow-md p-5 h-[400px]">
-
-            {/* TITLE */}
-            <div className="mb-5">
-
-                <h2 className="text-2xl font-bold text-orange-500">
-                    📊 Monthly Revenue & Expense Report
-                </h2>
-
-                <p className="text-gray-500 text-sm mt-1">
-                    Track monthly revenue and expense analytics
+    if (!safeReports.length) {
+        return (
+            <div className="bg-white rounded-2xl shadow-md h-[400px] flex items-center justify-center">
+                <p className="text-gray-500">
+                    No monthly data found
                 </p>
+            </div>
+        );
+    }
 
+    return (
+        <div className="bg-white rounded-2xl shadow-md p-4">
+
+            <div className="mb-4">
+                <h2 className="text-xl md:text-2xl font-bold text-orange-500">
+                    📊 Monthly Report
+                </h2>
+                <p className="text-gray-500 text-sm">
+                    Revenue vs Expense overview
+                </p>
             </div>
 
-            {/* CHART */}
-            <ResponsiveContainer width="100%" height="85%">
+            <div className="w-full h-[350px]">
 
-                <BarChart
-                    data={reports}
-                    margin={{
-                        top: 10,
-                        right: 20,
-                        left: 0,
-                        bottom: 5,
-                    }}
-                >
+                <ResponsiveContainer width="99%" height="100%">
 
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <BarChart data={safeReports}>
 
-                    <XAxis
-                        dataKey="month"
-                        tick={{ fontSize: 12 }}
-                    />
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
 
-                    <YAxis />
+                        <XAxis dataKey="month" />
 
-                    <Tooltip />
+                        <YAxis width={50} />
 
-                    <Legend />
+                        <Tooltip />
 
-                    {/* REVENUE */}
-                    <Bar
-                        dataKey="revenue"
-                        fill="#22c55e"
-                        radius={[6, 6, 0, 0]}
-                    />
+                        <Legend />
 
-                    {/* EXPENSE */}
-                    <Bar
-                        dataKey="expense"
-                        fill="#ef4444"
-                        radius={[6, 6, 0, 0]}
-                    />
+                        <Bar dataKey="revenue" fill="#22c55e" />
+                        <Bar dataKey="expense" fill="#ef4444" />
 
-                </BarChart>
+                    </BarChart>
 
-            </ResponsiveContainer>
+                </ResponsiveContainer>
 
+            </div>
         </div>
     );
 };

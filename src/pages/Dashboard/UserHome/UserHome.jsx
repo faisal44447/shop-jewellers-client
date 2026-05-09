@@ -1,49 +1,44 @@
 import { useQuery } from "@tanstack/react-query";
-import useAuth from "../../../hooks/useAuth";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
-import useAdmin from "../../../hooks/useAdmin";
+import useAuth from "../../../hooks/useAuth";
 
 import {
     BarChart,
     Bar,
     XAxis,
     YAxis,
-    Tooltip,
-    Legend,
+    CartesianGrid,
     PieChart,
     Pie,
     Cell,
+    Legend,
     ResponsiveContainer,
-    CartesianGrid,
+    Tooltip,
 } from "recharts";
 
-import UserProducts from "../../../components/UserProducts/UserProducts";
 import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
+
+const colors = ["#f59e0b", "#f97316", "#eab308", "#fb923c"];
 
 const UserHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const [isAdmin, isAdminLoading] = useAdmin();
 
     // ================= DASHBOARD STATS =================
-    const {
-        data: stats = {},
-        isLoading: statsLoading,
-        isError,
-    } = useQuery({
+    const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
-            const res = await axiosSecure.get("/dashboard");
+            const res = await axiosSecure.get("/dashboard", {
+                headers: {
+                    authorization: `Bearer ${localStorage.getItem("access-token")}`,
+                },
+            });
             return res.data || {};
         },
-        enabled: isAdmin,
     });
 
     // ================= PRODUCTS =================
-    const {
-        data: products = [],
-        isLoading: productsLoading,
-    } = useQuery({
+    const { data: products = [] } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
             const res = await axiosSecure.get("/products");
@@ -51,45 +46,16 @@ const UserHome = () => {
         },
     });
 
-    // ================= SAFE PRODUCTS =================
-    const safeProducts = Array.isArray(products)
-        ? products
-        : [];
-
-    // ================= PIE COLORS =================
-    const colors = [
-        "#22c55e",
-        "#ef4444",
-        "#3b82f6",
-        "#facc15",
-    ];
-
     // ================= PIE DATA =================
     const pieChartData = [
-        {
-            name: "Revenue",
-            value: stats?.totalSales || 0,
-        },
-        {
-            name: "Expense",
-            value: stats?.totalExpense || 0,
-        },
-        {
-            name: "Profit",
-            value: stats?.totalProfit || 0,
-        },
-        {
-            name: "Stock",
-            value: stats?.totalStock || 0,
-        },
+        { name: "Revenue", value: stats?.totalSales || 0 },
+        { name: "Expense", value: stats?.totalExpense || 0 },
+        { name: "Profit", value: stats?.totalProfit || 0 },
+        { name: "Stock", value: stats?.totalStock || 0 },
     ];
 
     // ================= LOADING =================
-    if (
-        isAdminLoading ||
-        statsLoading ||
-        productsLoading
-    ) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <span className="loading loading-spinner loading-lg text-orange-500"></span>
@@ -100,331 +66,136 @@ const UserHome = () => {
     // ================= ERROR =================
     if (isError) {
         return (
-            <div className="text-center mt-20">
-                <h2 className="text-2xl font-bold text-red-500">
-                    ❌ Failed to load dashboard data
-                </h2>
+            <div className="text-center mt-20 text-red-500 font-bold">
+                ❌ Failed to load dashboard data
             </div>
         );
     }
 
-    // ================= USER VIEW =================
-    if (!isAdmin) {
-        return (
-            <div className="p-6 bg-gray-100 min-h-screen">
-
-                {/* PROFILE SECTION */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-
-                    <div className="flex flex-col md:flex-row items-center gap-5">
-
-                        {/* USER IMAGE */}
-                        <div className="avatar">
-
-                            <div className="w-24 rounded-full ring ring-orange-400 ring-offset-4">
-
-                                <img
-                                    src={
-                                        user?.photoURL ||
-                                        "https://i.ibb.co/2n0Q5Yc/default-user.png"
-                                    }
-                                    alt="user"
-                                />
-
-                            </div>
-
-                        </div>
-
-                        {/* USER INFO */}
-                        <div>
-
-                            <h2 className="text-3xl font-bold text-gray-800">
-                                Hi, Welcome{" "}
-                                <span className="text-orange-500">
-                                    {user?.displayName || "Back"}
-                                </span>
-                            </h2>
-
-                            <p className="text-gray-500 mt-1">
-                                Manage your account and products easily
-                            </p>
-
-                            <p className="text-sm text-gray-400 mt-2">
-                                {user?.email}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                {/* USER CARDS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-
-                    {/* PROFILE CARD */}
-                    <div className="bg-white rounded-2xl p-6 shadow-md border-l-4 border-orange-500">
-
-                        <h3 className="text-xl font-bold text-orange-500 mb-2">
-                            👤 User Profile
-                        </h3>
-
-                        <p className="text-gray-600">
-                            {user?.displayName}
-                        </p>
-
-                        <p className="text-gray-500 text-sm mt-1">
-                            {user?.email}
-                        </p>
-
-                    </div>
-
-                    {/* STATUS CARD */}
-                    <div className="bg-white rounded-2xl p-6 shadow-md border-l-4 border-blue-500">
-
-                        <h3 className="text-xl font-bold text-blue-500 mb-2">
-                            🔐 Account Status
-                        </h3>
-
-                        <p className="text-gray-600">
-                            Active User
-                        </p>
-
-                        <p className="text-sm text-gray-400 mt-1">
-                            Your account is running normally
-                        </p>
-
-                    </div>
-
-                    {/* ORDER CARD */}
-                    <div className="bg-white rounded-2xl p-6 shadow-md border-l-4 border-green-500">
-
-                        <h3 className="text-xl font-bold text-green-500 mb-2">
-                            📦 Orders
-                        </h3>
-
-                        <p className="text-gray-600">
-                            Your order history will appear here
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* USER PRODUCTS */}
-                <div className="mt-10">
-
-                    <div className="bg-white rounded-2xl shadow-md p-5">
-
-                        <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                            🛍️ Available Products
-                        </h2>
-
-                        <UserProducts />
-
-                    </div>
-
-                </div>
-
-            </div>
-        );
-    }
-
-    // ================= ADMIN VIEW =================
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
+        <div className="p-5 bg-gray-100 min-h-screen">
 
-            {/* ADMIN PROFILE */}
-            <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
+            {/* ================= HEADER ================= */}
+            <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 mb-8">
 
-                <div className="flex items-center gap-5">
+                <img
+                    src={
+                        user?.photoURL ||
+                        "https://i.ibb.co/2n0Q5Yc/default-user.png"
+                    }
+                    className="w-16 h-16 rounded-full border-4 border-orange-400 object-cover"
+                    alt="user"
+                />
 
-                    <img
-                        src={
-                            user?.photoURL ||
-                            "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                        }
-                        className="w-20 h-20 rounded-full border-4 border-orange-400 object-cover"
-                        alt="user"
-                    />
+                <div>
+                    <h2 className="text-2xl font-bold text-orange-500">
+                        Welcome {user?.displayName || "User"} 👋
+                    </h2>
 
-                    <div>
-
-                        <h2 className="text-3xl font-bold text-orange-500">
-                            Welcome Admin 👑
-                        </h2>
-
-                        <p className="text-gray-500 mt-1">
-                            Manage your jewellery business dashboard
-                        </p>
-
-                    </div>
-
+                    <p className="text-gray-500">
+                        Manage your jewellery shop dashboard easily
+                    </p>
                 </div>
 
             </div>
 
-            {/* STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {/* ================= STATS ================= */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
 
-                {/* TOTAL CASH */}
-                <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-purple-500">
-
-                    <h3 className="text-gray-500 font-medium">
-                        💵 Total Cash
-                    </h3>
-
-                    <p className="text-3xl font-bold text-purple-600 mt-2">
-                        ৳{stats?.totalCash || 0}
-                    </p>
-
-                </div>
-
-                {/* REVENUE */}
-                <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-green-500">
-
-                    <h3 className="text-gray-500 font-medium">
-                        💰 Revenue
-                    </h3>
-
-                    <p className="text-3xl font-bold text-green-600 mt-2">
-                        ৳{stats?.totalSales || 0}
-                    </p>
-
-                </div>
-
-                {/* EXPENSE */}
-                <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-red-500">
-
-                    <h3 className="text-gray-500 font-medium">
-                        💸 Expense
-                    </h3>
-
-                    <p className="text-3xl font-bold text-red-600 mt-2">
-                        ৳{stats?.totalExpense || 0}
-                    </p>
-
-                </div>
-
-                {/* PROFIT */}
-                <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-yellow-500">
-
-                    <h3 className="text-gray-500 font-medium">
-                        📈 Profit
-                    </h3>
-
-                    <p className="text-3xl font-bold text-yellow-500 mt-2">
-                        ৳{stats?.totalProfit || 0}
-                    </p>
-
-                </div>
+                <Card title="Total Cash" value={stats.totalCash} color="purple" />
+                <Card title="Revenue" value={stats.totalSales} color="green" />
+                <Card title="Expense" value={stats.totalExpense} color="red" />
+                <Card title="Profit" value={stats.totalProfit} color="yellow" />
 
             </div>
 
-            {/* CHARTS */}
+            {/* ================= CHART SECTION ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* BAR CHART */}
                 <div className="bg-white rounded-2xl shadow-md p-5 h-[400px]">
-
-                    <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                        📊 Product Analytics
+                    <h2 className="text-xl font-bold mb-4 text-orange-500">
+                        Product Price Analytics
                     </h2>
 
                     <ResponsiveContainer width="100%" height="100%">
-
-                        <BarChart data={safeProducts}>
-
+                        <BarChart data={products}>
                             <CartesianGrid strokeDasharray="3 3" />
-
                             <XAxis dataKey="name" />
-
                             <YAxis />
-
                             <Tooltip />
-
                             <Legend />
-
-                            <Bar
-                                dataKey="buyPrice"
-                                fill="#22c55e"
-                                radius={[5, 5, 0, 0]}
-                            />
-
-                            <Bar
-                                dataKey="sellPrice"
-                                fill="#ef4444"
-                                radius={[5, 5, 0, 0]}
-                            />
-
+                            <Bar dataKey="buyPrice" fill="#f59e0b" />
+                            <Bar dataKey="sellPrice" fill="#f97316" />
                         </BarChart>
-
                     </ResponsiveContainer>
-
                 </div>
 
-                {/* PIE CHART */}
-                <div className="bg-white rounded-2xl shadow-md p-5 h-[400px]">
+                {/* PIE CHART (FIXED OVERFLOW) */}
+                <div className="bg-white rounded-2xl shadow-md p-5 h-[400px] flex flex-col">
 
-                    <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                        📈 Financial Overview
+                    <h2 className="text-xl font-bold mb-4 text-orange-500">
+                        Financial Overview
                     </h2>
 
-                    <ResponsiveContainer width="100%" height="100%">
+                    <div className="flex-1 min-h-0">
 
-                        <PieChart>
+                        <ResponsiveContainer width="100%" height="100%">
 
-                            <Pie
-                                data={pieChartData}
-                                dataKey="value"
-                                nameKey="name"
-                                outerRadius={120}
-                                label
-                            >
-                                {pieChartData.map(
-                                    (_, index) => (
+                            <PieChart>
+
+                                <Pie
+                                    data={pieChartData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    outerRadius="70%"
+                                    labelLine={false}
+                                    label
+                                >
+                                    {pieChartData.map((_, index) => (
                                         <Cell
                                             key={index}
-                                            fill={
-                                                colors[
-                                                index %
-                                                colors.length
-                                                ]
-                                            }
+                                            fill={colors[index % colors.length]}
                                         />
-                                    )
-                                )}
-                            </Pie>
+                                    ))}
+                                </Pie>
 
-                            <Tooltip />
+                                <Tooltip />
+                                <Legend />
 
-                            <Legend />
+                            </PieChart>
 
-                        </PieChart>
+                        </ResponsiveContainer>
 
-                    </ResponsiveContainer>
+                    </div>
 
                 </div>
 
             </div>
 
-            {/* MONTHLY REPORT */}
-            <div className="mt-10">
+            {/* ================= MONTHLY REPORT ================= */}
+            <div className="mt-10 bg-white rounded-2xl shadow-md p-5">
 
-                <div className="bg-white rounded-2xl shadow-md p-5">
+                <h2 className="text-2xl font-bold text-orange-500 mb-5">
+                    📊 Monthly Report
+                </h2>
 
-                    <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                        📅 Monthly Report
-                    </h2>
-
-                    <MonthlyReport />
-
-                </div>
+                <MonthlyReport />
 
             </div>
 
         </div>
     );
 };
+
+// ================= REUSABLE CARD =================
+const Card = ({ title, value, color }) => (
+    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 border-${color}-500`}>
+        <h3 className="text-gray-500 font-medium">{title}</h3>
+        <p className={`text-3xl font-bold text-${color}-600`}>
+            ৳{value || 0}
+        </p>
+    </div>
+);
 
 export default UserHome;
