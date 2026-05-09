@@ -17,9 +17,23 @@ import {
     Tooltip,
 } from "recharts";
 
-import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
+const colors = ["#f59e0b", "#10b981", "#eab308", "#fb923c"];
 
-const colors = ["#f59e0b", "#f97316", "#eab308", "#fb923c"];
+const colorMap = {
+    purple: "border-purple-500 text-purple-600",
+    green: "border-green-500 text-green-600",
+    red: "border-red-500 text-red-600",
+    yellow: "border-yellow-500 text-yellow-600",
+};
+
+const Card = ({ title, value, color }) => (
+    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}>
+        <h3 className="text-gray-500">{title}</h3>
+        <p className="text-3xl font-bold">
+            ৳{value || 0}
+        </p>
+    </div>
+);
 
 const AdminHome = () => {
     const { user } = useAuth();
@@ -29,11 +43,7 @@ const AdminHome = () => {
     const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
-            const res = await axiosSecure.get("/dashboard", {
-                headers: {
-                    authorization: `Bearer ${localStorage.getItem("access-token")}`,
-                },
-            });
+            const res = await axiosSecure.get("/dashboard");
             return res.data || {};
         },
     });
@@ -104,27 +114,40 @@ const AdminHome = () => {
             {/* CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* BAR */}
-                <div className="bg-white rounded-2xl p-5 h-[400px]">
-                    <h2 className="text-orange-500 font-bold mb-3">
-                        Product Analytics
+                {/* BAR CHART (FIXED ONLY ONE VERSION) */}
+                <div className="bg-white rounded-2xl p-5 h-[450px]">
+                    <h2 className="text-orange-500 font-bold mb-4">
+                        Product Price Analysis
                     </h2>
 
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={products}>
+                        <BarChart
+                            data={products}
+                            margin={{ top: 10, right: 20, left: 10, bottom: 80 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
+
+                            <XAxis
+                                dataKey="name"
+                                angle={-45}
+                                textAnchor="end"
+                                interval={0}
+                                height={70}
+                            />
+
                             <YAxis />
+
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="buyPrice" fill="#f59e0b" />
-                            <Bar dataKey="sellPrice" fill="#f97316" />
+
+                            <Bar dataKey="buyPrice" fill="#f59e0b" name="Buy Price" />
+                            <Bar dataKey="sellPrice" fill="#10b981" name="Sell Price" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE (FIXED OVERFLOW) */}
-                <div className="bg-white rounded-2xl p-5 h-[400px] flex flex-col">
+                {/* PIE CHART */}
+                <div className="bg-white rounded-2xl p-5 h-[450px] flex flex-col">
                     <h2 className="text-orange-500 font-bold mb-3">
                         Financial Overview
                     </h2>
@@ -140,10 +163,7 @@ const AdminHome = () => {
                                     label
                                 >
                                     {pieChartData.map((_, i) => (
-                                        <Cell
-                                            key={i}
-                                            fill={colors[i % colors.length]}
-                                        />
+                                        <Cell key={i} fill={colors[i % colors.length]} />
                                     ))}
                                 </Pie>
 
@@ -156,27 +176,8 @@ const AdminHome = () => {
 
             </div>
 
-            {/* MONTHLY */}
-            <div className="mt-10 bg-white rounded-2xl shadow-md p-5">
-                <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                    📊 Monthly Report
-                </h2>
-
-                <MonthlyReport />
-            </div>
-
         </div>
     );
 };
-
-// SMALL REUSABLE CARD
-const Card = ({ title, value, color }) => (
-    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 border-${color}-500`}>
-        <h3 className="text-gray-500">{title}</h3>
-        <p className={`text-3xl font-bold text-${color}-600`}>
-            ৳{value || 0}
-        </p>
-    </div>
-);
 
 export default AdminHome;

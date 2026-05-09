@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAuth from "../../../hooks/useAuth";
+import useAdmin from "../../../hooks/useAdmin";
 
 import {
     BarChart,
@@ -16,28 +17,37 @@ import {
     Tooltip,
 } from "recharts";
 
-import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
+const colors = ["#f59e0b", "#10b981", "#eab308", "#fb923c"];
 
-const colors = ["#f59e0b", "#f97316", "#eab308", "#fb923c"];
+const colorMap = {
+    purple: "border-purple-500 text-purple-600",
+    green: "border-green-500 text-green-600",
+    red: "border-red-500 text-red-600",
+    yellow: "border-yellow-500 text-yellow-600",
+};
+
+const Card = ({ title, value, color }) => (
+    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}>
+        <h3 className="text-gray-500">{title}</h3>
+        <p className="text-3xl font-bold">
+            ৳{value || 0}
+        </p>
+    </div>
+);
 
 const UserHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
+    const [isAdmin, isAdminLoading] = useAdmin();
 
-    // ================= DASHBOARD STATS =================
     const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
-            const res = await axiosSecure.get("/dashboard", {
-                headers: {
-                    authorization: `Bearer ${localStorage.getItem("access-token")}`,
-                },
-            });
+            const res = await axiosSecure.get("/dashboard");
             return res.data || {};
         },
     });
 
-    // ================= PRODUCTS =================
     const { data: products = [] } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
@@ -46,7 +56,6 @@ const UserHome = () => {
         },
     });
 
-    // ================= PIE DATA =================
     const pieChartData = [
         { name: "Revenue", value: stats?.totalSales || 0 },
         { name: "Expense", value: stats?.totalExpense || 0 },
@@ -54,8 +63,7 @@ const UserHome = () => {
         { name: "Stock", value: stats?.totalStock || 0 },
     ];
 
-    // ================= LOADING =================
-    if (isLoading) {
+    if (isAdminLoading || isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <span className="loading loading-spinner loading-lg text-orange-500"></span>
@@ -63,7 +71,6 @@ const UserHome = () => {
         );
     }
 
-    // ================= ERROR =================
     if (isError) {
         return (
             <div className="text-center mt-20 text-red-500 font-bold">
@@ -75,23 +82,18 @@ const UserHome = () => {
     return (
         <div className="p-5 bg-gray-100 min-h-screen">
 
-            {/* ================= HEADER ================= */}
+            {/* HEADER */}
             <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 mb-8">
 
                 <img
-                    src={
-                        user?.photoURL ||
-                        "https://i.ibb.co/2n0Q5Yc/default-user.png"
-                    }
-                    className="w-16 h-16 rounded-full border-4 border-orange-400 object-cover"
-                    alt="user"
+                    src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                    className="w-16 h-16 rounded-full border-4 border-orange-400"
                 />
 
                 <div>
                     <h2 className="text-2xl font-bold text-orange-500">
-                        Welcome {user?.displayName || "User"} 👋
+                        Welcome Admin 👑
                     </h2>
-
                     <p className="text-gray-500">
                         Manage your jewellery shop dashboard easily
                     </p>
@@ -99,7 +101,7 @@ const UserHome = () => {
 
             </div>
 
-            {/* ================= STATS ================= */}
+            {/* STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
 
                 <Card title="Total Cash" value={stats.totalCash} color="purple" />
@@ -109,93 +111,73 @@ const UserHome = () => {
 
             </div>
 
-            {/* ================= CHART SECTION ================= */}
+            {/* CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* BAR CHART */}
-                <div className="bg-white rounded-2xl shadow-md p-5 h-[400px]">
-                    <h2 className="text-xl font-bold mb-4 text-orange-500">
-                        Product Price Analytics
+                {/* BAR CHART (FIXED ONLY ONE VERSION) */}
+                <div className="bg-white rounded-2xl p-5 h-[450px]">
+                    <h2 className="text-orange-500 font-bold mb-4">
+                        Product Price Analysis
                     </h2>
 
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={products}>
+                        <BarChart
+                            data={products}
+                            margin={{ top: 10, right: 20, left: 10, bottom: 80 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
+
+                            <XAxis
+                                dataKey="name"
+                                angle={-45}
+                                textAnchor="end"
+                                interval={0}
+                                height={70}
+                            />
+
                             <YAxis />
+
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="buyPrice" fill="#f59e0b" />
-                            <Bar dataKey="sellPrice" fill="#f97316" />
+
+                            <Bar dataKey="buyPrice" fill="#f59e0b" name="Buy Price" />
+                            <Bar dataKey="sellPrice" fill="#10b981" name="Sell Price" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE CHART (FIXED OVERFLOW) */}
-                <div className="bg-white rounded-2xl shadow-md p-5 h-[400px] flex flex-col">
-
-                    <h2 className="text-xl font-bold mb-4 text-orange-500">
+                {/* PIE CHART */}
+                <div className="bg-white rounded-2xl p-5 h-[450px] flex flex-col">
+                    <h2 className="text-orange-500 font-bold mb-3">
                         Financial Overview
                     </h2>
 
-                    <div className="flex-1 min-h-0">
-
+                    <div className="flex-1">
                         <ResponsiveContainer width="100%" height="100%">
-
                             <PieChart>
-
                                 <Pie
                                     data={pieChartData}
                                     dataKey="value"
                                     nameKey="name"
                                     outerRadius="70%"
-                                    labelLine={false}
                                     label
                                 >
-                                    {pieChartData.map((_, index) => (
-                                        <Cell
-                                            key={index}
-                                            fill={colors[index % colors.length]}
-                                        />
+                                    {pieChartData.map((_, i) => (
+                                        <Cell key={i} fill={colors[i % colors.length]} />
                                     ))}
                                 </Pie>
 
                                 <Tooltip />
                                 <Legend />
-
                             </PieChart>
-
                         </ResponsiveContainer>
-
                     </div>
-
                 </div>
-
-            </div>
-
-            {/* ================= MONTHLY REPORT ================= */}
-            <div className="mt-10 bg-white rounded-2xl shadow-md p-5">
-
-                <h2 className="text-2xl font-bold text-orange-500 mb-5">
-                    📊 Monthly Report
-                </h2>
-
-                <MonthlyReport />
 
             </div>
 
         </div>
     );
 };
-
-// ================= REUSABLE CARD =================
-const Card = ({ title, value, color }) => (
-    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 border-${color}-500`}>
-        <h3 className="text-gray-500 font-medium">{title}</h3>
-        <p className={`text-3xl font-bold text-${color}-600`}>
-            ৳{value || 0}
-        </p>
-    </div>
-);
 
 export default UserHome;
