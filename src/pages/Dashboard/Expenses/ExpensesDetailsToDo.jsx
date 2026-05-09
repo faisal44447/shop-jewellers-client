@@ -7,7 +7,7 @@ const ExpensesDetailsToDo = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get("https://shop-jewellers-server.vercel.app/expenses", {
+        axios.get("https://shop-jewellers-client.web.app/expenses", {
             headers: {
                 authorization: `Bearer ${localStorage.getItem("access-token")}`
             }

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosPublic = axios.create({
-  baseURL: "https://shop-jewellers-server.vercel.app", 
+  baseURL: "https://shop-jewellers-client.web.app", 
 });
 
 const useAxiosPublic = () => {

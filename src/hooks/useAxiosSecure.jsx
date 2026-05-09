@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosSecure = axios.create({
-    baseURL: "https://shop-jewellers-server.vercel.app",
+    baseURL: "https://shop-jewellers-client.web.app",
 });
 
 const useAxiosSecure = () => {

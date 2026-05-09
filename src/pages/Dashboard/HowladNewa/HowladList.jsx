@@ -18,9 +18,7 @@ const HowladList = () => {
         try {
             setLoading(true);
 
-            const res = await axiosSecure.get(
-                "/transactions"
-            );
+            const res = await axiosSecure.get("/transactions");
 
             setList(
                 Array.isArray(res.data)
@@ -58,9 +56,7 @@ const HowladList = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            await axiosSecure.delete(
-                `/transactions/${id}`
-            );
+            await axiosSecure.delete(`/transactions/${id}`);
 
             Swal.fire({
                 icon: "success",
