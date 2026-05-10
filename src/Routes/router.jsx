@@ -35,6 +35,8 @@ import EditProduct from "../pages/Dashboard/EditProduct/EditProduct";
 import EditStaff from "../pages/Dashboard/EditStaff/EditStaff";
 import AllUsers from "../pages/Dashboard/AllUsers/AllUsers";
 import SoldProducts from "../pages/Dashboard/SoldProducts/SoldProducts";
+import AddCash from "../pages/Dashboard/AddCash/AddCash";
+import CashList from "../pages/Dashboard/CashList/CashList";
 
 
 export const router = createBrowserRouter([
@@ -64,6 +66,7 @@ export const router = createBrowserRouter([
       { path: "products", element: <Products /> },
       { path: "product-card", element: <ProductCard /> },
       { path: "product-card-page", element: <ProductCardPage /> },
+      { path: "cash-list", element: <CashList /> },
 
       // ✅ SELL PAGE (IMPORTANT FIX)
 
@@ -76,6 +79,7 @@ export const router = createBrowserRouter([
       { path: "add-product", element: <AddProduct /> },
       { path: "manage-product", element: <ManageProducts /> },
       { path: "sales", element: <Sales /> },
+      { path: "add-cash", element: <AddCash /> },
 
       { path: "expenses", element: <Expenses /> },
       { path: "expense-list", element: <ExpenseList /> },

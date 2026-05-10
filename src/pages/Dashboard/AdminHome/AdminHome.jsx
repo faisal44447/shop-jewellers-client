@@ -17,8 +17,10 @@ import {
     Tooltip,
 } from "recharts";
 
+// COLORS
 const colors = ["#f59e0b", "#10b981", "#eab308", "#fb923c"];
 
+// CARD COLOR MAP
 const colorMap = {
     purple: "border-purple-500 text-purple-600",
     green: "border-green-500 text-green-600",
@@ -26,11 +28,12 @@ const colorMap = {
     yellow: "border-yellow-500 text-yellow-600",
 };
 
-const Card = ({ title, value, color }) => (
+// ✅ REUSABLE CARD COMPONENT
+const Card = ({ title, value, color, isMoney = true }) => (
     <div className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}>
         <h3 className="text-gray-500">{title}</h3>
         <p className="text-3xl font-bold">
-            ৳{value || 0}
+            {isMoney ? `৳${value || 0}` : value || 0}
         </p>
     </div>
 );
@@ -40,6 +43,7 @@ const AdminHome = () => {
     const axiosSecure = useAxiosSecure();
     const [isAdmin, isAdminLoading] = useAdmin();
 
+    // ✅ DASHBOARD STATS
     const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
@@ -48,6 +52,7 @@ const AdminHome = () => {
         },
     });
 
+    // ✅ PRODUCTS
     const { data: products = [] } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
@@ -56,6 +61,19 @@ const AdminHome = () => {
         },
     });
 
+    // ✅ SAFE CALCULATIONS
+    const totalStock = (products || []).reduce(
+        (acc, item) => acc + (item.stock || 0),
+        0
+    );
+
+    const totalStockValue = (products || []).reduce(
+        (acc, item) =>
+            acc + (item.stock || 0) * (item.buyPrice || 0),
+        0
+    );
+
+    // ✅ PIE CHART DATA
     const pieChartData = [
         { name: "Revenue", value: stats?.totalSales || 0 },
         { name: "Expense", value: stats?.totalExpense || 0 },
@@ -63,6 +81,7 @@ const AdminHome = () => {
         { name: "Stock", value: stats?.totalStock || 0 },
     ];
 
+    // LOADING STATE
     if (isAdminLoading || isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -71,6 +90,7 @@ const AdminHome = () => {
         );
     }
 
+    // ERROR STATE
     if (isError) {
         return (
             <div className="text-center mt-20 text-red-500 font-bold">
@@ -101,20 +121,23 @@ const AdminHome = () => {
 
             </div>
 
-            {/* STATS */}
+            {/* STATS CARDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
 
                 <Card title="Total Cash" value={stats.totalCash} color="purple" />
-                <Card title="Revenue" value={stats.totalSales} color="green" />
-                <Card title="Expense" value={stats.totalExpense} color="red" />
-                <Card title="Profit" value={stats.totalProfit} color="yellow" />
+                <Card title="Revenue" value={stats.totalSales} color="green" isMoney />
+                <Card title="Expense" value={stats.totalExpense} color="red" isMoney />
+                <Card title="Profit" value={stats.totalProfit} color="yellow" isMoney />
+
+                <Card title="Total Stock" value={totalStock} color="green" isMoney={false} />
+                <Card title="Stock Value" value={totalStockValue} color="purple" isMoney />
 
             </div>
 
             {/* CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* BAR CHART (FIXED ONLY ONE VERSION) */}
+                {/* BAR CHART */}
                 <div className="bg-white rounded-2xl p-5 h-[450px]">
                     <h2 className="text-orange-500 font-bold mb-4">
                         Product Price Analysis
@@ -128,7 +151,7 @@ const AdminHome = () => {
                             <CartesianGrid strokeDasharray="3 3" />
 
                             <XAxis
-                                dataKey="name"
+                                dataKey={(item) => item.name || "Unknown"}
                                 angle={-45}
                                 textAnchor="end"
                                 interval={0}
@@ -136,7 +159,6 @@ const AdminHome = () => {
                             />
 
                             <YAxis />
-
                             <Tooltip />
                             <Legend />
 

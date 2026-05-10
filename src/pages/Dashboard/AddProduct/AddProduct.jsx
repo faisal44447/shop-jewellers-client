@@ -274,7 +274,7 @@ const AddProduct = () => {
                                 step="0.01"
                                 placeholder="Vori"
                                 {...register("vori")}
-                                className="input input-bordered"
+                                className="input input-bordered text-black"
                             />
 
                             <input
@@ -282,7 +282,7 @@ const AddProduct = () => {
                                 step="0.01"
                                 placeholder="Ana"
                                 {...register("ana")}
-                                className="input input-bordered"
+                                className="input input-bordered text-black"
                             />
 
                             <input
@@ -290,7 +290,7 @@ const AddProduct = () => {
                                 step="0.01"
                                 placeholder="Rati"
                                 {...register("rati")}
-                                className="input input-bordered"
+                                className="input input-bordered text-black"
                             />
 
                             <input
@@ -298,7 +298,7 @@ const AddProduct = () => {
                                 step="0.01"
                                 placeholder="Point"
                                 {...register("point")}
-                                className="input input-bordered"
+                                className="input input-bordered text-black"
                             />
 
                         </div>

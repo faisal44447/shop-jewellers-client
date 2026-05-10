@@ -7,7 +7,7 @@ const ExpensesDetailsToDo = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get("https://shop-jewellers-client.web.app/expenses", {
+        axios.get("http://localhost:5000/expenses", {
             headers: {
                 authorization: `Bearer ${localStorage.getItem("access-token")}`
             }

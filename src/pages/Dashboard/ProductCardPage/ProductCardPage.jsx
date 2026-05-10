@@ -16,6 +16,7 @@ const ProductCardPage = () => {
         queryKey: ["products"],
         queryFn: async () => {
             const res = await axiosSecure.get("/products");
+
             return Array.isArray(res.data)
                 ? res.data
                 : [];
@@ -53,11 +54,29 @@ const ProductCardPage = () => {
 
                 {products.length > 0 ? (
                     products.map((p) => (
-                        <ProductCard
+                        <div
                             key={p._id}
-                            product={p}
-                            refetch={refetch}
-                        />
+                            className="bg-white shadow-md rounded-xl p-4 border"
+                        >
+
+                            {/* CATEGORY */}
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs text-gray-500">
+                                    {new Date(p.createdAt).toLocaleDateString()}
+                                </span>
+                            </div>
+
+                            {/* TIME */}
+                            <p className="text-xs text-gray-400 mb-3">
+                                ⏰ {new Date(p.createdAt).toLocaleTimeString()}
+                            </p>
+
+                            {/* PRODUCT CARD */}
+                            <ProductCard
+                                product={p}
+                                refetch={refetch}
+                            />
+                        </div>
                     ))
                 ) : (
                     <p className="text-center col-span-3 text-gray-500">
