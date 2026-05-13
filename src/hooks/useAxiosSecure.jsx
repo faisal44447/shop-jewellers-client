@@ -6,19 +6,23 @@ const axiosSecure = axios.create({
 
 const useAxiosSecure = () => {
 
-    // ✅ REQUEST INTERCEPTOR (TOKEN ADD)
-    axiosSecure.interceptors.request.use(config => {
+    // ✅ REQUEST INTERCEPTOR
+    axiosSecure.interceptors.request.use((config) => {
+
         const token = localStorage.getItem("access-token");
+
         if (token) {
             config.headers.authorization = `Bearer ${token}`;
         }
+
         return config;
     });
 
-    // ✅ RESPONSE INTERCEPTOR (ERROR HANDLE)
+    // ✅ RESPONSE INTERCEPTOR
     axiosSecure.interceptors.response.use(
-        res => res,
-        err => {
+        (res) => res,
+
+        (err) => {
             console.error("API ERROR:", err);
             return Promise.reject(err);
         }
