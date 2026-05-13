@@ -28,11 +28,14 @@ const colorMap = {
     yellow: "border-yellow-500 text-yellow-600",
 };
 
-// ✅ REUSABLE CARD COMPONENT
+// ✅ CARD COMPONENT
 const Card = ({ title, value, color, isMoney = true }) => (
-    <div className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}>
-        <h3 className="text-gray-500">{title}</h3>
-        <p className="text-3xl font-bold">
+    <div
+        className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}
+    >
+        <h3 className="text-gray-500 text-sm">{title}</h3>
+
+        <p className="text-2xl md:text-3xl font-bold">
             {isMoney ? `৳${value || 0}` : value || 0}
         </p>
     </div>
@@ -43,8 +46,12 @@ const AdminHome = () => {
     const axiosSecure = useAxiosSecure();
     const [isAdmin, isAdminLoading] = useAdmin();
 
-    // ✅ DASHBOARD STATS
-    const { data: stats = {}, isLoading, isError } = useQuery({
+    // ================= DASHBOARD DATA =================
+    const {
+        data: stats = {},
+        isLoading,
+        isError,
+    } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
@@ -52,7 +59,7 @@ const AdminHome = () => {
         },
     });
 
-    // ✅ PRODUCTS
+    // ================= PRODUCTS =================
     const { data: products = [] } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
@@ -61,27 +68,27 @@ const AdminHome = () => {
         },
     });
 
-    // ✅ SAFE CALCULATIONS
-    const totalStock = (products || []).reduce(
-        (acc, item) => acc + (item.stock || 0),
-        0
-    );
-
-    const totalStockValue = (products || []).reduce(
-        (acc, item) =>
-            acc + (item.stock || 0) * (item.buyPrice || 0),
-        0
-    );
-
-    // ✅ PIE CHART DATA
+    // ================= PIE CHART DATA =================
     const pieChartData = [
-        { name: "Revenue", value: stats?.totalSales || 0 },
-        { name: "Expense", value: stats?.totalExpense || 0 },
-        { name: "Profit", value: stats?.totalProfit || 0 },
-        { name: "Stock", value: stats?.totalStock || 0 },
+        {
+            name: "Sales",
+            value: stats?.totalSales || 0,
+        },
+        {
+            name: "Expense",
+            value: stats?.totalExpense || 0,
+        },
+        {
+            name: "Profit",
+            value: stats?.totalProfit || 0,
+        },
+        {
+            name: "Stock",
+            value: stats?.totalStock || 0,
+        },
     ];
 
-    // LOADING STATE
+    // ================= LOADING =================
     if (isAdminLoading || isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -90,7 +97,7 @@ const AdminHome = () => {
         );
     }
 
-    // ERROR STATE
+    // ================= ERROR =================
     if (isError) {
         return (
             <div className="text-center mt-20 text-red-500 font-bold">
@@ -102,7 +109,7 @@ const AdminHome = () => {
     return (
         <div className="p-5 bg-gray-100 min-h-screen">
 
-            {/* HEADER */}
+            {/* ================= HEADER ================= */}
             <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 mb-8">
 
                 <img
@@ -114,31 +121,91 @@ const AdminHome = () => {
                     <h2 className="text-2xl font-bold text-orange-500">
                         Welcome Admin 👑
                     </h2>
+
                     <p className="text-gray-500">
                         Manage your jewellery shop dashboard easily
                     </p>
                 </div>
-
             </div>
 
-            {/* STATS CARDS */}
+            {/* ================= STATS CARDS ================= */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
 
-                <Card title="Total Cash" value={stats.totalCash} color="purple" />
-                <Card title="Revenue" value={stats.totalSales} color="green" isMoney />
-                <Card title="Expense" value={stats.totalExpense} color="red" isMoney />
-                <Card title="Profit" value={stats.totalProfit} color="yellow" isMoney />
+                <Card
+                    title="Total Cash"
+                    value={stats.totalCash}
+                    color="purple"
+                />
 
-                <Card title="Total Stock" value={totalStock} color="green" isMoney={false} />
-                <Card title="Stock Value" value={totalStockValue} color="purple" isMoney />
+                <Card
+                    title="Sales"
+                    value={stats.totalSales}
+                    color="green"
+                />
+
+                <Card
+                    title="Expenses"
+                    value={stats.totalExpense}
+                    color="red"
+                />
+
+                <Card
+                    title="Receivables"
+                    value={stats.totalReceivable}
+                    color="red"
+                />
+
+                <Card
+                    title="Transactions +"
+                    value={stats.totalTransactionPlus}
+                    color="green"
+                />
+
+                <Card
+                    title="Transactions -"
+                    value={stats.totalTransactionMinus}
+                    color="red"
+                />
+
+                <Card
+                    title="Cash Added"
+                    value={stats.totalCashFromList}
+                    color="green"
+                />
+
+                <Card
+                    title="Staff Salary"
+                    value={stats.totalStaffSalary}
+                    color="red"
+                />
+
+                <Card
+                    title="Profit"
+                    value={stats.totalProfit}
+                    color="yellow"
+                />
+
+                <Card
+                    title="Total Stock"
+                    value={stats.totalStock}
+                    color="green"
+                    isMoney={false}
+                />
+
+                <Card
+                    title="Stock Value"
+                    value={stats.totalStockValue}
+                    color="purple"
+                />
 
             </div>
 
-            {/* CHARTS */}
+            {/* ================= CHARTS ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* BAR CHART */}
+                {/* ================= BAR CHART ================= */}
                 <div className="bg-white rounded-2xl p-5 h-[450px]">
+
                     <h2 className="text-orange-500 font-bold mb-4">
                         Product Price Analysis
                     </h2>
@@ -146,7 +213,12 @@ const AdminHome = () => {
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             data={products}
-                            margin={{ top: 10, right: 20, left: 10, bottom: 80 }}
+                            margin={{
+                                top: 10,
+                                right: 20,
+                                left: 10,
+                                bottom: 80,
+                            }}
                         >
                             <CartesianGrid strokeDasharray="3 3" />
 
@@ -159,24 +231,39 @@ const AdminHome = () => {
                             />
 
                             <YAxis />
+
                             <Tooltip />
+
                             <Legend />
 
-                            <Bar dataKey="buyPrice" fill="#f59e0b" name="Buy Price" />
-                            <Bar dataKey="sellPrice" fill="#10b981" name="Sell Price" />
+                            <Bar
+                                dataKey="buyPrice"
+                                fill="#f59e0b"
+                                name="Buy Price"
+                            />
+
+                            <Bar
+                                dataKey="sellPrice"
+                                fill="#10b981"
+                                name="Sell Price"
+                            />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* PIE CHART */}
+                {/* ================= PIE CHART ================= */}
                 <div className="bg-white rounded-2xl p-5 h-[450px] flex flex-col">
+
                     <h2 className="text-orange-500 font-bold mb-3">
                         Financial Overview
                     </h2>
 
                     <div className="flex-1">
+
                         <ResponsiveContainer width="100%" height="100%">
+
                             <PieChart>
+
                                 <Pie
                                     data={pieChartData}
                                     dataKey="value"
@@ -185,14 +272,21 @@ const AdminHome = () => {
                                     label
                                 >
                                     {pieChartData.map((_, i) => (
-                                        <Cell key={i} fill={colors[i % colors.length]} />
+                                        <Cell
+                                            key={i}
+                                            fill={colors[i % colors.length]}
+                                        />
                                     ))}
                                 </Pie>
 
                                 <Tooltip />
+
                                 <Legend />
+
                             </PieChart>
+
                         </ResponsiveContainer>
+
                     </div>
                 </div>
 
