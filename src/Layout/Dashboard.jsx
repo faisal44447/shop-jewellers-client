@@ -31,7 +31,7 @@ const Dashboard = () => {
         }`;
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 -mt-10">
 
             {/* PAGE CONTENT */}
             <div className="pb-28">
