@@ -70,7 +70,7 @@ const NavBar = () => {
     };
 
     return (
-        <div className="navbar fixed top-0 left-0 w-full z-50 bg-black bg-opacity-70 backdrop-blur-md text-white shadow-md px-2 md:px-6 h-16">
+        <div className="navbar fixed top-8 left-0 w-full z-50 bg-black bg-opacity-70 backdrop-blur-md text-white shadow-md px-2 md:px-6 h-16">
             <div className="navbar-start">
 
                 {/* মোবাইল ড্রপডাউন মেনু */}
