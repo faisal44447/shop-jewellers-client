@@ -85,7 +85,7 @@ const NavBar = () => {
 
                 {/* লোগো */}
                 <Link to="/" className="flex items-center gap-2">
-                    <img src={ljiCON} className="w-11 h-11 rounded-full border border-orange-500 object-cover" alt="Logo" />
+                    <img src={ljiCON} className="skeleton w-11 h-11 rounded-full border border-orange-500 object-cover" alt="Logo" />
                 </Link>
             </div>
 
