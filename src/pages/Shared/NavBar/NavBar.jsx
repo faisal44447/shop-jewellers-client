@@ -1,299 +1,103 @@
+import { Link } from "react-router-dom";
 import { useContext } from "react";
-import { Link, NavLink } from "react-router-dom";
 import { AuthContext } from "../../../providers/AuthProvider";
 import useCart from "../../../hooks/useCart";
 import useAdmin from "../../../hooks/useAdmin";
-import Swal from "sweetalert2";
-
-import ljiCON from "../../../assets/laivinIcon.png";
 
 import {
     FaShoppingCart,
-    FaMoneyBill,
     FaUserPlus,
-    FaPlus,
+    FaMoneyBill,
     FaPlusCircle,
-    FaFileInvoiceDollar,
     FaHandHoldingUsd,
+    FaFileInvoiceDollar
 } from "react-icons/fa";
 
+import ljiCON from "../../../assets/laivinIcon.png";
+
 const NavBar = () => {
-    const { user, logOut } = useContext(AuthContext);
+    const context = useContext(AuthContext);
+
+    if (!context) return null;
+
+    const { user, logOut } = context;
+
     const [cart = []] = useCart();
-    const [isAdmin] = useAdmin();
+    const [isAdmin = false] = useAdmin();
 
     const handleLogOut = () => {
-        logOut()
-            .then(() => {
-                Swal.fire({
-                    icon: "success",
-                    title: "Logged out",
-                    timer: 1200,
-                    showConfirmButton: false,
-                });
-            })
-            .catch(() => {
-                Swal.fire({
-                    icon: "error",
-                    title: "Logout failed",
-                });
-            });
+        logOut().catch(err => console.log(err));
     };
 
-    const linkStyle = ({ isActive }) =>
-        `flex items-center gap-2 px-3 py-2 rounded-lg transition duration-200 ${isActive
-            ? "btn-glow:hover"
-            : "nav-link-base"
-        }`;
+    const linkStyle =
+        "flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:text-orange-400 transition";
+
+    const navOptions = (
+        <>
+            <li>
+                <Link to="/" className={linkStyle}>Home</Link>
+            </li>
+
+            <li>
+                <Link to="/dashboard" className={linkStyle}>Dashboard</Link>
+            </li>
+
+            <li>
+                <Link to="/dashboard/cart" className={linkStyle}>
+                    <FaShoppingCart />
+                    Cart ({cart.length})
+                </Link>
+            </li>
+
+            {isAdmin && (
+                <>
+                    <li><Link to="/dashboard/add-product" className={linkStyle}><FaUserPlus />Product</Link></li>
+                    <li><Link to="/dashboard/add-staff" className={linkStyle}><FaUserPlus />Staff</Link></li>
+                    <li><Link to="/dashboard/expenses" className={linkStyle}><FaMoneyBill />Expenses</Link></li>
+                    <li><Link to="/dashboard/add-profit" className={linkStyle}><FaMoneyBill />Profit</Link></li>
+                    <li><Link to="/dashboard/add-cash" className={linkStyle}><FaPlusCircle />Cash</Link></li>
+                    <li><Link to="/dashboard/paboTaka" className={linkStyle}><FaHandHoldingUsd />PaboTaka</Link></li>
+                    <li><Link to="/dashboard/howlad-newa" className={linkStyle}><FaFileInvoiceDollar />Howlad</Link></li>
+                </>
+            )}
+        </>
+    );
 
     return (
-        <div className="navbar fixed top-0 left-0 z-50 bg-black/70 backdrop-blur-md text-white px-4 w-full">
+        <div className="navbar fixed z-10 bg-opacity-30 max-w-screen-xl bg-black text-white">
+            <div className="navbar-start mt-5">
 
-            {/* LEFT */}
-            <div className="navbar-start">
+                <div className="dropdown">
+                    <label tabIndex={0} className="btn btn-ghost lg:hidden">☰</label>
 
-                {/* MOBILE MENU */}
-                <div className="dropdown lg:hidden">
-                    <label tabIndex={0} className="btn btn-ghost text-white">
-                        ☰
-                    </label>
-
-                    <ul className="menu menu-sm dropdown-content mt-3 p-3 shadow bg-black rounded-box w-60 z-[100]">
-
-                        <li>
-                            <NavLink to="/" className={linkStyle}>
-                                Home
-                            </NavLink>
-                        </li>
-
-                        <li>
-                            <NavLink to="/dashboard" className={linkStyle}>
-                                Dashboard
-                            </NavLink>
-                        </li>
-
-                        <li>
-                            <NavLink
-                                to="/dashboard/product-card-page"
-                                className={linkStyle}
-                            >
-                                Products
-                            </NavLink>
-                        </li>
-
-                        <li>
-                            <NavLink
-                                to="/dashboard/cart"
-                                className={linkStyle}
-                            >
-                                <FaShoppingCart />
-                                Cart ({cart.length})
-                            </NavLink>
-                        </li>
-
-                        {/* ADMIN MENU MOBILE */}
-                        {isAdmin && (
-                            <>
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/add-staff"
-                                        className={linkStyle}
-                                    >
-                                        <FaUserPlus />
-                                        Add Staff
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/expenses"
-                                        className={linkStyle}
-                                    >
-                                        <FaMoneyBill />
-                                        Expenses
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/add-profit"
-                                        className={linkStyle}
-                                    >
-                                        <FaMoneyBill />
-                                        Add Profit
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/add-cash"
-                                        className={linkStyle}
-                                    >
-                                        <FaPlusCircle />
-                                        Add Cash
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/paboTaka"
-                                        className={linkStyle}
-                                    >
-                                        <FaHandHoldingUsd />
-                                        Pabo Taka
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink
-                                        to="/dashboard/howlad-newa"
-                                        className={linkStyle}
-                                    >
-                                        <FaFileInvoiceDollar />
-                                        Add Howlad
-                                    </NavLink>
-                                </li>
-                            </>
-                        )}
+                    <ul className="menu dropdown-content p-2 bg-base-100 rounded-box w-52 ">
+                        {navOptions}
                     </ul>
                 </div>
 
-                {/* LOGO */}
                 <Link to="/" className="flex items-center gap-2 ml-2">
-                    <img
-                        src={ljiCON}
-                        className="w-10 h-10 rounded-full border border-orange-500"
-                        alt="Logo"
-                    />
-
+                    <img src={ljiCON} className="w-14 h-14 -mt-4  rounded-full" alt="Logo" />
                 </Link>
             </div>
 
-            {/* CENTER */}
             <div className="navbar-center hidden lg:flex">
-                <ul className="menu menu-horizontal gap-3">
-
-                    <li>
-                        <NavLink to="/" className={linkStyle}>
-                            Home
-                        </NavLink>
-                    </li>
-
-                    <li>
-                        <NavLink to="/dashboard" className={linkStyle}>
-                            Dashboard
-                        </NavLink>
-                    </li>
-
-                    {/* ADMIN MENU */}
-                    {isAdmin && (
-                        <>
-                            <li>
-                                <NavLink
-                                    to="/dashboard/add-staff"
-                                    className={linkStyle}
-                                >
-                                    <FaUserPlus />
-                                    Add Staff
-                                </NavLink>
-                            </li>
-
-                            <li>
-                                <NavLink
-                                    to="/dashboard/expenses"
-                                    className={linkStyle}
-                                >
-                                    <FaMoneyBill />
-                                    Expenses
-                                </NavLink>
-                            </li>
-
-                            <li>
-                                <NavLink
-                                    to="/dashboard/add-profit"
-                                    className={linkStyle}
-                                >
-                                    <FaMoneyBill />
-                                    Add Profit
-                                </NavLink>
-                            </li>
-
-                            <li>
-                                <NavLink
-                                    to="/dashboard/add-cash"
-                                    className={linkStyle}
-                                >
-                                    <FaPlusCircle />
-                                    Add Cash
-                                </NavLink>
-                            </li>
-
-                            <li>
-                                <NavLink
-                                    to="/dashboard/paboTaka"
-                                    className={linkStyle}
-                                >
-                                    <FaPlus />
-                                    Pabo Taka
-                                </NavLink>
-                            </li>
-
-                            <li>
-                                <NavLink
-                                    to="/dashboard/howlad-newa"
-                                    className={linkStyle}
-                                >
-                                    <FaPlus />
-                                    Add Howlad
-                                </NavLink>
-                            </li>
-                        </>
-                    )}
-
-                    {/* CART */}
-                    <li>
-                        <NavLink
-                            to="/dashboard/cart"
-                            className={({ isActive }) =>
-                                `relative flex items-center gap-2 px-3 py-2 rounded-lg transition ${isActive
-                                    ? "bg-orange-600 text-white"
-                                    : "text-white hover:bg-orange-500 hover:text-black"
-                                }`
-                            }
-                        >
-                            <FaShoppingCart />
-
-                            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-2 py-[2px] rounded-full">
-                                {cart.length}
-                            </span>
-                        </NavLink>
-                    </li>
+                <ul className="menu menu-horizontal px-1 ">
+                    {navOptions}
                 </ul>
             </div>
 
-            {/* RIGHT */}
             <div className="navbar-end flex items-center gap-3">
-
                 {user ? (
                     <>
-                        <div className="relative group">
-                            <img
-                                src={
-                                    user?.photoURL ||
-                                    "https://i.ibb.co/mJR9mkv/default-user.png"
-                                }
-                                className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover"
-                                alt="User"
-                            />
-
-                            <span className="absolute left-1/2 -translate-x-1/2 top-11 bg-black text-orange-500 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                                {user?.displayName || "User"}
-                            </span>
-                        </div>
+                        <img
+                            src={user?.photoURL || "https://i.ibb.co/mJR9mkv/default-user.png"}
+                            className="w-10 h-10 rounded-full border-2 border-orange-500"
+                            alt="User"
+                        />
 
                         <button
                             onClick={handleLogOut}
-                            className="px-4 py-2 rounded-lg border border-orange-500 hover:bg-orange-500 hover:text-black transition"
+                            className="px-4 py-2 border border-orange-500 rounded-lg hover:bg-orange-500 hover:text-black"
                         >
                             Logout
                         </button>
@@ -301,7 +105,7 @@ const NavBar = () => {
                 ) : (
                     <Link
                         to="/login"
-                        className="px-4 py-2 rounded-lg border border-orange-500 hover:bg-orange-500 hover:text-black transition"
+                        className="px-4 py-2 border border-orange-500 rounded-lg hover:bg-orange-500 hover:text-black"
                     >
                         Login
                     </Link>

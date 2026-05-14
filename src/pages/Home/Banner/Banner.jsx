@@ -4,7 +4,7 @@ import ShopBanner from "../../../assets/Shop Banner.jpg";
 const Banner = () => {
 
     return (
-        <div className="mt-10">
+        <div className="mt-5">
 
             {/* ================= NEWS TICKER (MODERN MARQUEE) ================= */}
             <div className="bg-black text-yellow-400 py-2 border-b border-yellow-600/30 overflow-hidden">
@@ -29,18 +29,6 @@ const Banner = () => {
 
                 {/* DARK OVERLAY */}
                 <div className="absolute inset-0 bg-black/30"></div>
-
-                {/* CTA BUTTON */}
-                <div className="absolute bottom-8 left-6 md:right-10 md:left-auto">
-
-                    <Link
-                        to="/dashboard/product-card-page"
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-300 text-black font-bold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition"
-                    >
-                        🛍 Shop Now
-                    </Link>
-
-                </div>
 
             </div>
 

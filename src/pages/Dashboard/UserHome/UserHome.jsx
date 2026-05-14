@@ -47,15 +47,11 @@ const UserHome = () => {
     const [isAdmin, isAdminLoading] = useAdmin();
 
     // ================= DASHBOARD DATA =================
-    const {
-        data: stats = {},
-        isLoading,
-        isError,
-    } = useQuery({
+    const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
-            return res.data || {};
+            return res.data;
         },
     });
 
@@ -292,7 +288,7 @@ const UserHome = () => {
 
             </div>
 
-UserHome   </div>
+        </div>
     );
 };
 

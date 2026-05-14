@@ -14,22 +14,15 @@ const SocialLogin = () => {
             const result = await googleSignIn();
             const user = result.user;
 
-            // ================= SAVE USER =================
+            // শুধু ডাটাবেজে ইউজার ইনফো সেভ করার জন্য রিকোয়েস্ট পাঠান
             await axiosPublic.post("/users", {
                 email: user.email,
                 name: user.displayName,
                 role: "user",
             });
 
-            // ================= GET JWT =================
-            const jwtRes = await axiosPublic.post("/jwt", {
-                email: user.email,
-            });
-
-            localStorage.setItem("access-token", jwtRes.data.token);
-
             Swal.fire("Success", "Google Login Successful", "success");
-            navigate("/");
+            navigate("/"); // সরাসরি রিডাইরেক্ট, টোকেন AuthProvider সেট করে দেবে।
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }

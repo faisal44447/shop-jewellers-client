@@ -30,7 +30,6 @@ const Login = () => {
     const value = e.target.value;
     setDisabled(!validateCaptcha(value));
   };
-
   const handleLogin = async (event) => {
     event.preventDefault();
 
@@ -56,8 +55,14 @@ const Login = () => {
       Swal.fire("Success", "Login Successful", "success");
       navigate(from, { replace: true });
 
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
+    } catch (error) {
+      console.log("ERROR:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: error.code || error.message,
+      });
     }
   };
 
