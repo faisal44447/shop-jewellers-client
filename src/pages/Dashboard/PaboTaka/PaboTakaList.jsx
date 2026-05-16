@@ -172,7 +172,7 @@ const PaboTakaList = () => {
             {/* TITLE */}
             <div className="text-center mb-10">
 
-                <h2 className="text-4xl font-bold text-orange-500 flex justify-center items-center gap-2">
+                <h2 className="text-4xl font-bold text-green-500 flex justify-center items-center gap-2">
 
                     <FaMoneyBillWave />
 
@@ -223,11 +223,11 @@ const PaboTakaList = () => {
 
                                     <td className="text-black">{index + 1}</td>
 
-                                    <td className="font-medium text-black">
+                                    <td className="font-bold text-black">
                                         {item?.name}
                                     </td>
 
-                                    <td className="text-green-600 font-semibold">
+                                    <td className="text-green-600 font-bold">
                                         ৳ {item?.amount}
                                     </td>
 

@@ -70,7 +70,7 @@ const ProfitList = () => {
 
             {/* TOTAL */}
             <div className="text-center mb-6">
-                <span className="badge badge-success p-3 text-white text-lg">
+                <span className={`badge p-3 text-white text-lg ${totalProfit >= 0 ? "badge-success" : "badge-error"}`}>
                     Total Profit: ৳ {totalProfit}
                 </span>
             </div>
@@ -92,17 +92,19 @@ const ProfitList = () => {
                     <tbody>
                         {profits.map((item, index) => {
                             const dt = formatDateTime(item.createdAt);
+                            const amountNum = Number(item.amount || 0);
 
                             return (
                                 <tr key={item._id} className="hover">
 
                                     <td className="text-black">{index + 1}</td>
 
-                                    <td className="text-green-600 font-bold">
+                                    {/* Dynamic color based on positive/negative amount */}
+                                    <td className={`font-bold ${amountNum >= 0 ? "text-green-600" : "text-red-500"}`}>
                                         ৳ {item.amount}
                                     </td>
 
-                                    <td className="text-orange-600">
+                                    <td className="text-black font-bold">
                                         {item.note || "-"}
                                     </td>
 

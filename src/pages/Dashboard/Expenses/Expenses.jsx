@@ -39,11 +39,10 @@ const Expenses = () => {
         try {
             setLoading(true);
 
+            // Jidi date ebong time raw state e selected thake, tahole oita boshbe, nahole runtime execution time er auto current date/time boshbe.
             const fullDateTime =
                 form.date && form.time
-                    ? new Date(
-                        `${form.date}T${form.time}`
-                    )
+                    ? new Date(`${form.date}T${form.time}`)
                     : new Date();
 
             const expenseData = {

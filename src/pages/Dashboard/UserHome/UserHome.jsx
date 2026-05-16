@@ -28,15 +28,12 @@ const colorMap = {
     yellow: "border-yellow-500 text-yellow-600",
 };
 
-// ✅ CARD COMPONENT
+// ✅ REUSABLE CARD COMPONENT
 const Card = ({ title, value, color, isMoney = true }) => (
-    <div
-        className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[color]}`}
-    >
-        <h3 className="text-gray-500 text-sm">{title}</h3>
-
-        <p className="text-2xl md:text-3xl font-bold">
-            {isMoney ? `৳${value || 0}` : value || 0}
+    <div className={`bg-white rounded-2xl p-4 shadow-sm border-l-4 ${colorMap[color]} transition-transform duration-200 hover:scale-[1.02]`}>
+        <h3 className="text-gray-500 text-xs font-medium tracking-wide uppercase">{title}</h3>
+        <p className="text-xl md:text-2xl font-bold mt-1 text-gray-800">
+            {isMoney ? `৳${(value || 0).toLocaleString("en-BD")}` : value || 0}
         </p>
     </div>
 );
@@ -66,228 +63,104 @@ const UserHome = () => {
 
     // ================= PIE CHART DATA =================
     const pieChartData = [
-        {
-            name: "Sales",
-            value: stats?.totalSales || 0,
-        },
-        {
-            name: "Expense",
-            value: stats?.totalExpense || 0,
-        },
-        {
-            name: "Profit",
-            value: stats?.totalProfit || 0,
-        },
-        {
-            name: "Stock",
-            value: stats?.totalStock || 0,
-        },
+        { name: "Sales", value: stats?.totalSales || 0 },
+        { name: "Expense", value: stats?.totalExpense || 0 },
+        { name: "Profit", value: stats?.totalProfit || 0 },
+        { name: "Stock Value", value: stats?.totalStockValue || 0 },
     ];
 
-    // ================= LOADING =================
+    // ================= LOADING STATE =================
     if (isAdminLoading || isLoading) {
         return (
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex justify-center items-center min-h-[50vh]">
                 <span className="loading loading-spinner loading-lg text-orange-500"></span>
             </div>
         );
     }
 
-    // ================= ERROR =================
+    // ================= ERROR STATE =================
     if (isError) {
         return (
-            <div className="text-center mt-20 text-red-500 font-bold">
-                ❌ Failed to load dashboard data
+            <div className="text-center py-10 text-red-500 font-bold">
+                ❌ Failed to load dashboard data. Please check server status or authorization token.
             </div>
         );
     }
 
     return (
-        <div className="p-5 bg-gray-100 min-h-screen">
-
+        <div className="w-full space-y-6">
+            
             {/* ================= HEADER ================= */}
-            <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 mb-8">
-
+            <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-100 pb-5">
                 <img
-                    src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    className="w-16 h-16 rounded-full border-4 border-orange-400"
+                    src={user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
+                    className="w-14 h-14 rounded-full border-2 border-orange-400 object-cover shadow-sm"
+                    alt="Admin"
                 />
-
-                <div>
-                    <h2 className="text-2xl font-bold text-orange-500">
-                        Welcome Admin 👑
+                <div className="text-center sm:text-left">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                        Welcome, <span className="text-orange-500">{user?.displayName || "Admin"}</span> 👑
                     </h2>
-
-                    <p className="text-gray-500">
-                        Manage your jewellery shop dashboard easily
-                    </p>
+                    <p className="text-sm text-gray-500">Manage your business overview and track real-time statistics</p>
                 </div>
             </div>
 
             {/* ================= STATS CARDS ================= */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-
-                <Card
-                    title="Total Cash"
-                    value={stats.totalCash}
-                    color="purple"
-                />
-
-                <Card
-                    title="Sales"
-                    value={stats.totalSales}
-                    color="green"
-                />
-
-                <Card
-                    title="Expenses"
-                    value={stats.totalExpense}
-                    color="red"
-                />
-
-                <Card
-                    title="Receivables"
-                    value={stats.totalReceivable}
-                    color="red"
-                />
-
-                <Card
-                    title="Transactions +"
-                    value={stats.totalTransactionPlus}
-                    color="green"
-                />
-
-                <Card
-                    title="Transactions -"
-                    value={stats.totalTransactionMinus}
-                    color="red"
-                />
-
-                <Card
-                    title="Cash Added"
-                    value={stats.totalCashFromList}
-                    color="green"
-                />
-
-                <Card
-                    title="Staff Salary"
-                    value={stats.totalStaffSalary}
-                    color="red"
-                />
-
-                <Card
-                    title="Profit"
-                    value={stats.totalProfit}
-                    color="yellow"
-                />
-
-                <Card
-                    title="Total Stock"
-                    value={stats.totalStock}
-                    color="green"
-                    isMoney={false}
-                />
-
-                <Card
-                    title="Stock Value"
-                    value={stats.totalStockValue}
-                    color="purple"
-                />
-
+            {/* Tuned grids layout: 1 col on mobile, 2 cols on small tablet, 3 on tablet, 4 on desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <Card title="Total Cash (Calculated)" value={stats.totalCash} color="purple" />
+                <Card title="Sales" value={stats.totalSales} color="green" />
+                <Card title="Profit" value={stats.totalProfit} color="yellow" />
+                <Card title="Cash Added (Hawlad)" value={stats.totalCashFromList} color="green" />
+                <Card title="Transactions +" value={stats.totalTransactionPlus} color="green" />
+                <Card title="Transactions -" value={stats.totalTransactionMinus} color="red" />
+                <Card title="Expenses" value={stats.totalExpense} color="red" />
+                <Card title="Receivables" value={stats.totalReceivable} color="red" />
+                <Card title="Staff Salary" value={stats.totalStaffSalary} color="red" />
+                <Card title="Total Stock Qty" value={stats.totalStock} color="green" isMoney={false} />
+                <Card title="Stock Value" value={stats.totalStockValue} color="purple" />
             </div>
 
             {/* ================= CHARTS ================= */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* ================= BAR CHART ================= */}
-                <div className="bg-white rounded-2xl p-5 h-[450px]">
-
-                    <h2 className="text-orange-500 font-bold mb-4">
-                        Product Price Analysis
-                    </h2>
-
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                            data={products}
-                            margin={{
-                                top: 10,
-                                right: 20,
-                                left: 10,
-                                bottom: 80,
-                            }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" />
-
-                            <XAxis
-                                dataKey={(item) => item.name || "Unknown"}
-                                angle={-45}
-                                textAnchor="end"
-                                interval={0}
-                                height={70}
-                            />
-
-                            <YAxis />
-
-                            <Tooltip />
-
-                            <Legend />
-
-                            <Bar
-                                dataKey="buyPrice"
-                                fill="#f59e0b"
-                                name="Buy Price"
-                            />
-
-                            <Bar
-                                dataKey="sellPrice"
-                                fill="#10b981"
-                                name="Sell Price"
-                            />
-                        </BarChart>
-                    </ResponsiveContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                
+                {/* BAR CHART */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px]">
+                    <h2 className="text-gray-700 font-semibold mb-4 text-sm uppercase tracking-wide">Product Price Analysis</h2>
+                    <div className="flex-1 w-full min-h-[320px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={products} margin={{ top: 10, right: 10, left: -10, bottom: 60 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                                <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0} height={60} stroke="#9ca3af" style={{ fontSize: '11px' }} />
+                                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }} />
+                                <Tooltip />
+                                <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                                <Bar dataKey="buyPrice" fill="#f59e0b" name="Buy Price" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="sellPrice" fill="#10b981" name="Sell Price" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
-                {/* ================= PIE CHART ================= */}
-                <div className="bg-white rounded-2xl p-5 h-[450px] flex flex-col">
-
-                    <h2 className="text-orange-500 font-bold mb-3">
-                        Financial Overview
-                    </h2>
-
-                    <div className="flex-1">
-
+                {/* PIE CHART */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px]">
+                    <h2 className="text-gray-700 font-semibold mb-4 text-sm uppercase tracking-wide">Financial Overview</h2>
+                    <div className="flex-1 w-full min-h-[320px]">
                         <ResponsiveContainer width="100%" height="100%">
-
                             <PieChart>
-
-                                <Pie
-                                    data={pieChartData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    outerRadius="70%"
-                                    label
-                                >
+                                <Pie data={pieChartData} dataKey="value" nameKey="name" outerRadius="75%" label={{ fontSize: 12, fill: '#4b5563' }}>
                                     {pieChartData.map((_, i) => (
-                                        <Cell
-                                            key={i}
-                                            fill={colors[i % colors.length]}
-                                        />
+                                        <Cell key={i} fill={colors[i % colors.length]} />
                                     ))}
                                 </Pie>
-
-                                <Tooltip />
-
-                                <Legend />
-
+                                <Tooltip formatter={(value) => `৳${value.toLocaleString("en-BD")}`} />
+                                <Legend wrapperStyle={{ paddingTop: '10px' }} />
                             </PieChart>
-
                         </ResponsiveContainer>
-
                     </div>
                 </div>
 
             </div>
-
         </div>
     );
 };

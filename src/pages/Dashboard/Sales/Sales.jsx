@@ -113,7 +113,7 @@ const Sales = () => {
                                         className="w-10 h-10 rounded object-cover"
                                     />
 
-                                    <span className="font-medium text-orange-500">
+                                    <span className="font-medium text-black">
                                         {s.productName}
                                     </span>
 
@@ -121,7 +121,8 @@ const Sales = () => {
 
                                 <td className="text-black">{s.quantity}</td>
 
-                                <td className="text-green-600 font-bold">
+                                {/* Dynamic color based on profit */}
+                                <td className={`font-bold ${s.profit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                                     ৳ {s.profit}
                                 </td>
 

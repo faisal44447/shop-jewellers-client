@@ -24,11 +24,16 @@ const SoldProducts = () => {
 
         if (!confirm.isConfirmed) return;
 
-        await axiosSecure.delete(`/sales/${id}`);
+        try {
+            await axiosSecure.delete(`/sales/${id}`);
 
-        Swal.fire("Deleted!", "", "success");
+            Swal.fire("Deleted!", "", "success");
 
-        queryClient.invalidateQueries(["sales"]);
+            // TanStack Query v5 correct syntax for invalidation
+            queryClient.invalidateQueries({ queryKey: ["sales"] });
+        } catch (error) {
+            Swal.fire("Error!", "Failed to delete the sale.", "error");
+        }
     };
 
     if (isLoading) return <p>Loading...</p>;
@@ -42,42 +47,49 @@ const SoldProducts = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                {sales.map((item) => (
-                    <div key={item._id} className="card shadow p-4">
+                {sales.map((item) => {
+                    const currentProfit = item.profit || 0;
 
-                        <div className="h-48 bg-gray-100 flex items-center justify-center">
-                            <img
-                                src={item.image}
-                                className="h-full w-full object-contain"
-                                alt=""
-                            />
+                    return (
+                        <div key={item._id} className="card shadow p-4">
+
+                            <div className="h-48 bg-gray-100 flex items-center justify-center">
+                                <img
+                                    src={item.image}
+                                    className="h-full w-full object-contain"
+                                    alt=""
+                                />
+                            </div>
+
+                            <h2 className="font-bold text-orange-500 mt-2">
+                                {item.productName}
+                            </h2>
+
+                            <p className="text-black">Qty: {item.quantity}</p>
+                            <p className="text-black">Buy: ৳{item.buyPrice}</p>
+                            <p className="text-black">Sell: ৳{item.sellPrice}</p>
+
+                            {/* Conditional styling based on profit */}
+                            <p className={`font-bold ${currentProfit >= 0 ? "text-green-600" : "text-red-500"}`}>
+                                Profit: ৳{currentProfit}
+                            </p>
+
+                            <p className="text-xs text-gray-500">
+                                {item.createdAt
+                                    ? new Date(item.createdAt).toLocaleString()
+                                    : "No Date"}
+                            </p>
+
+                            <button
+                                onClick={() => handleDelete(item._id)}
+                                className="btn btn-error w-full mt-3 text-white"
+                            >
+                                Delete
+                            </button>
+
                         </div>
-
-                        <h2 className="font-bold text-orange-500 mt-2">
-                            {item.productName}
-                        </h2>
-
-                        <p className="text-black">Qty: {item.quantity}</p>
-                        <p className="text-black">Buy: ৳{item.buyPrice}</p>
-                        <p className="text-black">Sell: ৳{item.sellPrice}</p>
-                        <p className="text-green-600 font-bold">
-                            Profit: ৳{item.profit || 0}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            {item.createdAt
-                                ? new Date(item.createdAt).toLocaleString()
-                                : "No Date"}
-                        </p>
-
-                        <button
-                            onClick={() => handleDelete(item._id)}
-                            className="btn btn-error w-full mt-3"
-                        >
-                            Delete
-                        </button>
-
-                    </div>
-                ))}
+                    );
+                })}
 
             </div>
         </div>

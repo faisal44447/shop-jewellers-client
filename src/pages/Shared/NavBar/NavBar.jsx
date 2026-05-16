@@ -50,7 +50,7 @@ const NavBar = () => {
                 <li>
                     <Link to="/dashboard/cart" className={currentStyle}>
                         <FaShoppingCart />
-                        Cart <span className={`badge ${isMobile ? 'badge-warning text-black' : 'badge-ghost text-white'} ml-1`}>{cart.length}</span>
+                        Cart <span className={`badge ${isMobile ? 'badge-warning text-black' : 'badge-ghost text-orange-500'} ml-1`}>{cart.length}</span>
                     </Link>
                 </li>
 

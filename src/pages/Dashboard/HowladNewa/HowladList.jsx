@@ -89,11 +89,8 @@ const HowladList = () => {
 
             {/* TITLE */}
             <h2 className="text-4xl font-bold mb-10 text-center text-orange-500 flex justify-center items-center gap-2">
-
                 <FaMoneyBillWave />
-
                 Howlad List ({list.length})
-
             </h2>
 
             {/* TABLE */}
@@ -113,62 +110,56 @@ const HowladList = () => {
                     </thead>
 
                     <tbody>
-                        {list.map((item, i) => (
-                            <tr key={item._id} className="hover">
+                        {list.map((item, i) => {
+                            const isLoan = item.type === "loan"; // true mane howlad nise, false mane dise
 
-                                <td className="text-black">{i + 1}</td>
+                            return (
+                                <tr key={item._id} className="hover">
 
-                                <td className="font-medium text-black">
-                                    {item.name}
-                                </td>
+                                    <td className="text-black">{i + 1}</td>
 
-                                <td>
-                                    {item.type === "loan" ? (
-                                        <span className="text-green-600 font-semibold">
-                                            ➕ Howlad Nise
-                                        </span>
-                                    ) : (
-                                        <span className="text-red-500 font-semibold">
-                                            ➖ Howlad Dise
-                                        </span>
-                                    )}
-                                </td>
-
-                                <td
-                                    className={
-                                        item.type === "loan"
-                                            ? "text-green-600 font-bold"
-                                            : "text-red-500 font-bold"
-                                    }
-                                >
-                                    ৳ {item.amount}
-                                </td>
-
-                                <td className="text-black">
-                                    {item.createdAt
-                                        ? new Date(
-                                            item.createdAt
-                                        ).toLocaleString()
-                                        : "No Date"}
-                                </td>
-
-                                {isAdmin && (
-                                    <td>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(
-                                                    item._id
-                                                )
-                                            }
-                                            className="btn btn-xs btn-error text-white"
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                    <td className="font-medium text-black">
+                                        {item.name}
                                     </td>
-                                )}
 
-                            </tr>
-                        ))}
+                                    {/* Type Column Conditional Styling */}
+                                    <td>
+                                        {isLoan ? (
+                                            <span className="text-green-600 font-semibold">
+                                                ➕ Howlad Nise
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-500 font-semibold">
+                                                ➖ Howlad Dise
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* Amount Column Dynamic Color */}
+                                    <td className={`font-bold ${isLoan ? "text-green-600" : "text-red-500"}`}>
+                                        ৳ {item.amount}
+                                    </td>
+
+                                    <td className="text-black">
+                                        {item.createdAt
+                                            ? new Date(item.createdAt).toLocaleString()
+                                            : "No Date"}
+                                    </td>
+
+                                    {isAdmin && (
+                                        <td>
+                                            <button
+                                                onClick={() => handleDelete(item._id)}
+                                                className="btn btn-xs btn-error text-white"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </td>
+                                    )}
+
+                                </tr>
+                            );
+                        })}
                     </tbody>
 
                 </table>
