@@ -5,50 +5,31 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const SocialLogin = () => {
-
     const { googleSignIn } = useAuth();
-
     const axiosPublic = useAxiosPublic();
-
     const navigate = useNavigate();
 
     const handleGoogleSignIn = async () => {
-
         try {
-
             const result = await googleSignIn();
-
             const user = result.user;
 
-            // SAVE USER
+            // SAVE USER TO DATABASE
             await axiosPublic.post("/users", {
                 email: user.email,
                 name: user.displayName,
                 role: "user",
             });
 
-            Swal.fire(
-                "Success",
-                "Google Login Successful",
-                "success"
-            );
-
+            Swal.fire("Success", "Google Login Successful", "success");
             navigate("/");
-
         } catch (err) {
-
-            Swal.fire(
-                "Error",
-                err.message,
-                "error"
-            );
+            Swal.fire("Error", err.message, "error");
         }
     };
 
     return (
-
         <div className="p-6">
-
             <div className="divider">OR</div>
 
             <button
@@ -58,7 +39,6 @@ const SocialLogin = () => {
                 <FaGoogle className="text-red-500 text-lg" />
                 Continue with Google
             </button>
-
         </div>
     );
 };

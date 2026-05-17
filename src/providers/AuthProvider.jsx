@@ -7,9 +7,9 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   updateProfile,
-  GoogleAuthProvider,
 } from "firebase/auth";
 
 import { app } from "../firebase/firebase.config";
@@ -18,16 +18,17 @@ export const AuthContext = createContext(null);
 
 const auth = getAuth(app);
 
+// axios instance
 const axiosPublic = axios.create({
   baseURL: "https://shop-jewellers-server.vercel.app",
 });
 
-const AuthProvider = ({ children }) => {
+// 🔥 ONLY ONE Google Provider (IMPORTANT)
+const googleProvider = new GoogleAuthProvider();
 
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const googleProvider = new GoogleAuthProvider();
 
   // CREATE USER
   const createUser = (email, password) => {
@@ -41,7 +42,7 @@ const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // GOOGLE LOGIN
+  // 🔥 GOOGLE LOGIN (ONLY THIS)
   const googleSignIn = () => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
@@ -61,54 +62,34 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // OBSERVER
+  // AUTH OBSERVER
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async (currentUser) => {
+      if (currentUser?.email) {
+        try {
+          const res = await axiosPublic.post("/jwt", {
+            email: currentUser.email,
+          });
 
-        setLoading(true);
-
-        if (currentUser?.email) {
-
-          try {
-
-            const res = await axiosPublic.post("/jwt", {
-              email: currentUser.email,
-            });
-
-            if (res.data.token) {
-
-              localStorage.setItem(
-                "access-token",
-                res.data.token
-              );
-
-              // TOKEN save হওয়ার পরে user set হবে
-              setUser(currentUser);
-            }
-
-          } catch (error) {
-
-            console.log("JWT ERROR:", error);
-
-            setUser(null);
+          if (res.data.token) {
+            localStorage.setItem("access-token", res.data.token);
+            setUser(currentUser);
           }
-
-        } else {
-
-          localStorage.removeItem("access-token");
-
+        } catch (error) {
+          console.log("JWT ERROR:", error);
           setUser(null);
         }
-
-        setLoading(false);
+      } else {
+        localStorage.removeItem("access-token");
+        setUser(null);
       }
-    );
+
+      setLoading(false);
+    });
 
     return () => unsubscribe();
-
   }, []);
 
   const authInfo = {
