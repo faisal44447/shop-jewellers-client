@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   signOut,
   updateProfile,
@@ -23,7 +23,7 @@ const axiosPublic = axios.create({
   baseURL: "https://shop-jewellers-server.vercel.app",
 });
 
-// 🔥 ONLY ONE Google Provider (IMPORTANT)
+// 🔥 ONLY ONE GOOGLE PROVIDER
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
@@ -42,10 +42,10 @@ const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔥 GOOGLE LOGIN (ONLY THIS)
+  // 🔥 GOOGLE LOGIN (REDIRECT FIXED)
   const googleSignIn = () => {
     setLoading(true);
-    return signInWithPopup(auth, googleProvider);
+    return signInWithRedirect(auth, googleProvider);
   };
 
   // LOGOUT
@@ -62,7 +62,7 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // AUTH OBSERVER
+  // AUTH OBSERVER (REAL USER COMES HERE AFTER REDIRECT)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);

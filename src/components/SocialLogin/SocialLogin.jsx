@@ -11,18 +11,11 @@ const SocialLogin = () => {
 
     const handleGoogleSignIn = async () => {
         try {
-            const result = await googleSignIn();
-            const user = result.user;
+            // 🔥 redirect will happen here (no result)
+            await googleSignIn();
 
-            // SAVE USER TO DATABASE
-            await axiosPublic.post("/users", {
-                email: user.email,
-                name: user.displayName,
-                role: "user",
-            });
-
-            Swal.fire("Success", "Google Login Successful", "success");
-            navigate("/");
+            // NOTE: after redirect, user will come back
+            // real user handling is in onAuthStateChanged
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
