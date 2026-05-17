@@ -68,7 +68,7 @@ const AuthProvider = ({ children }) => {
       auth,
       async (currentUser) => {
 
-        setUser(currentUser);
+        setLoading(true);
 
         if (currentUser?.email) {
 
@@ -79,19 +79,28 @@ const AuthProvider = ({ children }) => {
             });
 
             if (res.data.token) {
+
               localStorage.setItem(
                 "access-token",
                 res.data.token
               );
+
+              // TOKEN save হওয়ার পরে user set হবে
+              setUser(currentUser);
             }
 
           } catch (error) {
+
             console.log("JWT ERROR:", error);
+
+            setUser(null);
           }
 
         } else {
 
           localStorage.removeItem("access-token");
+
+          setUser(null);
         }
 
         setLoading(false);
