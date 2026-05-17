@@ -18,7 +18,7 @@ export const AuthContext = createContext(null);
 const auth = getAuth(app);
 
 const axiosPublic = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://shop-jewellers-server.vercel.app",
 });
 
 const AuthProvider = ({ children }) => {
