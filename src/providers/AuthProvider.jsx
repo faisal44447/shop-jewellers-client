@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+
 import {
   getAuth,
   onAuthStateChanged,
@@ -22,30 +23,37 @@ const axiosPublic = axios.create({
 });
 
 const AuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const googleProvider = new GoogleAuthProvider();
 
+  // CREATE USER
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
+  // LOGIN
   const signIn = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
+  // GOOGLE LOGIN
   const googleSignIn = () => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
   };
 
-  const logOut = () => {
-    setLoading(true);
+  // LOGOUT
+  const logOut = async () => {
+    localStorage.removeItem("access-token");
     return signOut(auth);
   };
 
+  // UPDATE PROFILE
   const updateUserProfile = (name, photo) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
@@ -53,30 +61,45 @@ const AuthProvider = ({ children }) => {
     });
   };
 
+  // OBSERVER
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
 
-      if (currentUser) {
-        try {
-          const res = await axiosPublic.post("/jwt", {
-            email: currentUser.email,
-          });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (currentUser) => {
 
-          if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
+        setUser(currentUser);
+
+        if (currentUser?.email) {
+
+          try {
+
+            const res = await axiosPublic.post("/jwt", {
+              email: currentUser.email,
+            });
+
+            if (res.data.token) {
+              localStorage.setItem(
+                "access-token",
+                res.data.token
+              );
+            }
+
+          } catch (error) {
+            console.log("JWT ERROR:", error);
           }
-        } catch (error) {
-          console.log("JWT ERROR:", error);
-        }
-      } else {
-        localStorage.removeItem("access-token");
-      }
 
-      setLoading(false);
-    });
+        } else {
+
+          localStorage.removeItem("access-token");
+        }
+
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
+
   }, []);
 
   const authInfo = {

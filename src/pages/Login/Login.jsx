@@ -30,38 +30,34 @@ const Login = () => {
     const value = e.target.value;
     setDisabled(!validateCaptcha(value));
   };
+
   const handleLogin = async (event) => {
+
     event.preventDefault();
 
     const form = event.target;
+
     const email = form.email.value;
     const password = form.password.value;
 
     try {
-      const result = await signIn(email, password);
-      const user = result.user;
 
-      const res = await axiosPublic.post("/jwt", {
-        email: user.email,
-      });
+      await signIn(email, password);
 
-      localStorage.setItem("access-token", res.data.token);
+      Swal.fire(
+        "Success",
+        "Login Successful",
+        "success"
+      );
 
-      await axiosPublic.post("/users", {
-        email: user.email,
-        name: user.displayName || "User",
-      });
-
-      Swal.fire("Success", "Login Successful", "success");
       navigate(from, { replace: true });
 
     } catch (error) {
-      console.log("ERROR:", error);
 
       Swal.fire({
         icon: "error",
         title: "Login Failed",
-        text: error.code || error.message,
+        text: error.message,
       });
     }
   };

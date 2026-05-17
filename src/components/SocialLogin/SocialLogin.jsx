@@ -5,35 +5,52 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const SocialLogin = () => {
+
     const { googleSignIn } = useAuth();
+
     const axiosPublic = useAxiosPublic();
+
     const navigate = useNavigate();
 
     const handleGoogleSignIn = async () => {
+
         try {
+
             const result = await googleSignIn();
+
             const user = result.user;
 
-            // শুধু ডাটাবেজে ইউজার ইনফো সেভ করার জন্য রিকোয়েস্ট পাঠান
+            // SAVE USER
             await axiosPublic.post("/users", {
                 email: user.email,
                 name: user.displayName,
                 role: "user",
             });
 
-            Swal.fire("Success", "Google Login Successful", "success");
-            navigate("/"); // সরাসরি রিডাইরেক্ট, টোকেন AuthProvider সেট করে দেবে।
+            Swal.fire(
+                "Success",
+                "Google Login Successful",
+                "success"
+            );
+
+            navigate("/");
+
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+
+            Swal.fire(
+                "Error",
+                err.message,
+                "error"
+            );
         }
     };
 
     return (
+
         <div className="p-6">
 
             <div className="divider">OR</div>
 
-            {/* CLEAN BUTTON */}
             <button
                 onClick={handleGoogleSignIn}
                 className="btn w-full flex items-center gap-2 justify-center bg-white text-black hover:bg-gray-200"

@@ -22,44 +22,45 @@ const SignUp = () => {
     const [loading, setLoading] = useState(false);
 
     const onSubmit = async (data) => {
+
         try {
+
             setLoading(true);
 
             // CREATE USER
-            const result = await createUser(data.email, data.password);
-
-            if (!result?.user) throw new Error("User creation failed");
+            const result = await createUser(
+                data.email,
+                data.password
+            );
 
             // UPDATE PROFILE
             await updateUserProfile(data.name, "");
 
-            // SAVE USER IN DB
+            // SAVE USER TO DB
             await axiosPublic.post("/users", {
                 name: data.name,
                 email: data.email,
-                role: "user", // 🔥 removed hardcoded admin logic
+                role: "user",
             });
 
-            // GET JWT
-            const tokenRes = await axiosPublic.post("/jwt", {
-                email: data.email,
-            });
-
-            if (tokenRes?.data?.token) {
-                localStorage.setItem("access-token", tokenRes.data.token);
-            }
-
-            Swal.fire("Success", "Account created successfully", "success");
+            Swal.fire(
+                "Success",
+                "Account created successfully",
+                "success"
+            );
 
             navigate("/");
 
         } catch (err) {
+
             Swal.fire(
                 "Error",
-                err?.message || "Something went wrong",
+                err.message,
                 "error"
             );
+
         } finally {
+
             setLoading(false);
         }
     };
