@@ -8,34 +8,52 @@ const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
+
     const navigate = useNavigate();
+
     const { logOut } = useAuth();
 
     useEffect(() => {
 
         const requestInterceptor =
             axiosSecure.interceptors.request.use(
+
                 (config) => {
-                    const token = localStorage.getItem("access-token");
+
+                    const token =
+                        localStorage.getItem("access-token");
 
                     if (token) {
-                        config.headers.authorization = `Bearer ${token}`;
+                        config.headers.authorization =
+                            `Bearer ${token}`;
                     }
 
                     return config;
                 },
-                (error) => Promise.reject(error)
+
+                (error) => {
+                    return Promise.reject(error);
+                }
             );
 
         const responseInterceptor =
             axiosSecure.interceptors.response.use(
+
                 (response) => response,
 
                 async (error) => {
-                    const status = error.response?.status;
+
+                    const status =
+                        error.response?.status;
 
                     if (status === 401 || status === 403) {
+
+                        localStorage.removeItem(
+                            "access-token"
+                        );
+
                         await logOut();
+
                         navigate("/login");
                     }
 
@@ -44,8 +62,14 @@ const useAxiosSecure = () => {
             );
 
         return () => {
-            axiosSecure.interceptors.request.eject(requestInterceptor);
-            axiosSecure.interceptors.response.eject(responseInterceptor);
+
+            axiosSecure.interceptors.request.eject(
+                requestInterceptor
+            );
+
+            axiosSecure.interceptors.response.eject(
+                responseInterceptor
+            );
         };
 
     }, [logOut, navigate]);
