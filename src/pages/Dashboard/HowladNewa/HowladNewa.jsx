@@ -131,8 +131,8 @@ const HowladNewa = () => {
                         onChange={handleChange}
                         className="select select-bordered w-full text-black"
                     >
-                        <option value="loan" className="text-black">➕ Howlad Nise</option>
-                        <option value="given" className="text-black">➖ Howlad Dise</option>
+                        <option value="loan" className="text-black">➕ ধার নেওয়া হয়েছে</option>
+                        <option value="given" className="text-black">➖ ধার পরিশোধ করা হয়েছে</option>
                     </select>
 
                     <button

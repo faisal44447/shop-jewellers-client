@@ -1,15 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import Main from "../Layout/Main";
 import Dashboard from "../Layout/Dashboard";
-
 import Home from "../pages/Home/Home/Home";
 import Login from "../pages/Login/Login";
 import SignUp from "../pages/SignUp/SignUp";
-
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 
-// USER
+// USER COMPONENTS
 import UserHome from "../pages/Dashboard/UserHome/UserHome";
 import Products from "../pages/Dashboard/Products/Products";
 import Cart from "../pages/Dashboard/Cart/Cart";
@@ -18,7 +16,7 @@ import PaboTakaList from "../pages/Dashboard/PaboTaka/PaboTakaList";
 import ProductCard from "../pages/Dashboard/ProductCard/ProductCard";
 import ProductCardPage from "../pages/Dashboard/ProductCardPage/ProductCardPage";
 
-// ADMIN
+// ADMIN COMPONENTS
 import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
 import AddProduct from "../pages/Dashboard/AddProduct/AddProduct";
 import ManageProducts from "../pages/Dashboard/ManageProducts/ManageProducts";
@@ -38,7 +36,6 @@ import SoldProducts from "../pages/Dashboard/SoldProducts/SoldProducts";
 import AddCash from "../pages/Dashboard/AddCash/AddCash";
 import CashList from "../pages/Dashboard/CashList/CashList";
 
-
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -49,7 +46,6 @@ export const router = createBrowserRouter([
       { path: "signup", element: <SignUp /> },
     ],
   },
-
   {
     path: "/dashboard",
     element: (
@@ -58,43 +54,37 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      // USER
+      // ================= USER ROUTES =================
+      // এই পেজগুলো সাধারণ ইউজার এবং অ্যাডমিন সবাই দেখতে পারবে
       { index: true, element: <UserHome /> },
       { path: "userHome", element: <UserHome /> },
-      { path: "sold-products", element: <SoldProducts /> },
-
       { path: "products", element: <Products /> },
       { path: "product-card", element: <ProductCard /> },
       { path: "product-card-page", element: <ProductCardPage /> },
+      { path: "sold-products", element: <SoldProducts /> },
       { path: "cash-list", element: <CashList /> },
-
-      // ✅ SELL PAGE (IMPORTANT FIX)
-
       { path: "cart", element: <Cart /> },
       { path: "howlad-list", element: <HowladList /> },
       { path: "paboTaka-list", element: <PaboTakaList /> },
-
-      // ADMIN
-      { path: "adminHome", element: <AdminHome /> },
-      { path: "add-product", element: <AddProduct /> },
-      { path: "manage-product", element: <ManageProducts /> },
-      { path: "sales", element: <Sales /> },
-      { path: "add-cash", element: <AddCash /> },
-
-      { path: "expenses", element: <Expenses /> },
       { path: "expense-list", element: <ExpenseList /> },
-
-      { path: "profit-list", element: <ProfitList /> },
-      { path: "add-profit", element: <AddProfit /> },
-
       { path: "staff-list", element: <StaffList /> },
-      { path: "add-staff", element: <AddStaff /> },
+      { path: "profit-list", element: <ProfitList /> },
 
-      { path: "howlad-newa", element: <HowladNewa /> },
-      { path: "paboTaka", element: <PaboTaka /> },
-      { path: "all-users", element: <AllUsers /> },
+      // ================= ADMIN ONLY ROUTES =================
+      // এই পেজগুলোতে অ্যাডমিন ছাড়া অন্য কেউ ঢুকলে AdminRoute তাকে আটকে দেবে
+      { path: "adminHome", element: <AdminRoute><AdminHome /></AdminRoute> },
+      { path: "all-users", element: <AdminRoute><AllUsers /></AdminRoute> },
+      { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },
+      { path: "add-product", element: <AdminRoute><AddProduct /></AdminRoute> },
+      { path: "manage-product", element: <AdminRoute><ManageProducts /></AdminRoute> },
+      { path: "sales", element: <AdminRoute><Sales /></AdminRoute> },
+      { path: "add-cash", element: <AdminRoute><AddCash /></AdminRoute> },
+      { path: "expenses", element: <AdminRoute><Expenses /></AdminRoute> },
+      { path: "add-profit", element: <AdminRoute><AddProfit /></AdminRoute> },
+      { path: "howlad-newa", element: <AdminRoute><HowladNewa /></AdminRoute> },
+      { path: "paboTaka", element: <AdminRoute><PaboTaka /></AdminRoute> },
 
-      // EDIT
+      // EDIT ROUTES (ADMIN ONLY)
       { path: "edit/:id", element: <AdminRoute><EditProduct /></AdminRoute> },
       { path: "edit-staff/:id", element: <AdminRoute><EditStaff /></AdminRoute> },
     ],
@@ -102,4 +92,3 @@ export const router = createBrowserRouter([
 ]);
 
 export default router;
-

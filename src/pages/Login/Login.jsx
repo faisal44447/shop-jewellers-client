@@ -14,7 +14,7 @@ const Login = () => {
   const { signIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname || "/dashboard/userHome";
 
   useEffect(() => {
     loadCaptchaEnginge(6);
@@ -84,10 +84,12 @@ const Login = () => {
         <form onSubmit={handleLogin} className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
           <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">Welcome Back</h2>
 
+          {/* Email Input */}
           <div className="form-control mt-4">
             <input name="email" type="email" placeholder="Email" className="input input-bordered bg-black/40 border-yellow-500 focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400" required />
           </div>
 
+          {/* Password Input */}
           <div className="form-control relative mt-3">
             <input name="password" type={showPass ? "text" : "password"} placeholder="Password" className="input input-bordered w-full bg-black/40 border-yellow-500 text-white pr-10" required />
             <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3 text-yellow-400 focus:outline-none">
@@ -95,18 +97,33 @@ const Login = () => {
             </button>
           </div>
 
+          {/* Captcha Section */}
           <div className="form-control mt-3">
             <div className="bg-white rounded-lg p-1 overflow-hidden flex justify-center items-center">
               <LoadCanvasTemplate />
             </div>
             <div className="relative flex gap-2 mt-2">
-              <input ref={captchaRef} type="text" placeholder="Type captcha above" className="input input-bordered flex-1 bg-black/40 border-yellow-500 text-white" disabled={isCaptchaVerified} required />
+              <input
+                ref={captchaRef}
+                type="text"
+                placeholder="Type captcha above"
+                className="input input-bordered flex-1 bg-black/40 border-yellow-500 text-white"
+                disabled={isCaptchaVerified}
+                required
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // ফর্ম সাবমিট হওয়া রোধ করবে
+                    handleVerifyCaptcha(); // ক্যাপচা ভেরিফাই ফাংশন রান করবে
+                  }
+                }}
+              />
               <button type="button" onClick={handleVerifyCaptcha} disabled={isCaptchaVerified} className={`btn font-bold px-4 transition-all ${isCaptchaVerified ? "bg-green-600 border-none text-white disabled:bg-green-600 disabled:text-white" : "bg-yellow-500 hover:bg-yellow-600 text-black border-none"}`}>
                 {isCaptchaVerified ? <CheckCircle size={18} /> : "Verify"}
               </button>
             </div>
           </div>
 
+          {/* Login Button */}
           <button type="submit" disabled={!isCaptchaVerified || submitLoading} className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 border-none text-black font-bold shadow-lg hover:scale-105 transition-all disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-500 disabled:scale-100">
             {submitLoading ? "Logging in..." : "Login"}
           </button>
