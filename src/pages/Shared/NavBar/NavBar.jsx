@@ -83,8 +83,8 @@ const NavBar = () => {
 
                         <span
                             className={`badge ml-1 ${isMobile
-                                ? "badge-warning text-black"
-                                : "badge-ghost text-orange-500"
+                                    ? "badge-warning text-black"
+                                    : "badge-ghost text-orange-500"
                                 }`}
                         >
                             {cart.length}
