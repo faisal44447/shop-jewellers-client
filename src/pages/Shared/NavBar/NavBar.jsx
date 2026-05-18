@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
 import useCart from "../../../hooks/useCart";
@@ -14,6 +14,7 @@ import {
     FaBoxOpen,
     FaHome,
     FaTachometerAlt,
+    FaGem,
 } from "react-icons/fa";
 
 import ljiCON from "../../../assets/laivinIcon.png";
@@ -32,138 +33,122 @@ const NavBar = () => {
         logOut().catch((err) => console.log(err));
     };
 
-    // DESKTOP STYLE (কম্প্যাক্ট এবং প্রিমিয়াম লুকের জন্য প্যাডিং ও ফন্ট সাইজ টিউন করা হয়েছে)
-    const linkStyle =
-        "flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs xl:text-sm text-gray-200 hover:text-orange-400 hover:bg-white/5 transition-all duration-200 font-medium whitespace-nowrap";
+    // DESKTOP NAV STYLE
+    const navLink =
+        "relative flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300";
 
-    // MOBILE STYLE
-    const mobileLinkStyle =
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-gray-800 hover:bg-orange-50 hover:text-orange-600 transition font-semibold w-full";
+    const activeClass =
+        "bg-orange-500 text-black shadow-lg";
+
+    const normalClass =
+        "text-gray-200 hover:bg-white/10 hover:text-orange-400";
+
+    // MOBILE NAV STYLE
+    const mobileNav =
+        "flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-all duration-200 font-semibold";
 
     // NAV ITEMS
     const renderNavOptions = (isMobile = false) => {
-        const currentStyle = isMobile
-            ? mobileLinkStyle
-            : linkStyle;
+        const mobile = isMobile;
+
+        const navItem = (to, icon, label, extra = null) => (
+            <li>
+                <NavLink
+                    to={to}
+                    className={({ isActive }) =>
+                        mobile
+                            ? mobileNav
+                            : `${navLink} ${isActive
+                                ? activeClass
+                                : normalClass
+                            }`
+                    }
+                >
+                    {icon}
+                    {label}
+                    {extra}
+                </NavLink>
+            </li>
+        );
 
         return (
             <>
-                {/* COMMON MENU */}
-                <li>
-                    <Link to="/" className={currentStyle}>
-                        <FaHome className="text-base" />
-                        Home
-                    </Link>
-                </li>
+                {navItem(
+                    "/",
+                    <FaHome className="text-base" />,
+                    "Home"
+                )}
 
-                <li>
-                    <Link to="/dashboard" className={currentStyle}>
-                        <FaTachometerAlt className="text-base" />
-                        Dashboard
-                    </Link>
-                </li>
+                {navItem(
+                    "/dashboard",
+                    <FaTachometerAlt className="text-base" />,
+                    "Dashboard"
+                )}
 
-                <li>
-                    <Link
-                        to="/dashboard/product-card-page"
-                        className={currentStyle}
-                    >
-                        <FaBoxOpen className="text-base" />
-                        Products
-                    </Link>
-                </li>
+                {navItem(
+                    "/dashboard/product-card-page",
+                    <FaBoxOpen className="text-base" />,
+                    "Products"
+                )}
 
-                <li>
-                    <Link
-                        to="/dashboard/cart"
-                        className={currentStyle}
-                    >
-                        <FaShoppingCart className="text-base" />
-                        Cart
-
-                        <span
-                            className={`badge badge-sm ml-1 ${isMobile
+                {navItem(
+                    "/dashboard/cart",
+                    <FaShoppingCart className="text-base" />,
+                    "Cart",
+                    <span
+                        className={`badge badge-sm ${mobile
                                 ? "badge-warning text-black"
-                                : "bg-orange-500 text-white border-none px-1.5 h-5 min-h-0"
-                                }`}
-                        >
-                            {cart.length}
-                        </span>
-                    </Link>
-                </li>
+                                : "bg-orange-500 border-none text-white"
+                            }`}
+                    >
+                        {cart.length}
+                    </span>
+                )}
 
-                {/* ADMIN ONLY */}
+                {/* ADMIN MENU */}
                 {isAdmin && (
                     <>
-                        <li>
-                            <Link
-                                to="/dashboard/add-product"
-                                className={currentStyle}
-                            >
-                                <FaBoxOpen className="text-base" />
-                                Product
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/add-product",
+                            <FaBoxOpen className="text-base" />,
+                            "Product"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/add-staff"
-                                className={currentStyle}
-                            >
-                                <FaUserPlus className="text-base" />
-                                Staff
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/add-staff",
+                            <FaUserPlus className="text-base" />,
+                            "Staff"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/expenses"
-                                className={currentStyle}
-                            >
-                                <FaMoneyBill className="text-base" />
-                                Expenses
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/expenses",
+                            <FaMoneyBill className="text-base" />,
+                            "Expenses"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/add-profit"
-                                className={currentStyle}
-                            >
-                                <FaMoneyBill className="text-base" />
-                                Profit
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/add-profit",
+                            <FaMoneyBill className="text-base" />,
+                            "Profit"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/add-cash"
-                                className={currentStyle}
-                            >
-                                <FaPlusCircle className="text-base" />
-                                Cash
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/add-cash",
+                            <FaPlusCircle className="text-base" />,
+                            "Cash"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/paboTaka"
-                                className={currentStyle}
-                            >
-                                <FaHandHoldingUsd className="text-base" />
-                                PaboTaka
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/paboTaka",
+                            <FaHandHoldingUsd className="text-base" />,
+                            "PaboTaka"
+                        )}
 
-                        <li>
-                            <Link
-                                to="/dashboard/howlad-newa"
-                                className={currentStyle}
-                            >
-                                <FaFileInvoiceDollar className="text-base" />
-                                Howlad
-                            </Link>
-                        </li>
+                        {navItem(
+                            "/dashboard/howlad-newa",
+                            <FaFileInvoiceDollar className="text-base" />,
+                            "Howlad"
+                        )}
                     </>
                 )}
             </>
@@ -171,70 +156,93 @@ const NavBar = () => {
     };
 
     return (
-        <div className="navbar fixed top-0 left-0 w-full z-50 bg-slate-900/90 backdrop-blur-md text-white shadow-lg px-4 xl:px-4 h-16 border-b border-white/10">
+        <div className="navbar fixed top-0 left-0 w-full z-50 px-4 lg:px-8 h-20 bg-gradient-to-r from-slate-950 via-slate-900 to-black border-b border-orange-500/20 shadow-2xl backdrop-blur-xl">
 
             {/* LEFT */}
-            <div className="navbar-start w-auto mx-auto px-2">
+            <div className="navbar-start">
 
-                {/* MOBILE DROPDOWN */}
-                <div className="dropdown">
+                {/* MOBILE MENU */}
+                <div className="dropdown lg:hidden">
                     <label
                         tabIndex={0}
-                        className="btn btn-ghost lg:hidden text-orange-500 text-xl px-2"
+                        className="btn btn-ghost text-orange-400 text-2xl hover:bg-white/10 border-none"
                     >
                         ☰
                     </label>
 
                     <ul
                         tabIndex={0}
-                        className="menu menu-sm dropdown-content mt-3 z-[100] p-3 shadow-2xl bg-white rounded-2xl w-60 border border-gray-100 gap-2"
+                        className="menu menu-sm dropdown-content mt-4 z-[100] p-4 shadow-2xl bg-white rounded-2xl w-72 border border-gray-100 gap-2"
                     >
                         {renderNavOptions(true)}
                     </ul>
                 </div>
 
                 {/* LOGO */}
-                <Link to="/" className="flex items-center gap-2 mr-1">
-                    <img
-                        src={ljiCON}
-                        className="w-11 h-11 rounded-full border border-orange-500 object-cover shadow-sm"
-                        alt="Logo"
-                    />
+                <Link
+                    to="/"
+                    className="flex items-center gap-3 group"
+                >
+                    <div className="relative">
+                        <img
+                            src={ljiCON}
+                            className="w-12 h-12 rounded-full border-2 border-orange-500 object-cover shadow-lg group-hover:scale-105 transition duration-300"
+                            alt="Logo"
+                        />
+
+                        <div className="absolute -bottom-1 -right-1 bg-orange-500 p-1 rounded-full">
+                            <FaGem className="text-black text-[10px]" />
+                        </div>
+                    </div>
+
+                    {/* BRAND TEXT */}
+                    <div className="hidden sm:flex flex-col leading-none">
+                        <span className="text-white font-bold text-lg tracking-wide">
+                            Premium Store
+                        </span>
+
+                        <span className="text-orange-400 text-xs tracking-[4px] uppercase">
+                            Luxury Collection
+                        </span>
+                    </div>
                 </Link>
             </div>
 
-            {/* CENTER (সব মেনু একসাথে জায়গা দেওয়ার জন্য max-w কাস্টমাইজ করা হয়েছে) */}
-            <div className="navbar-center hidden lg:flex flex-1 justify-center max-w-[calc(100%-200px)]">
-                <ul className="menu menu-horizontal px-1 gap-3 w-full justify-center flex-nowrap overflow-x-auto scrollbar-none">
+            {/* CENTER */}
+            <div className="navbar-center hidden lg:flex flex-1">
+                <ul className="menu menu-horizontal gap-2 px-1 mx-auto">
                     {renderNavOptions(false)}
                 </ul>
             </div>
 
             {/* RIGHT */}
-            <div className="navbar-end w-auto flex items-center gap-2 ml-auto">
+            <div className="navbar-end gap-3">
 
                 {user ? (
                     <>
                         {/* USER IMAGE */}
-                        <div className="relative group cursor-pointer ml-1">
-                            <img
-                                src={
-                                    user?.photoURL ||
-                                    "https://i.ibb.co/mJR9mkv/default-user.png"
-                                }
-                                className="w-8 h-8 rounded-full border-2 border-orange-500 object-cover shadow-sm"
-                                alt="user"
-                            />
+                        <div className="relative group cursor-pointer">
+                            <div className="p-[2px] rounded-full bg-gradient-to-r from-orange-500 to-yellow-400">
+                                <img
+                                    src={
+                                        user?.photoURL ||
+                                        "https://i.ibb.co/mJR9mkv/default-user.png"
+                                    }
+                                    className="w-10 h-10 rounded-full object-cover bg-black"
+                                    alt="user"
+                                />
+                            </div>
 
-                            <span className="absolute right-0 top-11 bg-slate-800 text-orange-400 text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition duration-200 whitespace-nowrap z-50 border border-white/10">
+                            {/* TOOLTIP */}
+                            <div className="absolute right-0 top-14 bg-slate-900 text-orange-400 text-xs px-3 py-2 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap border border-orange-500/20">
                                 {user?.displayName || "User"}
-                            </span>
+                            </div>
                         </div>
 
                         {/* LOGOUT */}
                         <button
                             onClick={handleLogOut}
-                            className="px-2.5 py-1.5 text-xs font-semibold text-orange-400 border border-orange-500/50 rounded-md hover:bg-orange-500 hover:text-black transition-all duration-200"
+                            className="px-4 py-2 rounded-xl bg-transparent border border-orange-500 text-orange-400 font-semibold hover:bg-orange-500 hover:text-black transition-all duration-300 shadow-lg hover:scale-105"
                         >
                             Logout
                         </button>
@@ -242,7 +250,7 @@ const NavBar = () => {
                 ) : (
                     <Link
                         to="/login"
-                        className="px-2.5 py-1.5 text-xs font-semibold bg-orange-500 text-black rounded-md hover:bg-orange-600 transition-all duration-200 shadow-sm"
+                        className="px-5 py-2 rounded-xl bg-orange-500 text-black font-bold hover:bg-orange-400 transition-all duration-300 shadow-lg hover:scale-105"
                     >
                         Login
                     </Link>
