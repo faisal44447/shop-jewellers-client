@@ -1,32 +1,35 @@
 import { FaGoogle } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const SocialLogin = () => {
     const { googleSignIn } = useAuth();
-    const navigate = useNavigate();
 
     const handleGoogleSignIn = async () => {
-        // 📱 চেক করা হচ্ছে ইউজার ফেসবুক, ইনস্টাগ্রাম বা কোনো অ্যাপের ভেতরের (In-App) ব্রাউজারে আছে কিনা
-        const isInsideApp = /FBAN|FBAV|Instagram|Twitter|TGAndroid|Line/i.test(navigator.userAgent);
+        const ua = navigator.userAgent;
 
-        if (isInsideApp) {
+        // 📱 ১. অ্যাপের ভেতরের ব্রাউজার চেক (Facebook, Messenger, Instagram, WhatsApp, Twitter, Line ইত্যাদি)
+        const isInApp = /FBAN|FBAV|Instagram|Twitter|TGAndroid|Line|WhatsApp|GSA/i.test(ua);
+
+        // 🌐 ২. ফোনের নিজস্ব দুর্বল ব্রাউজার চেক (Mi Browser, Oppo, Vivo, Samsung Internet ইত্যাদি)
+        // তবে Samsung বা Mi ব্রাউজারে অনেক সময় ক্রোম ও সাফারির নামও থাকে, তাই নিখুঁতভাবে চেক করার লজিক:
+        const isSafeBrowser = /Chrome|Safari|Firefox|Edge|CriOS|FxiOS/i.test(ua) && !/SamsungBrowser|MiuiBrowser|HeyTapBrowser|VivoBrowser/i.test(ua);
+
+        // ইউজার যদি ইন-অ্যাপ ব্রাউজারে থাকে অথবা কোনো নিরাপদ ব্রাউজারে না থাকে
+        if (isInApp || !isSafeBrowser) {
             Swal.fire({
-                title: "ব্রাউজার পরিবর্তন করুন",
-                text: "গুগল সিকিউরিটির কারণে দয়া করে এই পেজটি Chrome, Safari বা ফোনের আসল ব্রাউজারে ওপেন করুন।",
+                title: "সুরক্ষিত ব্রাউজার ব্যবহার করুন",
+                text: "গুগলের সিকিউরিটি পলিসির কারণে এই ব্রাউজার থেকে লগইন ব্লক করা হয়েছে। দয়া করে এই পেজটি সরাসরি Google Chrome বা Safari ব্রাউজারে ওপেন করে চেষ্টা করুন।",
                 icon: "warning",
-                confirmButtonText: "ঠিক আছে"
+                confirmButtonText: "ঠিক আছে",
+                confirmButtonColor: "#e6b800"
             });
-            return; // 🛑 অ্যাপের ভেতর থাকলে রিডাইরেক্ট রান হবে না, ফলে গুগলের সেই 403 এররও আসবে না।
+            return; // 🛑 রিডাইরেক্ট রান হবে না, ফলে গুগলের সেই 403 এরর পেজও আসবে না।
         }
 
         try {
-            // 🔥 আসল ব্রাউজারে থাকলে রিডাইরেক্ট রান হবে (কোনো রেজাল্ট ভ্যারিয়েবল ছাড়া)
+            // 🔥 ইউজার আসল ক্রোম বা সাফারিতে থাকলে কোনো এরর ছাড়া রিডাইরেক্ট সফলভাবে কাজ করবে
             await googleSignIn();
-
-            // নোট: রিডাইরেক্ট হওয়ার কারণে পেজ রিলোড হবে। 
-            // ইউজার ব্যাক করার পর তার ডাটা AuthProvider-এর onAuthStateChanged হ্যান্ডেল করবে।
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -37,6 +40,7 @@ const SocialLogin = () => {
             <div className="divider">OR</div>
 
             <button
+                type="button"
                 onClick={handleGoogleSignIn}
                 className="btn w-full flex items-center gap-2 justify-center bg-white text-black hover:bg-gray-200"
             >

@@ -15,15 +15,13 @@ import {
 import { app } from "../firebase/firebase.config";
 
 export const AuthContext = createContext(null);
-
 const auth = getAuth(app);
 
-// axios instance
+// Axios Public Instance
 const axiosPublic = axios.create({
   baseURL: "https://shop-jewellers-server.vercel.app",
 });
 
-// 🔥 গুগলের একটি মাত্র প্রোভাইডার ইনস্ট্যান্স
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
@@ -36,13 +34,13 @@ const AuthProvider = ({ children }) => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  // LOGIN
+  // LOGINWITH EMAIL & PASSWORD
   const signIn = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔥 GOOGLE LOGIN (REDIRECT MODE)
+  // 🔥 GOOGLE SIGN IN (REDIRECT MODE)
   const googleSignIn = () => {
     setLoading(true);
     return signInWithRedirect(auth, googleProvider);
@@ -62,13 +60,22 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // AUTH OBSERVER (রিডাইরেক্ট হয়ে ফিরে আসার পর ইউজার এখানে রিসিভ হবে)
+  // AUTH OBSERVER (রিডাইরেক্ট হয়ে ফিরে আসার পর ইউজার এখানে ডাটা পাবে)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
 
       if (currentUser?.email) {
         try {
+          // 🟢 গুগল থেকে আসা ইউজার প্রথমবার ঢুকলে ডাটাবেজে সেভ হবে
+          // (ব্যাকএন্ডে /users এ অলরেডি 'user already exists' চেক করা আছে, তাই সমস্যা হবে না)
+          await axiosPublic.post("/users", {
+            name: currentUser.displayName || "Google User",
+            email: currentUser.email,
+            role: "user",
+          });
+
+          // টোকেন নেওয়া হচ্ছে
           const res = await axiosPublic.post("/jwt", {
             email: currentUser.email,
           });
@@ -78,7 +85,7 @@ const AuthProvider = ({ children }) => {
             setUser(currentUser);
           }
         } catch (error) {
-          console.log("JWT ERROR:", error);
+          console.log("AUTH OBSERVER ERROR:", error);
           setUser(null);
         }
       } else {
