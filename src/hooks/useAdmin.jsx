@@ -18,7 +18,7 @@ const useAdmin = () => {
 
     queryFn: async () => {
       const res = await axiosSecure.get(`/users/admin/${user.email}`);
-      return res.data.admin;
+      return res.data?.admin || false; // res.data না থাকলেও ক্র্যাশ করবে না, false রিটার্ন করবে
     },
   });
 

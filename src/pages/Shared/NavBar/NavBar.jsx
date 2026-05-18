@@ -108,7 +108,7 @@ const NavBar = () => {
                 {user ? (
                     <>
                         <img
-                            src={user?.photoURL || "https://i.ibb.co/2kR5zqL/user.png"}
+                            src={user?.photoURL || "https://i.ibb.co/vHZ369b/placeholder.png"} // সচল ইমেজ প্লেসহোল্ডার
                             className="w-9 h-9 rounded-full border-2 border-orange-500 object-cover"
                             alt="User"
                         />

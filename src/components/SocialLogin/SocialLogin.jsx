@@ -17,10 +17,11 @@ const SocialLogin = () => {
             const userInfo = {
                 email: result.user?.email,
                 name: result.user?.displayName,
+                image: result.user?.photoURL || "https://i.ibb.co/vHZ369b/placeholder.png",
                 role: "user",
             };
 
-            // ডাটাবেজে ইউজার সেভ হবে (টোকেন AuthProvider থেকে অটো সেট হবে)
+            // ডাটাবেজে ইউজার চেক/সেভ হবে
             await axiosPublic.post("/users", userInfo);
 
             Swal.fire({
@@ -31,10 +32,11 @@ const SocialLogin = () => {
             });
             navigate(from, { replace: true });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             Swal.fire({
                 icon: "error",
                 title: "Google Login Failed",
+                text: error.message,
             });
         }
     };

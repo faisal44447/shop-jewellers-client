@@ -18,23 +18,28 @@ const SignUp = () => {
     const onSubmit = async (data) => {
         try {
             setLocalLoading(true);
+            const defaultImg = "https://i.ibb.co/vHZ369b/placeholder.png";
+
             // ১. ফায়ারবেসে ইউজার তৈরি
             await createUser(data.email, data.password);
-            // ২. প্রোফাইল আপডেট
-            await updateUserProfile(data.name, "");
+
+            // ২. প্রোফাইল আপডেট (ডিফল্ট ইমেজ সহ)
+            await updateUserProfile(data.name, defaultImg);
+
             // ৩. ডাটাবেজে ইউজার রোলসহ সেভ করা
             const dbRes = await axiosPublic.post("/users", {
                 name: data.name,
                 email: data.email,
+                image: defaultImg, // ইমেজ ফিল্ডটি এখানে যুক্ত করা হলো
                 role: "user",
             });
 
-            if (dbRes.data.insertedId || dbRes.data.message === "User already exists") {
+            if (dbRes.data.insertedId || dbRes.data.success) {
                 Swal.fire({
                     icon: "success",
                     title: "Account Created Successfully",
                     showConfirmButton: false,
-                    timer: 1500
+                    timer: 1500,
                 });
                 navigate("/");
             }

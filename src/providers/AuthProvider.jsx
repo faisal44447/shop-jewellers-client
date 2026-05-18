@@ -55,9 +55,9 @@ const AuthProvider = ({ children }) => {
   };
 
   // OBSERVER (JWT Token handler)
+  // OBSERVER (JWT Token handler)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser?.email) {
         try {
           const userInfo = { email: currentUser.email };
@@ -71,8 +71,11 @@ const AuthProvider = ({ children }) => {
       } else {
         localStorage.removeItem("access-token");
       }
+      // ইউজার স্টেট সেট এবং লোডিং ফলস একদম শেষে একসাথে হবে
+      setUser(currentUser);
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, [axiosPublic]);
 
