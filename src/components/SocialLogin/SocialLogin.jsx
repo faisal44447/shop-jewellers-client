@@ -9,7 +9,7 @@ const SocialLogin = () => {
     const axiosPublic = useAxiosPublic();
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
+    const from = location.state?.from?.pathname || "/dashboard/userHome"; // এখানে রুটটি আপডেট করে /dashboard/userHome দেওয়া হলো যাতে গুগল লগইনেও সরাসরি ইউজার হোম-এ যায়।
 
     const handleGoogleSignIn = async () => {
         try {
@@ -44,6 +44,7 @@ const SocialLogin = () => {
     return (
         <div className="mt-4">
             <button
+                type="button"
                 onClick={handleGoogleSignIn}
                 className="btn btn-outline border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black w-full"
             >

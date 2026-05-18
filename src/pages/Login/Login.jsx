@@ -69,7 +69,19 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (error) {
       console.error(error);
-      Swal.fire({ icon: "error", title: "Login Failed", text: error.message });
+
+      // 🎯 Firebase Invalid Credential Error Handling
+      let errorMessage = "লগইন ব্যর্থ হয়েছে। দয়া করে আবার চেষ্টা করুন।";
+      if (error.code === "auth/invalid-credential" || error.message.includes("invalid-credential")) {
+        errorMessage = "ভুল ইমেইল অথবা পাসওয়ার্ড দিয়েছেন! দয়া করে সঠিক তথ্য দিন।";
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "লগইন ফেইল!",
+        text: errorMessage
+      });
+
       loadCaptchaEnginge(6);
       setIsCaptchaVerified(false);
       if (captchaRef.current) captchaRef.current.value = "";
@@ -112,8 +124,8 @@ const Login = () => {
                 required
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault(); // ফর্ম সাবমিট হওয়া রোধ করবে
-                    handleVerifyCaptcha(); // ক্যাপচা ভেরিফাই ফাংশন রান করবে
+                    e.preventDefault();
+                    handleVerifyCaptcha();
                   }
                 }}
               />
