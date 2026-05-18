@@ -59,7 +59,7 @@ const NavBar = () => {
     );
 
     return (
-        <div className="navbar fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-2 md:px-6">
+        <div className="navbar fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-2 md:px-6 mt-10">
 
             {/* ================= NAVBAR START (LOGO & MOBILE MENU) ================= */}
             <div className="navbar-start">
