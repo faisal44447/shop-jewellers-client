@@ -25,7 +25,7 @@ const Dashboard = () => {
     const [isAdmin, isAdminLoading] = useAdmin();
     const scrollContainerRef = useRef(null);
 
-    // মাউস দিয়ে ক্লিক করে টেনে (Drag) স্ক্রোল করার জন্য স্টেট
+    // মাউস দিয়ে ক্লিক করে টেনে (Drag) স্ক্রোল করার জন্য স্টেট
     const [isDown, setIsDown] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -33,7 +33,7 @@ const Dashboard = () => {
     // ১. মাউসের চাকা ঘুরালে ডানে-বামে স্ক্রোল করার লজিক
     const handleWheel = (e) => {
         if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollLeft += e.deltaY * 1.5; // ১.৫ গুণ গতি বাড়ানো হয়েছে
+            scrollContainerRef.current.scrollLeft += e.deltaY * 1.5; // ১.৫ গুণ গতি বাড়ানো হয়েছে
         }
     };
 
@@ -44,17 +44,23 @@ const Dashboard = () => {
         setScrollLeft(scrollContainerRef.current.scrollLeft);
     };
 
-    // মাউস ছেড়ে দিলে বা কন্টেইনারের বাইরে চলে গেলে
+    // মাউস ছেড়ে দিলে বা কন্টেইনারের বাইরে চলে গেলে
     const handleMouseLeaveOrUp = () => {
         setIsDown(false);
     };
 
-    // মাউস ড্র্যাগ করার সময় স্ক্রোল মুভমেন্ট
+    // মাউস ড্র্যাগ করার সময় স্ক্রোল মুভমেন্ট
     const handleMouseMove = (e) => {
         if (!isDown) return;
-        e.preventDefault();
+
         const x = e.pageX - scrollContainerRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // স্ক্রোলের স্পিড দ্বিগুণ করা হয়েছে
+        const walk = (x - startX) * 2; // স্ক্রোলের স্পিড দ্বিগুণ করা হয়েছে
+
+        // 🎯 ফিক্স: ক্লিক করার সময় হাত সামান্য নড়লে যেন লিংক কাজ করে (Threshold সেট করা হলো)
+        if (Math.abs(x - startX) > 5) {
+            e.preventDefault(); // শুধুমাত্র বেশি দূর ড্র্যাগ করলেই ডিফল্ট ক্লিক আটকাবে
+        }
+
         scrollContainerRef.current.scrollLeft = scrollLeft - walk;
     };
 
@@ -103,7 +109,6 @@ const Dashboard = () => {
                             }
                         `}</style>
 
-                        {/* 'breadcrumbs' ক্লাস সরিয়ে এখানে উইডথ ফিক্সড করা হয়েছে */}
                         <div className="flex items-center justify-start gap-1 sm:gap-2 md:gap-4 min-w-max mx-auto">
 
                             {/* PROFILE */}
