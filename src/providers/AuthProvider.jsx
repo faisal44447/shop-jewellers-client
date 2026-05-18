@@ -23,7 +23,7 @@ const axiosPublic = axios.create({
   baseURL: "https://shop-jewellers-server.vercel.app",
 });
 
-// 🔥 ONLY ONE GOOGLE PROVIDER
+// 🔥 গুগলের একটি মাত্র প্রোভাইডার ইনস্ট্যান্স
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
@@ -42,7 +42,7 @@ const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔥 GOOGLE LOGIN (REDIRECT FIXED)
+  // 🔥 GOOGLE LOGIN (REDIRECT MODE)
   const googleSignIn = () => {
     setLoading(true);
     return signInWithRedirect(auth, googleProvider);
@@ -62,7 +62,7 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // AUTH OBSERVER (REAL USER COMES HERE AFTER REDIRECT)
+  // AUTH OBSERVER (রিডাইরেক্ট হয়ে ফিরে আসার পর ইউজার এখানে রিসিভ হবে)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
