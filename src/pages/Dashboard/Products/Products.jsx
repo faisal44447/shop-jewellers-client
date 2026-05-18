@@ -1,18 +1,13 @@
 import { FaTrashAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
-
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Products = () => {
     const axiosSecure = useAxiosSecure();
+    const queryClient = useQueryClient();
 
-    // ================= FETCH PRODUCTS =================
-    const {
-        data: products = [],
-        refetch,
-        isLoading,
-    } = useQuery({
+    const { data: products = [], isLoading } = useQuery({
         queryKey: ["products"],
         queryFn: async () => {
             const res = await axiosSecure.get("/products");
@@ -20,7 +15,6 @@ const Products = () => {
         },
     });
 
-    // ================= DELETE =================
     const handleDelete = async (product) => {
         const confirm = await Swal.fire({
             title: "Are you sure?",
@@ -35,10 +29,7 @@ const Products = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            const res = await axiosSecure.delete(
-                `/products/${product._id}`
-            );
-
+            const res = await axiosSecure.delete(`/products/${product._id}`);
             if (res.data?.deletedCount || res.data?.success) {
                 Swal.fire({
                     icon: "success",
@@ -47,18 +38,14 @@ const Products = () => {
                     timer: 1200,
                     showConfirmButton: false,
                 });
-
-                refetch();
+                // 🚀 ফিক্স: TanStack Query গ্লোবাল ক্যাশ ইনভ্যালিডেশন
+                queryClient.invalidateQueries({ queryKey: ["products"] });
             }
         } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Delete Failed",
-            });
+            Swal.fire({ icon: "error", title: "Delete Failed" });
         }
     };
 
-    // ================= LOADING =================
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-96">
@@ -69,79 +56,38 @@ const Products = () => {
 
     return (
         <div className="p-5 mt-10">
-
-            {/* TITLE */}
-            <h2 className="text-3xl font-bold text-center mb-8">
-                📦 All Products ({products.length})
-            </h2>
-
-            {/* TABLE */}
+            <h2 className="text-3xl font-bold text-center mb-8"> 📦 All Products ({products.length}) </h2>
             <div className="overflow-x-auto bg-white rounded-xl shadow">
-
                 <table className="table">
-
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gray-100 text-black">
                         <tr>
-                            <th>#</th>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Karat</th>
-                            <th>Weight</th>
-                            <th>Buy Price</th>
-                            <th>Action</th>
-                        </tr>
+                            <th>#</th> <th>Image</th> <th>Name</th> <th>Karat</th> <th>Weight</th> <th>Buy Price</th> <th>Action</th> </tr>
                     </thead>
-
                     <tbody>
                         {products.map((item, index) => (
-                            <tr key={item._id} className="hover">
-
+                            <tr key={item._id} className="hover text-black">
                                 <td>{index + 1}</td>
-
                                 <td>
                                     <div className="avatar">
-                                        <div className="w-12 rounded">
-                                            <img src={item.image} alt="product" />
-                                        </div>
+                                        <div className="w-12 rounded"> <img src={item.image || "https://via.placeholder.com/50"} alt="product" /> </div>
                                     </div>
                                 </td>
-
-                                <td className="font-medium">
-                                    {item.name}
-                                </td>
-
-                                <td>{item.karat}</td>
-
+                                <td className="font-medium">{item.name}</td>
+                                <td><span className="badge badge-ghost font-semibold">{item.karat}</span></td>
                                 <td>
-                                    {item.vori} ভরি{" "}
-                                    {item.ana} আনা{" "}
-                                    {item.rati} রতি{" "}
-                                    {item.point} পয়েন্ট
+                                    {item.vori || 0} ভরি {item.ana || 0} আনা {item.rati || 0} রতি {item.point || 0} পয়েন্ট
                                 </td>
-
-                                <td className="text-green-600 font-bold">
-                                    ৳ {item.buyPrice}
-                                </td>
-
+                                <td className="text-green-600 font-bold"> ৳ {item.buyPrice} </td>
                                 <td>
-                                    <button
-                                        onClick={() =>
-                                            handleDelete(item)
-                                        }
-                                        className="btn btn-sm btn-error text-white"
-                                    >
+                                    <button onClick={() => handleDelete(item)} className="btn btn-sm btn-error text-white" >
                                         <FaTrashAlt />
                                     </button>
                                 </td>
-
                             </tr>
                         ))}
                     </tbody>
-
                 </table>
-
             </div>
-
         </div>
     );
 };

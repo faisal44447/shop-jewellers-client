@@ -59,8 +59,16 @@ const ExpenseList = () => {
         const { value } = await Swal.fire({
             title: "✏️ Edit Expense",
             html: `
+                <!-- ১. টাইটেল ইনপুট -->
                 <input id="swal-title" class="swal2-input" value="${item.title}" placeholder="Title">
+                
+                <!-- 🌟 নতুন যুক্ত করা হলো: ক্যাটাগরি ইনপুট ফিল্ড -->
+                <input id="swal-category" class="swal2-input" value="${item.category || ''}" placeholder="Category (e.g. Rent, Salary)">
+                
+                <!-- ২. অ্যামাউন্ট ইনপুট -->
                 <input id="swal-amount" type="number" class="swal2-input" value="${item.amount}" placeholder="Amount">
+                
+                <!-- ৩. ডেট ইনপুট -->
                 <input id="swal-date" type="datetime-local" class="swal2-input" value="${localDateString}">
             `,
             showCancelButton: true,
@@ -68,6 +76,7 @@ const ExpenseList = () => {
             focusConfirm: false,
             preConfirm: () => {
                 const title = document.getElementById("swal-title").value.trim();
+                const category = document.getElementById("swal-category").value.trim(); // 🌟 ক্যাটাগরি ভ্যালু ডম থেকে রিড করা হচ্ছে
                 const amount = document.getElementById("swal-amount").value;
                 const dateVal = document.getElementById("swal-date").value;
 
@@ -78,6 +87,7 @@ const ExpenseList = () => {
 
                 return {
                     title: title,
+                    category: category, // 🌟 রিটার্ন অবজেক্টে ক্যাটাগরি পাস করা হলো
                     amount: Number(amount),
                     createdAt: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString(), // ISO Format এ পাঠানো নিরাপদ
                 };
@@ -87,22 +97,14 @@ const ExpenseList = () => {
         if (!value) return;
 
         try {
-            // আপনার কোডে এখানে patch ছিল, ব্যাকএন্ডে patch/put যেটা সাপোর্ট করে সেটাই রাখবেন
-            await axiosSecure.patch(`/expenses/${item._id}`, value); 
+            // ব্যাকএন্ডের ফিক্সড প্যাচ (PATCH) রুটে ডাটা পাঠানো হচ্ছে
+            await axiosSecure.patch(`/expenses/${item._id}`, value);
             Swal.fire({ icon: "success", title: "Updated successfully", timer: 1200, showConfirmButton: false });
             fetchExpenses();
         } catch (error) {
             Swal.fire({ icon: "error", title: "Update failed" });
         }
     };
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-96">
-                <span className="loading loading-spinner loading-lg text-red-500"></span>
-            </div>
-        );
-    }
 
     return (
         <div className="p-5">

@@ -1,55 +1,48 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Product = () => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
     const axiosSecure = useAxiosSecure();
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
+    // 🚀 ফিক্স: status ফিল্ডের পরিবর্তে stock > 0 ফিল্টার ব্যবহার করা হয়েছে
+    const { data: stockProducts = [], isLoading } = useQuery({
+        queryKey: ["stock-products"],
+        queryFn: async () => {
+            const res = await axiosSecure.get("/products");
+            return Array.isArray(res.data) ? res.data.filter(p => safeStock(p?.stock) > 0) : [];
+        }
+    });
 
-                const res = await axiosSecure.get("/products");
+    // সেফ স্টক চেকার ইউটিলিটি
+    const safeStock = (val) => {
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    };
 
-                const stockProducts = Array.isArray(res.data)
-                    ? res.data.filter(p => p?.status?.toLowerCase() === "stock")
-                    : [];
-
-                setProducts(stockProducts);
-
-            } catch (err) {
-                console.log(err);
-                setProducts([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, [axiosSecure]);
-
-    if (loading) {
+    if (isLoading) {
         return (
-            <div className="p-5">
-                <span className="loading loading-spinner"></span>
+            <div className="p-5 flex justify-center items-center h-48">
+                <span className="loading loading-spinner text-orange-500 loading-lg"></span>
             </div>
         );
     }
 
     return (
         <div className="p-5">
-            <h2 className="text-2xl font-bold mb-4">
-                Products ({products.length})
+            <h2 className="text-2xl font-bold mb-4 text-black">
+                Stock Products ({stockProducts.length})
             </h2>
-
-            {products.length === 0 ? (
-                <p>No stock products found</p>
+            {stockProducts.length === 0 ? (
+                <p className="text-gray-500">No stock products found</p>
             ) : (
-                products.map(p => (
-                    <p key={p._id}>{p.name}</p>
-                ))
+                <div className="space-y-2 bg-white p-4 rounded-xl shadow-inner max-w-md">
+                    {stockProducts.map(p => (
+                        <div key={p._id} className="flex justify-between items-center text-black font-medium border-b py-2 last:border-0">
+                            <span>{p.name}</span>
+                            <span className="badge badge-warning text-xs font-bold">Stock: {p.stock}</span>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );

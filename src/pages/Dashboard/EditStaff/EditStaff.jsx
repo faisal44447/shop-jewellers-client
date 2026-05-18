@@ -7,10 +7,8 @@ const EditStaff = () => {
     const { id } = useParams();
     const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
-
     const [staff, setStaff] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const [liveName, setLiveName] = useState("");
     const [liveSalary, setLiveSalary] = useState(0);
     const [liveWeeks, setLiveWeeks] = useState([]);
@@ -26,11 +24,7 @@ const EditStaff = () => {
 
                 const weeks = (res.data?.weeklyExpenses || []).map(w => {
                     if (typeof w === "object" && w !== null) {
-                        return {
-                            amount: w.amount !== undefined ? String(w.amount) : "",
-                            date: w.date || "",
-                            time: w.time || ""
-                        };
+                        return { amount: w.amount !== undefined ? String(w.amount) : "", date: w.date || "", time: w.time || "" };
                     }
                     return { amount: String(w) || "", date: "", time: "" };
                 });
@@ -41,7 +35,8 @@ const EditStaff = () => {
             } catch (err) {
                 console.error(err);
                 Swal.fire("Error", "Failed to load staff", "error");
-            } finally {
+            } // ফয়সাল, এখানে finally ব্লকটি ডাটা লোড নিশ্চিত করে
+            finally {
                 setLoading(false);
             }
         };
@@ -55,7 +50,6 @@ const EditStaff = () => {
             }
             return week;
         });
-
         setLiveWeeks(updatedWeeks);
         const totalWeeklySum = updatedWeeks.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
         setLiveTaken(totalWeeklySum);
@@ -67,7 +61,6 @@ const EditStaff = () => {
         }
         const today = new Date().toISOString().split('T')[0];
         const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-
         const updatedWeeks = [...liveWeeks, { amount: "", date: today, time: time }];
         setLiveWeeks(updatedWeeks);
     };
@@ -76,14 +69,12 @@ const EditStaff = () => {
         if (liveWeeks.length === 0) return;
         const updatedWeeks = liveWeeks.slice(0, -1);
         setLiveWeeks(updatedWeeks);
-
         const totalWeeklySum = updatedWeeks.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
         setLiveTaken(totalWeeklySum);
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-
         if (!liveName.trim()) {
             return Swal.fire("Error", "Staff Name cannot be blank", "error");
         }
@@ -96,15 +87,11 @@ const EditStaff = () => {
             if (w.amount === undefined || String(w.amount).trim() === "") {
                 emptyWeekDetected = true;
             }
-            return {
-                amount: Number(w.amount) || 0,
-                date: w.date,
-                time: w.time
-            };
+            return { amount: Number(w.amount) || 0, date: w.date, time: w.time };
         });
 
         if (emptyWeekDetected) {
-            return Swal.fire("Error", "Weekly log inputs fill out korun othoba step-ti row element theke remove korun.", "error");
+            return Swal.fire("Error", "Weekly log inputs fill out korun.", "error");
         }
 
         const updatedData = {
@@ -119,7 +106,8 @@ const EditStaff = () => {
         };
 
         try {
-            const res = await axiosSecure.put(`/staffs/${id}`, updatedData);
+            // 🚀 এখানে PUT পরিবর্তন করে PATCH করা হয়েছে সার্ভারের সাথে মিল রাখার জন্য
+            const res = await axiosSecure.patch(`/staffs/${id}`, updatedData);
             if (res.data?.modifiedCount > 0 || res.data?.success) {
                 Swal.fire("Updated!", "Data synced inside cluster structure", "success")
                     .then(() => navigate("/dashboard/staff-list"));
@@ -153,7 +141,6 @@ const EditStaff = () => {
                 </div>
                 <div className="text-xs text-orange-400 mt-2">📊 Auto-Calculated Total Taken: ৳{liveTaken}</div>
             </div>
-
             <form onSubmit={handleUpdate} noValidate className="space-y-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
                 <div>
                     <label className="label text-sm font-semibold text-black mb-1">Staff Name</label>
@@ -163,7 +150,6 @@ const EditStaff = () => {
                     <label className="label text-sm font-semibold text-black mb-1">Monthly Salary</label>
                     <input value={liveSalary === 0 ? "" : liveSalary} type="number" className="input input-bordered w-full text-black bg-gray-50 focus:outline-none" onChange={(e) => setLiveSalary(e.target.value)} required />
                 </div>
-
                 <div className="p-4 bg-orange-50 rounded-xl border border-orange-200 my-2">
                     <div className="flex justify-between items-center mb-4">
                         <h4 className="text-sm font-bold text-orange-600 uppercase tracking-wider">📆 Weekly Expenses</h4>
@@ -194,7 +180,6 @@ const EditStaff = () => {
                         ))}
                     </div>
                 </div>
-
                 <div>
                     <label className="label text-sm font-semibold text-black mb-1">Total Taken</label>
                     <input value={liveTaken} type="number" className="input input-bordered w-full text-gray-600 bg-gray-100 font-bold" readOnly />

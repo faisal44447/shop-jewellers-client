@@ -9,24 +9,19 @@ const ProductCard = ({ product }) => {
     if (!product) return null;
 
     const handleAddToCart = () => {
+        // 🚀 Number কাস্টিং ডাইরেক্টলি করা হয়েছে 
+        const finalPrice = price.trim() === "" ? Number(product.buyPrice) : Number(price);
 
-        const finalPrice = Number(price || product.buyPrice);
-
-        // ================= VALIDATION =================
-        if (finalPrice <= 0) {
-            return Swal.fire("Error", "Invalid price", "error");
+        if (isNaN(finalPrice) || finalPrice <= 0) {
+            return Swal.fire("Error", "Please enter a valid price", "error");
         }
 
-        // ================= DUPLICATE CHECK =================
-        const alreadyExists = cart?.find(
-            (item) => item._id === product._id
-        );
-
+        // ডুপ্লিকেট কার্ট আইটেম চেক 
+        const alreadyExists = cart?.find((item) => item._id === product._id);
         if (alreadyExists) {
             return Swal.fire("Warning", "Already in cart", "warning");
         }
 
-        // ================= ADD =================
         addToCart({
             ...product,
             sellPrice: finalPrice,
@@ -38,47 +33,35 @@ const ProductCard = ({ product }) => {
             timer: 1200,
             showConfirmButton: false,
         });
+        setPrice(""); // ইনপুট ফিল্ড রিসেট
     };
 
     return (
-        <div className="card bg-base-100 shadow-xl p-4 hover:scale-[1.02] transition">
-
-            {/* IMAGE */}
-            <div className="w-full h-48 bg-white flex items-center justify-center rounded overflow-hidden">
-                <img
-                    src={product?.image || "https://via.placeholder.com/300"}
-                    alt={product?.name}
-                    className="max-h-full max-w-full object-contain"
-                />
+        <div className="card bg-base-100 shadow-xl p-4 hover:scale-[1.02] transition duration-200">
+            <div className="w-full h-48 bg-white flex items-center justify-center rounded-xl overflow-hidden border border-gray-50">
+                <img src={product?.image || "https://via.placeholder.com/300"} alt={product?.name} className="max-h-full max-w-full object-contain" />
             </div>
-
-            {/* NAME */}
-            <h2 className="font-bold mt-2 text-orange-500">
+            <h2 className="font-bold mt-3 text-orange-500 text-lg truncate">
                 {product?.name}
             </h2>
-
-            {/* BUY PRICE */}
-            <p className="text-sm text-gray-600">
-                Buy: ৳{product?.buyPrice}
+            <p className="text-sm text-gray-600 font-medium mt-1">
+                Buy Price: ৳{product?.buyPrice}
             </p>
-
-            {/* SELL PRICE INPUT */}
-            <input
-                type="number"
-                className="input input-bordered w-full my-2 text-black"
-                placeholder="Sell price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-            />
-
-            {/* BUTTON */}
+            <div className="mt-3">
+                <input
+                    type="number"
+                    className="input input-bordered w-full text-black bg-gray-50 focus:outline-none focus:border-orange-400"
+                    placeholder="Set customized sell price"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                />
+            </div>
             <button
                 onClick={handleAddToCart}
-                className="btn btn-success w-full"
+                className="btn btn-success mt-3 w-full text-white bg-emerald-500 hover:bg-emerald-600 border-none"
             >
                 Add to Cart
             </button>
-
         </div>
     );
 };

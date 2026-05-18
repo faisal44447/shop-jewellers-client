@@ -2,26 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAuth from "../../../hooks/useAuth";
 import useAdmin from "../../../hooks/useAdmin";
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
+import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
+// 🚀 নতুন ইম্পোর্ট: তোমার তৈরি করা মান্থলি বার চার্টটি ড্যাশবোর্ডে যুক্ত করা হলো
 
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    PieChart,
-    Pie,
-    Cell,
-    Legend,
-    ResponsiveContainer,
-    Tooltip,
-} from "recharts";
 
-const colors = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6"];
+const colors = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b"];
 
-// ✅ আপডেট করা রেউজেবল কার্ড কম্পোনেন্ট (কাস্টম টেক্সট কালার সাপোর্ট সহ)
+// ✅ রেউজেবল কার্ড কম্পোনেন্ট
 const Card = ({ title, value, colorClass, isMoney = true }) => (
-    <div className={`bg-white rounded-2xl p-4 shadow-sm border-l-4 border-gray-200 w-full transition-transform duration-200 hover:scale-[1.02]`}>
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-gray-300 w-full transition-transform duration-200 hover:scale-[1.02]">
         <h3 className="text-gray-500 text-xs font-medium tracking-wide uppercase">{title}</h3>
         <p className={`text-xl md:text-2xl font-bold mt-1 break-words ${colorClass}`}>
             {isMoney ? `৳${(value || 0).toLocaleString("en-BD")}` : value || 0}
@@ -34,8 +24,8 @@ const AdminHome = () => {
     const axiosSecure = useAxiosSecure();
     const [isAdmin, isAdminLoading] = useAdmin();
 
-    // ================= DASHBOARD DATA =================
-    const { data: stats = {}, isLoading, isError } = useQuery({
+    // ================= DASHBOARD DATA ================= 
+    const { data: responseData = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
@@ -43,7 +33,9 @@ const AdminHome = () => {
         },
     });
 
-    // ================= LOADING STATE =================
+    const stats = responseData.stats || {};
+
+    // ================= LOADING STATE ================= 
     if (isAdminLoading || isLoading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh] w-full">
@@ -52,7 +44,7 @@ const AdminHome = () => {
         );
     }
 
-    // ================= ERROR STATE =================
+    // ================= ERROR STATE ================= 
     if (isError) {
         return (
             <div className="text-center py-10 text-red-500 font-bold w-full">
@@ -61,51 +53,55 @@ const AdminHome = () => {
         );
     }
 
-    // 🌟 লাভ অথবা লস অনুযায়ী কালার সিলেক্ট করার লজিক
-    const isProfit = (stats?.totalCash || 0) >= 0;
-    const cashColorClass = isProfit ? "text-green-600" : "text-red-600";
+    // 🌟 লাভ অথবা লস লজিক (Total Cash - Total Expenses) 
+    const totalCashCombined = stats.totalCash || 0;
+    const totalExpenseCombined = stats.totalExpense || 0;
+    const netBusinessCash = totalCashCombined - totalExpenseCombined;
 
-    // পাই চার্ট ডাটা স্ট্রাকচার
+    // নেট ক্যাশ লাভ বা লস অনুযায়ী কালার সিলেক্ট 
+    const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
+
+    // পাই চার্ট ডাটা স্ট্রাকচার 
     const pieChartData = [
-        { name: "Total Cash", value: Math.abs(stats?.totalCash || 0) },
-        { name: "Expenses", value: stats?.totalExpense || 0 },
-        { name: "Sales", value: stats?.totalSales || 0 },
-        { name: "Stock Value", value: stats?.totalStockValue || 0 },
+        { name: "Net Cash", value: Math.abs(netBusinessCash) },
+        { name: "Expenses", value: totalExpenseCombined },
+        { name: "Sales", value: stats.totalSales || 0 },
+        { name: "Stock Value", value: stats.totalStockValue || 0 },
     ];
 
     return (
-        <div className="w-full space-y-6 px-1 sm:px-2">
-
+        <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
             {/* ================= HEADER ================= */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-100 pb-5 w-full text-center sm:text-left">
-                <img
-                    src={user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
-                    className="w-14 h-14 rounded-full border-2 border-orange-400 object-cover shadow-sm"
-                    alt="Admin"
-                />
+            <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
+                <img src={user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} className="w-14 h-14 rounded-full border-2 border-orange-400 object-cover shadow-sm" alt="Admin" />
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800 truncate">
                         Welcome, <span className="text-orange-500">{user?.displayName || "Admin"}</span> 👑
                     </h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-0.5">Manage your business overview and track real-time statistics</p>
+                    <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                        Manage your business overview and track real-time statistics
+                    </p>
                 </div>
             </div>
 
             {/* ================= STATS CARDS ================= */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 w-full">
-
-                {/* 🎯 আপনার শর্ত অনুযায়ী: প্রফিট হলে টেক্সট সবুজ, লস হলে লাল */}
-                <Card title="Total Cash" value={stats.totalCash} colorClass={cashColorClass} />
+                {/* 🎯 ফাইনাল ক্যাশ কার্ড */}
+                <div className="col-span-2 md:col-span-3 lg:col-span-4 bg-white p-1 rounded-2xl shadow-sm border border-orange-100">
+                    <Card title="Final Remaining Cash (Total Cash - Total Expenses)" value={netBusinessCash} colorClass={`${cashColorClass} text-2xl md:text-3xl font-black`} />
+                </div>
 
                 {/* প্লাস (+) কার্ডস */}
+                <Card title="Total Cash In (+)" value={totalCashCombined} colorClass="text-green-600 font-extrabold" />
                 <Card title="Sales (+)" value={stats.totalSales} colorClass="text-green-600" />
                 <Card title="Profits List (+)" value={stats.totalProfitsCollection} colorClass="text-green-600" />
                 <Card title="Cashs List (+)" value={stats.totalCashFromList} colorClass="text-green-600" />
                 <Card title="Transactions (+)" value={stats.totalTransactionPlus} colorClass="text-green-600" />
                 <Card title="Receivables (+)" value={stats.totalReceivablesPlus} colorClass="text-green-600" />
 
-                {/* মাইনাস (-) কার্ডস - আপনার শর্ত অনুযায়ী সব মাইনাস খরচগুলো এখানে */}
-                <Card title="Total Expenses (-)" value={stats.totalExpense} colorClass="text-red-600" />
+                {/* মাইনাস (-) খরচ কার্ডস */}
+                <Card title="Total Expenses (-)" value={totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
+                <Card title="Expenses (-)" value={stats.totalExpenseAmount} colorClass="text-red-600" />
                 <Card title="Staff Salary (-)" value={stats.totalStaffSalary} colorClass="text-red-600" />
                 <Card title="Transactions (-)" value={stats.totalTransactionMinus} colorClass="text-red-600" />
                 <Card title="Receivables (-)" value={stats.totalReceivablesMinus} colorClass="text-red-600" />
@@ -115,24 +111,17 @@ const AdminHome = () => {
                 <Card title="Stock Value" value={stats.totalStockValue} colorClass="text-purple-600" />
             </div>
 
-            {/* ================= CHARTS ================= */}
+            {/* ================= CHARTS (SIDE BY SIDE) ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 w-full">
-                {/* PIE CHART */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-3 md:p-4 shadow-sm flex flex-col min-h-[380px] md:min-h-[420px] w-full">
-                    <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">Business Overview Pie Chart</h2>
-                    <div className="flex-1 w-full h-full min-h-[260px]">
+
+                {/* 1. PIE CHART */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px] w-full">
+                    <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">
+                        Business Overview Pie Chart </h2>
+                    <div className="flex-1 w-full h-full min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie
-                                    data={pieChartData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
+                                <Pie data={pieChartData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={90} fill="#8884d8" dataKey="value" >
                                     {pieChartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                                     ))}
@@ -143,8 +132,13 @@ const AdminHome = () => {
                         </ResponsiveContainer>
                     </div>
                 </div>
-            </div>
 
+                {/* 🚀 2. MONTHLY BAR CHART (যোগ করা হলো) */}
+                <div className="w-full">
+                    <MonthlyReport />
+                </div>
+
+            </div>
         </div>
     );
 };
