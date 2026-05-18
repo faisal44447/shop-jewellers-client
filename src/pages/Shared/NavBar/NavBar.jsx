@@ -200,10 +200,6 @@ const NavBar = () => {
                         className="w-11 h-11 rounded-full border border-orange-500 object-cover"
                         alt="Logo"
                     />
-
-                    <h1 className="hidden md:block text-lg font-bold text-orange-400">
-                        Laivin Jewellers
-                    </h1>
                 </Link>
             </div>
 
