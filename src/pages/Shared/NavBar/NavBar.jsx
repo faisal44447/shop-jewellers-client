@@ -29,7 +29,7 @@ const NavBar = () => {
     const handleLogOut = async () => {
         try {
             await logOut();
-            navigate("/login"); // লগআউটের পর লগইন পেজে রিডাইরেক্ট
+            navigate("/login");
         } catch (error) {
             console.log("Logout Error:", error);
         }
@@ -38,7 +38,6 @@ const NavBar = () => {
     const linkStyle = "flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:text-orange-400 hover:bg-white/5 transition duration-200";
     const dropdownLinkStyle = "flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:text-orange-400 hover:bg-slate-800 transition rounded-md";
 
-    // 🌟 সাধারণ সবার জন্য কমন লিংকসমূহ
     const commonOptions = (
         <>
             <li>
@@ -59,11 +58,15 @@ const NavBar = () => {
     );
 
     return (
-        <div className="navbar fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-2 md:px-6 mt-10">
+        /* 
+          ت এখানে পরিবর্তন করা হয়েছে:
+          ১. `top-0` এর বদলে `top-5` (অথবা মোবাইলে safe area র জন্য pt-[env(safe-area-inset-top)]) ব্যবহার করা হয়েছে।
+          ২. `left-5` এর কারণে ডানপাশে স্ক্রিন কেটে যেতে পারে, তাই `left-0` করে ভেতরে `px-4` বা মার্জিন অ্যাড করা হয়েছে।
+        */
+        <div className="navbar fixed top-5 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 pt-[env(safe-area-inset-top)]">
 
             {/* ================= NAVBAR START (LOGO & MOBILE MENU) ================= */}
             <div className="navbar-start">
-                {/* মোবাইল স্ক্রিন ড্রপডাউন মেনু */}
                 <div className="dropdown">
                     <label tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2">
                         ☰
@@ -71,7 +74,6 @@ const NavBar = () => {
                     <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 p-3 bg-slate-950 text-white rounded-xl w-56 shadow-2xl border border-white/10 z-[100] space-y-1">
                         {commonOptions}
 
-                        {/* মোবাইলের ভেতর এডমিন লিংকগুলো আলাদা সেকশন হিসেবে দেখাবে */}
                         {isAdmin && (
                             <>
                                 <div className="divider border-white/10 my-1 text-xs text-orange-400/70 font-semibold tracking-wider uppercase pl-2">Admin Actions</div>
@@ -86,7 +88,6 @@ const NavBar = () => {
                     </ul>
                 </div>
 
-                {/* ব্র্যান্ড লোগো */}
                 <Link to="/" className="flex items-center gap-2 ml-2 transition hover:opacity-90">
                     <img src={ljiCON} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md shadow-orange-500/20" alt="Logo" />
                     <span className="hidden sm:inline font-bold tracking-wide bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent text-sm">
@@ -100,7 +101,6 @@ const NavBar = () => {
                 <ul className="menu menu-horizontal px-1 gap-2 items-center">
                     {commonOptions}
 
-                    {/* 🚀 ডেক্সটপে এডমিন লিংকগুলোর জন্য প্রিমিয়াম 'Dropdown Menu' */}
                     {isAdmin && (
                         <li className="dropdown dropdown-hover">
                             <label tabIndex={0} className={`${linkStyle} cursor-pointer gap-1 text-orange-400 font-medium`}>
