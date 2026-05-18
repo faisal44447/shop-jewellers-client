@@ -2,11 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SocialLogin from "../../components/SocialLogin/SocialLogin";
-import { LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
+// এখানে LoadCanvasTemplate এর বদলে LoadCanvasTemplateNoReload ইম্পোর্ট করা হয়েছে
+import { LoadCanvasTemplateNoReload, loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 import Swal from "sweetalert2";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
+  const [disabled, setDisabled] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -20,27 +22,26 @@ const Login = () => {
     loadCaptchaEnginge(6);
   }, []);
 
+  // এখন স্টেট চেঞ্জ হয়ে রি-রেন্ডার হলেও ক্যাপচা পরিবর্তন হবে না
+  const handleValidateCaptcha = (e) => {
+    const value = e.target.value;
+    if (validateCaptcha(value) === true) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  };
+
   const handleLogin = async (event) => {
     event.preventDefault();
     const form = event.target;
     const email = form.email.value;
     const password = form.password.value;
-    const captchaValue = form.captcha.value; // ক্যাপচা ইনপুটের ভ্যালু
-
-    // ১. প্রথমেই ক্যাপচা চেক করা হচ্ছে (ভুল হলে এখানেই আটকে দেবে, রি-রেন্ডার হবে না)
-    if (!validateCaptcha(captchaValue)) {
-      Swal.fire({
-        icon: "error",
-        title: "Invalid Captcha",
-        text: "Captcha did not match. Please try again!",
-      });
-      return; // কোড এখানেই থেমে যাবে, লগইন রিকোয়েস্ট যাবে না
-    }
 
     try {
       setSubmitLoading(true);
 
-      // ২. ক্যাপচা সঠিক হলে ফায়ারবেস লগইন হবে
+      // ফায়ারবেস লগইন সফল হলে 'AuthProvider' নিজে থেকেই JWT জেনারেট করে লোকাল স্টোরেজে সেট করে নেবে
       await signIn(email, password);
 
       Swal.fire({
@@ -95,10 +96,11 @@ const Login = () => {
           {/* CAPTCHA */}
           <div className="form-control mt-3">
             <div className="bg-white rounded-lg p-1 overflow-hidden">
-              <LoadCanvasTemplate />
+              {/* এখানে NoReload টেমপ্লেটটি ব্যবহার করা হয়েছে */}
+              <LoadCanvasTemplateNoReload />
             </div>
             <input
-              name="captcha" // এখানে name="captcha" দেওয়া হয়েছে ফর্ম ডেটা সহজে পাওয়ার জন্য
+              onChange={handleValidateCaptcha} // এখন আপনি আপনার পছন্দের onChange-ই ব্যবহার করতে পারবেন!
               type="text"
               placeholder="Type captcha above"
               className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
@@ -109,7 +111,7 @@ const Login = () => {
           {/* LOGIN BTN */}
           <button
             type="submit"
-            disabled={submitLoading} // শুধু সাবমিট লোডিং হলে বাটন ডিজেবল থাকবে
+            disabled={disabled || submitLoading}
             className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 border-none text-black font-bold shadow-lg hover:scale-105 transition-all disabled:bg-gray-600 disabled:text-gray-400"
           >
             {submitLoading ? "Logging in..." : "Login"}
