@@ -21,9 +21,14 @@ const Login = () => {
     loadCaptchaEnginge(6);
   }, []);
 
+  // ইউজার টাইপ শেষ করে ইনপুট ফিল্ডের বাইরে ক্লিক করলে এই ফাংশনটি কাজ করবে
   const handleValidateCaptcha = (e) => {
     const value = e.target.value;
-    setDisabled(!validateCaptcha(value));
+    if (validateCaptcha(value) === true) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
   };
 
   const handleLogin = async (event) => {
@@ -35,7 +40,7 @@ const Login = () => {
     try {
       setSubmitLoading(true);
 
-      // ফায়ারবেস লগইন সফল হলে 'AuthProvider' নিজে থেকেই JWT জেনারেট করে লোকাল স্টোরেজে সেট করে নেবে
+      // ফায়ারবেস লগইন সফল হলে 'AuthProvider' নিজে থেকেই JWT জেনারেট করে লোকাল স্টোরেজে সেট করে নেবে
       await signIn(email, password);
 
       Swal.fire({
@@ -93,7 +98,7 @@ const Login = () => {
               <LoadCanvasTemplate />
             </div>
             <input
-              onChange={handleValidateCaptcha} // অন-ব্লার এর চেয়ে অন-চেঞ্জ ইউজার এক্সপেরিয়েন্স ভালো দেয়
+              onBlur={handleValidateCaptcha} // এখানে onChange এর বদলে onBlur ব্যবহার করা হয়েছে যেন প্রতি ক্যারেক্টারে ক্যাপচা রি-লোড না হয়
               type="text"
               placeholder="Type captcha above"
               className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
