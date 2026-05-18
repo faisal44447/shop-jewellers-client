@@ -105,8 +105,8 @@ const PaboTaka = () => {
                         onChange={handleChange}
                         className="select select-bordered w-full text-black font-medium"
                     >
-                        <option value="minus">দোকানের baki ba hawlad dele (-)</option>
-                        <option value="plus">hawlad ba baki taka deye dele (+)</option>
+                        <option value="minus">বাকি দেওয়া হয়েছে (-)</option>
+                        <option value="plus">টাকা আদায় হয়েছে (+)</option>
                     </select>
 
                     {/* AMOUNT */}
