@@ -2,13 +2,8 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SocialLogin from "../../components/SocialLogin/SocialLogin";
-import {
-  LoadCanvasTemplate,
-  loadCaptchaEnginge,
-  validateCaptcha,
-} from "react-simple-captcha";
+import { LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 import Swal from "sweetalert2";
-import useAxiosPublic from "../../hooks/useAxiosPublic";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
@@ -17,7 +12,6 @@ const Login = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
 
   const { signIn } = useContext(AuthContext);
-  const axiosPublic = useAxiosPublic();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,12 +34,9 @@ const Login = () => {
 
     try {
       setSubmitLoading(true);
-      await signIn(email, password);
 
-      const tokenRes = await axiosPublic.post('/jwt', { email });
-      if (tokenRes.data.token) {
-        localStorage.setItem('access-token', tokenRes.data.token);
-      }
+      // ফায়ারবেস লগইন সফল হলে 'AuthProvider' নিজে থেকেই JWT জেনারেট করে লোকাল স্টোরেজে সেট করে নেবে
+      await signIn(email, password);
 
       Swal.fire({
         icon: "success",
@@ -56,6 +47,7 @@ const Login = () => {
 
       navigate(from, { replace: true });
     } catch (error) {
+      console.error(error);
       Swal.fire({ icon: "error", title: "Login Failed", text: error.message });
     } finally {
       setSubmitLoading(false);
@@ -64,25 +56,16 @@ const Login = () => {
 
   return (
     <div className="hero min-h-screen flex items-center justify-center bg-gray-900 p-4">
-      <div className="card w-full max-w-md p-[2px] rounded-2xl 
-        bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 
-        shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
-
-        <form
-          onSubmit={handleLogin}
-          className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white"
-        >
-          <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">
-            Welcome Back
-          </h2>
+      <div className="card w-full max-w-md p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
+        <form onSubmit={handleLogin} className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
+          <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">Welcome Back</h2>
 
           {/* EMAIL */}
           <input
             name="email"
             type="email"
             placeholder="Email"
-            className="input input-bordered bg-black/40 border-yellow-500 
-            focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-4"
+            className="input input-bordered bg-black/40 border-yellow-500 focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400 mt-4"
             required
           />
 
@@ -92,8 +75,7 @@ const Login = () => {
               name="password"
               type={showPass ? "text" : "password"}
               placeholder="Password"
-              className="input input-bordered w-full bg-black/40 border-yellow-500 
-              text-white pr-10"
+              className="input input-bordered w-full bg-black/40 border-yellow-500 text-white pr-10"
               required
             />
             <button
@@ -111,7 +93,7 @@ const Login = () => {
               <LoadCanvasTemplate />
             </div>
             <input
-              onBlur={handleValidateCaptcha}
+              onChange={handleValidateCaptcha} // অন-ব্লার এর চেয়ে অন-চেঞ্জ ইউজার এক্সপেরিয়েন্স ভালো দেয়
               type="text"
               placeholder="Type captcha above"
               className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
@@ -123,19 +105,13 @@ const Login = () => {
           <button
             type="submit"
             disabled={disabled || submitLoading}
-            className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 
-            border-none text-black font-bold shadow-lg 
-            hover:scale-105 transition-all disabled:bg-gray-600 disabled:text-gray-400"
+            className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 border-none text-black font-bold shadow-lg hover:scale-105 transition-all disabled:bg-gray-600 disabled:text-gray-400"
           >
             {submitLoading ? "Logging in..." : "Login"}
           </button>
 
-          {/* SIGNUP LINK */}
           <p className="text-sm mt-3 text-center">
-            New here?{" "}
-            <Link to="/signup" className="text-yellow-400 font-bold hover:underline">
-              Create account
-            </Link>
+            New here? <Link to="/signup" className="text-yellow-400 font-bold hover:underline">Create account</Link>
           </p>
 
           <SocialLogin />

@@ -10,42 +10,38 @@ const SocialLogin = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 👑 'from' লোকেশন ডিক্লেয়ার করা হলো যাতে গুগল লগইনের পর সঠিক পেজে যায়
     const from = location.state?.from?.pathname || "/";
 
-    const handleGoogleSignIn = () => {
-        googleSignIn()
-            .then(result => {
-                const userInfo = {
-                    email: result.user?.email,
-                    name: result.user?.displayName
-                };
+    const handleGoogleSignIn = async () => {
+        try {
+            const result = await googleSignIn();
 
-                // প্রথমে ইউজার ডাটাবেজে সেভ বা চেক করুন
-                axiosPublic.post('/users', userInfo)
-                    .then(res => {
-                        // এবার ব্যাকএন্ড থেকে JWT টোকেনটি জেনারেট করে আনুন
-                        axiosPublic.post('/jwt', { email: result.user?.email })
-                            .then(tokenRes => {
-                                if (tokenRes.data.token) {
-                                    localStorage.setItem('access-token', tokenRes.data.token);
+            const userInfo = {
+                email: result.user?.email,
+                name: result.user?.displayName
+            };
 
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Google Login Successful",
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    });
+            // ডাটাবেজে ইউজার ইনফো পাঠানো (ব্যাকএন্ড চেক করবে ইউজার নতুন নাকি পুরাতন)
+            await axiosPublic.post('/users', userInfo);
 
-                                    navigate(from, { replace: true });
-                                }
-                            });
-                    });
-            })
-            .catch(error => {
-                console.error("Google Sign In Error:", error);
-                Swal.fire({ icon: "error", title: "Authentication Failed", text: error.message });
+            Swal.fire({
+                icon: "success",
+                title: "Google Login Successful",
+                showConfirmButton: false,
+                timer: 1500
             });
+
+            // সাকসেসফুল লগইনের পর রিডাইরেক্ট
+            navigate(from, { replace: true });
+
+        } catch (error) {
+            console.error("Google Sign In Error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Authentication Failed",
+                text: error.message
+            });
+        }
     };
 
     return (

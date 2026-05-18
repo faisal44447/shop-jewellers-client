@@ -19,7 +19,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const googleProvider = new GoogleAuthProvider();
-  const axiosPublic = useAxiosPublic(); // 👑 হুকটি এখানে সঠিকভাবে ইনিশিয়েলাইজড আছে
+  const axiosPublic = useAxiosPublic();
 
   const createUser = (email, password) => {
     setLoading(true);
@@ -44,43 +44,39 @@ const AuthProvider = ({ children }) => {
   const updateUserProfile = (name, photo) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
-      photoURL: photo
+      photoURL: photo || ""
     });
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, currentUser => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
-      if (currentUser) {
+      if (currentUser?.email) {
         const userInfo = { email: currentUser.email };
-
-        // 👑 এখানে useAxiosPublic এর বদলে সঠিক ভেরিয়েবল axiosPublic ব্যবহার করা হয়েছে
-        axiosPublic.post('/jwt', userInfo)
-          .then(res => {
-            if (res.data.token) {
-              localStorage.setItem('access-token', res.data.token);
-              setLoading(false); // টোকেন পাওয়ার পর লোডিং ফলস হবে
-            }
-          })
-          .catch(err => {
-            console.error("JWT Error:", err);
-            setLoading(false);
-          });
+        try {
+          const res = await axiosPublic.post('/jwt', userInfo);
+          if (res.data.token) {
+            localStorage.setItem('access-token', res.data.token);
+          }
+        } catch (err) {
+          console.error("Global JWT Error:", err);
+        } finally {
+          setLoading(false);
+        }
       } else {
         localStorage.removeItem('access-token');
-        setLoading(false); // ইউজার না থাকলেও লোeding ফলস হবে
+        setLoading(false);
       }
     });
 
-    return () => {
-      return unsubscribe();
-    };
+    return () => unsubscribe();
   }, [axiosPublic]);
 
   const authInfo = {
     user,
     loading,
+    setLoading, // কাস্টম লোডিং হ্যান্ডলিংয়ের জন্য এটি পাস করা হলো
     createUser,
     signIn,
     googleSignIn,
