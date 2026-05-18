@@ -12,7 +12,7 @@ import {
     FaFileInvoiceDollar,
     FaChevronDown
 } from "react-icons/fa";
-import ljiCON from "../../../assets/laivinIcon.png";
+import laivinIcon from "../../../assets/laivinIcon.png";
 
 const NavBar = () => {
     const auth = useContext(AuthContext);
@@ -89,7 +89,7 @@ const NavBar = () => {
                 </div>
 
                 <Link to="/" className="flex items-center gap-2 ml-2 transition hover:opacity-90">
-                    <img src={ljiCON} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md shadow-orange-500/20" alt="Logo" />
+                    <img src={laivinIcon} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md shadow-orange-500/20" alt="Logo" />
                     <span className="hidden sm:inline font-bold tracking-wide bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent text-sm">
                         Al Amin Jewellers
                     </span>
