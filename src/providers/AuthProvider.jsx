@@ -57,27 +57,30 @@ const AuthProvider = ({ children }) => {
   // OBSERVER (JWT Token handler)
   // OBSERVER (JWT Token handler)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser?.email) {
-        try {
-          const userInfo = { email: currentUser.email };
-          const res = await axiosPublic.post("/jwt", userInfo);
-          if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
-          }
-        } catch (error) {
-          console.log("JWT ERROR:", error.message);
-        }
-      } else {
-        localStorage.removeItem("access-token");
-      }
-      // ইউজার স্টেট সেট এবং লোডিং ফলস একদম শেষে একসাথে হবে
+    const unsubscribe = onAuthStateChanged(auth, currentUser => {
       setUser(currentUser);
-      setLoading(false);
-    });
 
-    return () => unsubscribe();
-  }, [axiosPublic]);
+      // টোকেন হ্যান্ডেল করার লজিক
+      if (currentUser) {
+        // আপনার ব্যাকএন্ডে টোকেনের জন্য রিকোয়েস্ট (যদি axios ব্যবহার করেন)
+        axios.post('https://your-server-url.com/jwt', { email: currentUser.email })
+          .then(data => {
+            if (data.data.token) {
+              localStorage.setItem('access-token', data.data.token);
+              setLoading(false); // 👈 টোকেন পাওয়ার পরই কেবল লোডিং ফলস হবে
+            }
+          })
+      }
+      else {
+        // ইউজার লগআউট করলে টোকেন মুছে যাবে
+        localStorage.removeItem('access-token');
+        setLoading(false);
+      }
+    });
+    return () => {
+      return unsubscribe();
+    }
+  }, []);
 
   const authInfo = {
     user,
