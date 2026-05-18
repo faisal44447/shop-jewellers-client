@@ -5,12 +5,18 @@ const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
     const location = useLocation();
 
+    // 👑 অ্যাপ রিলোড হলে ফায়ারবেস চেক করা পর্যন্ত এই স্পিনারটি ইউজারকে আটকে রাখবে
     if (loading) {
-        return <span className="loading loading-spinner text-warning"></span>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-900">
+                <span className="loading loading-spinner text-warning loading-lg"></span>
+            </div>
+        );
     }
 
     if (!user) {
-        return <Navigate to="/" state={{ from: location }} replace />;
+        // লগইন না থাকলে লগইন পেজে পাঠাবে এবং আগের লোকেশন মনে রাখবে
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     return children;

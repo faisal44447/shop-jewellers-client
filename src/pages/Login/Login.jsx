@@ -14,6 +14,7 @@ import { Eye, EyeOff } from "lucide-react";
 const Login = () => {
   const [disabled, setDisabled] = useState(true);
   const [showPass, setShowPass] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const { signIn } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
@@ -32,41 +33,38 @@ const Login = () => {
   };
 
   const handleLogin = async (event) => {
-
     event.preventDefault();
-
     const form = event.target;
-
     const email = form.email.value;
     const password = form.password.value;
 
     try {
-
+      setSubmitLoading(true);
       await signIn(email, password);
 
-      Swal.fire(
-        "Success",
-        "Login Successful",
-        "success"
-      );
-
-      navigate(from, { replace: true });
-
-    } catch (error) {
+      const tokenRes = await axiosPublic.post('/jwt', { email });
+      if (tokenRes.data.token) {
+        localStorage.setItem('access-token', tokenRes.data.token);
+      }
 
       Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: error.message,
+        icon: "success",
+        title: "Login Successful",
+        showConfirmButton: false,
+        timer: 1500
       });
+
+      navigate(from, { replace: true });
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Login Failed", text: error.message });
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
   return (
-    <div className="hero min-h-screen flex items-center justify-center bg-gray-900">
-
-      {/* 🔥 MATCHED SIGNUP STYLE CARD */}
-      <div className="card w-96 p-[2px] rounded-2xl 
+    <div className="hero min-h-screen flex items-center justify-center bg-gray-900 p-4">
+      <div className="card w-full max-w-md p-[2px] rounded-2xl 
         bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 
         shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
 
@@ -98,7 +96,6 @@ const Login = () => {
               text-white pr-10"
               required
             />
-
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
@@ -110,24 +107,27 @@ const Login = () => {
 
           {/* CAPTCHA */}
           <div className="form-control mt-3">
-            <LoadCanvasTemplate />
+            <div className="bg-white rounded-lg p-1 overflow-hidden">
+              <LoadCanvasTemplate />
+            </div>
             <input
               onBlur={handleValidateCaptcha}
               type="text"
-              placeholder="type captcha"
+              placeholder="Type captcha above"
               className="input input-bordered bg-black/40 border-yellow-500 text-white mt-2"
+              required
             />
           </div>
 
           {/* LOGIN BTN */}
           <button
             type="submit"
-            disabled={disabled}
+            disabled={disabled || submitLoading}
             className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 
             border-none text-black font-bold shadow-lg 
-            hover:scale-105 transition-all"
+            hover:scale-105 transition-all disabled:bg-gray-600 disabled:text-gray-400"
           >
-            Login
+            {submitLoading ? "Logging in..." : "Login"}
           </button>
 
           {/* SIGNUP LINK */}
@@ -137,9 +137,9 @@ const Login = () => {
               Create account
             </Link>
           </p>
-        </form>
 
-        <SocialLogin />
+          <SocialLogin />
+        </form>
       </div>
     </div>
   );

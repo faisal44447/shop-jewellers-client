@@ -1,52 +1,66 @@
 import { FaGoogle } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const SocialLogin = () => {
     const { googleSignIn } = useAuth();
+    const axiosPublic = useAxiosPublic();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleGoogleSignIn = async () => {
-        const ua = navigator.userAgent;
+    // 👑 'from' লোকেশন ডিক্লেয়ার করা হলো যাতে গুগল লগইনের পর সঠিক পেজে যায়
+    const from = location.state?.from?.pathname || "/";
 
-        // 📱 ১. অ্যাপের ভেতরের ব্রাউজার চেক (Facebook, Messenger, Instagram, WhatsApp, Twitter, Line ইত্যাদি)
-        const isInApp = /FBAN|FBAV|Instagram|Twitter|TGAndroid|Line|WhatsApp|GSA/i.test(ua);
+    const handleGoogleSignIn = () => {
+        googleSignIn()
+            .then(result => {
+                const userInfo = {
+                    email: result.user?.email,
+                    name: result.user?.displayName
+                };
 
-        // 🌐 ২. ফোনের নিজস্ব দুর্বল ব্রাউজার চেক (Mi Browser, Oppo, Vivo, Samsung Internet ইত্যাদি)
-        // তবে Samsung বা Mi ব্রাউজারে অনেক সময় ক্রোম ও সাফারির নামও থাকে, তাই নিখুঁতভাবে চেক করার লজিক:
-        const isSafeBrowser = /Chrome|Safari|Firefox|Edge|CriOS|FxiOS/i.test(ua) && !/SamsungBrowser|MiuiBrowser|HeyTapBrowser|VivoBrowser/i.test(ua);
+                // প্রথমে ইউজার ডাটাবেজে সেভ বা চেক করুন
+                axiosPublic.post('/users', userInfo)
+                    .then(res => {
+                        // এবার ব্যাকএন্ড থেকে JWT টোকেনটি জেনারেট করে আনুন
+                        axiosPublic.post('/jwt', { email: result.user?.email })
+                            .then(tokenRes => {
+                                if (tokenRes.data.token) {
+                                    localStorage.setItem('access-token', tokenRes.data.token);
 
-        // ইউজার যদি ইন-অ্যাপ ব্রাউজারে থাকে অথবা কোনো নিরাপদ ব্রাউজারে না থাকে
-        if (isInApp || !isSafeBrowser) {
-            Swal.fire({
-                title: "সুরক্ষিত ব্রাউজার ব্যবহার করুন",
-                text: "গুগলের সিকিউরিটি পলিসির কারণে এই ব্রাউজার থেকে লগইন ব্লক করা হয়েছে। দয়া করে এই পেজটি সরাসরি Google Chrome বা Safari ব্রাউজারে ওপেন করে চেষ্টা করুন।",
-                icon: "warning",
-                confirmButtonText: "ঠিক আছে",
-                confirmButtonColor: "#e6b800"
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Google Login Successful",
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+
+                                    navigate(from, { replace: true });
+                                }
+                            });
+                    });
+            })
+            .catch(error => {
+                console.error("Google Sign In Error:", error);
+                Swal.fire({ icon: "error", title: "Authentication Failed", text: error.message });
             });
-            return; // 🛑 রিডাইরেক্ট রান হবে না, ফলে গুগলের সেই 403 এরর পেজও আসবে না।
-        }
-
-        try {
-            // 🔥 ইউজার আসল ক্রোম বা সাফারিতে থাকলে কোনো এরর ছাড়া রিডাইরেক্ট সফলভাবে কাজ করবে
-            await googleSignIn();
-        } catch (err) {
-            Swal.fire("Error", err.message, "error");
-        }
     };
 
     return (
-        <div className="p-6">
-            <div className="divider">OR</div>
-
-            <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                className="btn w-full flex items-center gap-2 justify-center bg-white text-black hover:bg-gray-200"
-            >
-                <FaGoogle className="text-red-500 text-lg" />
-                Continue with Google
-            </button>
+        <div className="mt-4">
+            <div className="divider text-gray-400 text-xs">OR CONTINUE WITH</div>
+            <div className="flex justify-center mt-2">
+                <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    className="btn btn-outline border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black w-full"
+                >
+                    <FaGoogle className="mr-2" />
+                    Google
+                </button>
+            </div>
         </div>
     );
 };

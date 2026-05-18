@@ -1,103 +1,82 @@
 import { createContext, useEffect, useState } from "react";
-import axios from "axios";
-
 import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithRedirect,
-  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
-  updateProfile,
+  updateProfile
 } from "firebase/auth";
-
 import { app } from "../firebase/firebase.config";
+import useAxiosPublic from "../hooks/useAxiosPublic";
 
 export const AuthContext = createContext(null);
 const auth = getAuth(app);
 
-// Axios Public Instance
-const axiosPublic = axios.create({
-  baseURL: "https://shop-jewellers-server.vercel.app",
-});
-
-const googleProvider = new GoogleAuthProvider();
-
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const googleProvider = new GoogleAuthProvider();
+  const axiosPublic = useAxiosPublic(); // 👑 হুকটি এখানে সঠিকভাবে ইনিশিয়েলাইজড আছে
 
-  // CREATE USER
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  // LOGINWITH EMAIL & PASSWORD
   const signIn = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 🔥 GOOGLE SIGN IN (REDIRECT MODE)
   const googleSignIn = () => {
     setLoading(true);
-    return signInWithRedirect(auth, googleProvider);
+    return signInWithPopup(auth, googleProvider);
   };
 
-  // LOGOUT
-  const logOut = async () => {
-    localStorage.removeItem("access-token");
+  const logOut = () => {
+    setLoading(true);
     return signOut(auth);
   };
 
-  // UPDATE PROFILE
   const updateUserProfile = (name, photo) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
-      photoURL: photo,
+      photoURL: photo
     });
   };
 
-  // AUTH OBSERVER (রিডাইরেক্ট হয়ে ফিরে আসার পর ইউজার এখানে ডাটা পাবে)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, currentUser => {
+      setUser(currentUser);
 
-      if (currentUser?.email) {
-        try {
-          // 🟢 গুগল থেকে আসা ইউজার প্রথমবার ঢুকলে ডাটাবেজে সেভ হবে
-          // (ব্যাকএন্ডে /users এ অলরেডি 'user already exists' চেক করা আছে, তাই সমস্যা হবে না)
-          await axiosPublic.post("/users", {
-            name: currentUser.displayName || "Google User",
-            email: currentUser.email,
-            role: "user",
+      if (currentUser) {
+        const userInfo = { email: currentUser.email };
+
+        // 👑 এখানে useAxiosPublic এর বদলে সঠিক ভেরিয়েবল axiosPublic ব্যবহার করা হয়েছে
+        axiosPublic.post('/jwt', userInfo)
+          .then(res => {
+            if (res.data.token) {
+              localStorage.setItem('access-token', res.data.token);
+              setLoading(false); // টোকেন পাওয়ার পর লোডিং ফলস হবে
+            }
+          })
+          .catch(err => {
+            console.error("JWT Error:", err);
+            setLoading(false);
           });
-
-          // টোকেন নেওয়া হচ্ছে
-          const res = await axiosPublic.post("/jwt", {
-            email: currentUser.email,
-          });
-
-          if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
-            setUser(currentUser);
-          }
-        } catch (error) {
-          console.log("AUTH OBSERVER ERROR:", error);
-          setUser(null);
-        }
       } else {
-        localStorage.removeItem("access-token");
-        setUser(null);
+        localStorage.removeItem('access-token');
+        setLoading(false); // ইউজার না থাকলেও লোeding ফলস হবে
       }
-
-      setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      return unsubscribe();
+    };
+  }, [axiosPublic]);
 
   const authInfo = {
     user,
@@ -106,7 +85,7 @@ const AuthProvider = ({ children }) => {
     signIn,
     googleSignIn,
     logOut,
-    updateUserProfile,
+    updateUserProfile
   };
 
   return (
