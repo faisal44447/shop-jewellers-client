@@ -43,7 +43,6 @@ const UserHome = () => {
     }
 
     const totalSales = stats.totalSales || 0;
-    const totalProfit = stats.totalProfit || 0;
     const totalExpenseAmount = stats.totalExpenseAmount || 0;
     const totalStaffSalary = stats.totalStaffSalary || 0;
     const totalCashFromList = stats.totalCashFromList || 0;
@@ -56,6 +55,10 @@ const UserHome = () => {
 
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
 
+    // 🟢 লাভ হলে সবুজ টেক্সট, 🔴 লস হলে লাল টেক্সট কন্ডিশন
+    const totalProfit = stats.totalProfit || 0;
+    const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
+
     const pieChartData = [
         { name: "Net Cash", value: Math.abs(netBusinessCash) },
         { name: "Total Expenses", value: totalExpenseCombined },
@@ -65,13 +68,13 @@ const UserHome = () => {
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
-            {/* 💎 HEADER */}
+            {/* 💎 HEADER (Updated subtitle) */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                        স্বাগতম, <span className="text-orange-500">{user?.displayName || "ইউজার"}</span> 👋
+                        হ্যালো, <span className="text-orange-500">{user?.displayName || "ইউজার"}</span>
                     </h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-0.5">Al Amin Jewellers Shop — রিয়েল-টাইম স্টাফ ড্যাশবোর্ড</p>
+                    <p className="text-xs md:text-sm text-gray-500 mt-0.5 font-medium">স্বাগতম ইউজার হোম 👋</p>
                 </div>
             </div>
 
@@ -99,7 +102,9 @@ const UserHome = () => {
 
                 <Card title="মোট স্টক প্রোডাক্ট" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="স্টক পণ্যের মূল্য" value={stats.totalStockValue} colorClass="text-purple-600" />
-                <Card title="মোট প্রফিট/লাভ" value={totalProfit} colorClass="text-emerald-600 font-bold" />
+
+                {/* 🎯 কন্ডিশনাল প্রফিট/লস কালার কার্ড */}
+                <Card title="মোট প্রফিট/লাভ" value={totalProfit} colorClass={profitColorClass} />
             </div>
 
             {/* 📉 PIE CHART */}

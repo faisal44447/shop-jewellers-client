@@ -48,6 +48,10 @@ const AdminHome = () => {
     const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
 
+    // 🟢 লাভ হলে সবুজ টেক্সট, 🔴 লস হলে লাল টেক্সট কন্ডিশন
+    const totalProfit = stats.totalProfit || 0;
+    const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
+
     const pieChartData = [
         { name: "Net Remaining Cash", value: Math.abs(netBusinessCash) },
         { name: "Total Expenses", value: stats.totalExpenseCombined || 0 },
@@ -57,7 +61,7 @@ const AdminHome = () => {
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
-            {/* 💎 HEADER */}
+            {/* 💎 HEADER (Updated subtitle) */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
                 <img
                     src={user?.photoURL || "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150"}
@@ -66,9 +70,9 @@ const AdminHome = () => {
                 />
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                        স্বাগতম, <span className="text-orange-500">{user?.displayName || "এডমিন স্যার"}</span> 👑
+                        হ্যালো, <span className="text-orange-500">{user?.displayName || "এডমিন"}</span>
                     </h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-0.5">Al Amin Jewellers Shop — এডমিন প্যানেল ওভারভিউ</p>
+                    <p className="text-xs md:text-sm text-gray-500 mt-0.5 font-medium">স্বাগতম এডমিন হোম 👑</p>
                 </div>
             </div>
 
@@ -104,12 +108,13 @@ const AdminHome = () => {
                 </div>
                 <Card title="Stock Qty" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="Stock Value" value={stats.totalStockValue} colorClass="text-purple-600" />
-                <Card title="Total Profit / Gain" value={stats.totalProfit} colorClass="text-emerald-600 font-bold" />
+
+                {/* 🎯 কন্ডিশনাল প্রফিট/লস কালার কার্ড */}
+                <Card title="Total Profit / Gain" value={totalProfit} colorClass={profitColorClass} />
             </div>
 
             {/* CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 w-full">
-                {/* 1. PIE CHART */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px] w-full">
                     <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">
                         Business Overview Pie Chart
@@ -129,7 +134,6 @@ const AdminHome = () => {
                     </div>
                 </div>
 
-                {/* 2. MONTHLY BAR CHART */}
                 <div className="w-full">
                     <MonthlyReport />
                 </div>
