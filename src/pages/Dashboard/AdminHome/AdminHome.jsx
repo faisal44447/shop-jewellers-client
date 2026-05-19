@@ -110,7 +110,9 @@ const AdminHome = () => {
                 <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center">
                     Business Overview Pie Chart
                 </h2>
-                {!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0) ? (
+
+                {/* ফিক্স: এখানেও কন্ডিশনাল রেন্ডারিং করা হয়েছে */}
+                {(!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0)) ? (
                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         চার্ট তৈরি করার জন্য পর্যাপ্ত ডাটা নেই...
                     </div>

@@ -48,10 +48,10 @@ const UserHome = () => {
     const totalStaffSalary = stats.totalStaffSalary || 0;
     const totalCashFromList = stats.totalCashFromList || 0;
     const totalTransactionPlus = stats.totalTransactionPlus || 0;
-    
+
     // ডাটাবেজ থেকে আসা মাইনাস ভ্যালুগুলোকে পজিটিভ করে ড্যাশবোর্ডে দেখানোর ফিক্স
-    const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0); 
-    
+    const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0);
+
     const totalCashCombined = stats.totalCashCombined || 0;
     const totalExpenseCombined = stats.totalExpenseCombined || 0;
     const netBusinessCash = stats.netBusinessCash || 0;
@@ -65,7 +65,7 @@ const UserHome = () => {
         { name: "মোট খরচ", value: totalExpenseCombined },
         { name: "মোট বিক্রি", value: totalSales },
         { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
-        { name: "মোট বাকি/ধার", value: totalTransactionMinus }, 
+        { name: "মোট বাকি/ধার", value: totalTransactionMinus },
     ];
 
     return (
@@ -96,13 +96,13 @@ const UserHome = () => {
                 <Card title="মোট বিক্রি (+)" value={totalSales} colorClass="text-green-500" />
                 <Card title="অ্যাড ক্যাশ লিস্ট (+)" value={totalCashFromList} colorClass="text-green-500" />
                 <Card title="ধার/আদায় প্লাস (+)" value={totalTransactionPlus} colorClass="text-green-500" />
-                
+
                 <Card title="মোট খরচ ইন (-)" value={totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
                 <Card title="সাধারণ খরচ (-)" value={totalExpenseAmount} colorClass="text-red-500" />
                 <Card title="স্টাফ বেতন (-)" value={totalStaffSalary} colorClass="text-red-500" />
                 {/* ফিক্সড কার্ড: এখানে Math.abs করা ভ্যালুটি নিখুঁতভাবে শো করবে */}
                 <Card title="ধার/বাকি মাইনাস (-)" value={totalTransactionMinus} colorClass="text-red-500" />
-                
+
                 <Card title="মোট স্টক প্রোডাক্ট" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="স্টক পণ্যের মূল্য" value={stats.totalStockValue} colorClass="text-purple-600" />
                 <Card title="মোট প্রফিট/লাভ" value={totalProfit} colorClass={profitColorClass} />
@@ -113,7 +113,9 @@ const UserHome = () => {
                 <h2 className="text-gray-700 font-bold mb-6 text-sm uppercase tracking-wide text-center">
                     জুয়েলারি শপ Overview Chart
                 </h2>
-                {!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0) ? (
+
+                {/* ফিক্স: ইফ-রিটার্ন বাদ দিয়ে কন্ডিশনাল রেন্ডারিং করা হয়েছে */}
+                {(!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0)) ? (
                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         কোনো ডাটা পাওয়া যায়নি অথবা লোড হচ্ছে...
                     </div>
@@ -121,14 +123,14 @@ const UserHome = () => {
                     <div className="flex-1 w-full h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie 
-                                    data={pieChartData.map(item => ({ ...item, value: isNaN(Number(item.value)) ? 0 : Number(item.value) }))} 
-                                    cx="50%" 
-                                    cy="45%" 
-                                    labelLine={true} 
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} 
-                                    outerRadius={100} 
-                                    fill="#8884d8" 
+                                <Pie
+                                    data={pieChartData.map(item => ({ ...item, value: isNaN(Number(item.value)) ? 0 : Number(item.value) }))}
+                                    cx="50%"
+                                    cy="45%"
+                                    labelLine={true}
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    outerRadius={100}
+                                    fill="#8884d8"
                                     dataKey="value"
                                 >
                                     {pieChartData.map((entry, index) => (
