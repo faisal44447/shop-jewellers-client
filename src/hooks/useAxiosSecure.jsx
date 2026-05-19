@@ -34,8 +34,7 @@ const useAxiosSecure = () => {
             async (error) => {
                 const status = error.response?.status;
 
-                // 🎯 ফিক্স: ৪০১ বা ৪০৩ এরর পেলে সরাসরি লগআউট করাবে, 
-                // কিন্তু ডিপেন্ডেন্সি থেকে location বাদ দেওয়াতে এটি অহেতুক লুপ তৈরি করবে না।
+                // ৪০১ বা ৪০৩ এরর পেলে সোজাসুজি লগআউট করাবে
                 if (status === 401 || status === 403) {
                     localStorage.removeItem("access-token");
                     await logOut();
@@ -50,7 +49,7 @@ const useAxiosSecure = () => {
             axiosSecure.interceptors.request.eject(requestInterceptor);
             axiosSecure.interceptors.response.eject(responseInterceptor);
         };
-    }, [axiosSecure, logOut, navigate]); // 🎯 ফিক্স: এখান থেকে 'location' সরিয়ে নেওয়া হয়েছে
+    }, [axiosSecure, logOut, navigate]);
 
     return axiosSecure;
 };
