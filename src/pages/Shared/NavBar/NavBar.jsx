@@ -19,7 +19,7 @@ const NavBar = () => {
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // 🔄 ফিক্স: যদি Auth কনটেক্সট লোড হতে সময় নেয় বা loading ট্রু থাকে, তবে কোনো কিছু রিটার্ন না করে অপেক্ষা করবে
+    // 🔄 যদি Auth কনটেক্সট লোড হতে সময় নেয় বা loading ট্রু থাকে, তবে কোনো কিছু রিটার্ন না করে অপেক্ষা করবে
     if (!auth || auth.loading) {
         return null;
     }
@@ -37,19 +37,27 @@ const NavBar = () => {
         }
     };
 
+    // 🎯 ফিক্স: ড্রপডাউন মেনু এবং ইন-অ্যাপ অ্যাকশনের পর ফোকাস রিমুভ করার ফাংশন
+    const closeDropdown = () => {
+        const elem = document.activeElement;
+        if (elem) {
+            elem.blur();
+        }
+    };
+
     const linkStyle = "flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:text-orange-400 hover:bg-white/5 transition duration-200";
     const dropdownLinkStyle = "flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:text-orange-400 hover:bg-slate-800 transition rounded-md";
 
     const commonOptions = (
         <>
             <li>
-                <Link to="/" className={linkStyle}>Home</Link>
+                <Link to="/" onClick={closeDropdown} className={linkStyle}>Home</Link>
             </li>
             <li>
-                <Link to="/dashboard" className={linkStyle}>Dashboard</Link>
+                <Link to="/dashboard" onClick={closeDropdown} className={linkStyle}>Dashboard</Link>
             </li>
             <li>
-                <Link to="/dashboard/cart" className={linkStyle}>
+                <Link to="/dashboard/cart" onClick={closeDropdown} className={linkStyle}>
                     <FaShoppingCart className="text-orange-400" /> Cart
                     <span className="badge badge-sm bg-orange-500 border-none text-black font-bold px-1.5 py-0.5 ml-1">
                         {cart?.length || 0}
@@ -60,20 +68,22 @@ const NavBar = () => {
                 <a
                     href="https://shop-jewellers-client.web.app"
                     onClick={(e) => {
-                        e.preventDefault(); // ড্যাশবোর্ড পেজ রিফ্রেশ হওয়া বন্ধ করবে
+                        // ইন-অ্যাপ ব্রাউজার ডিটেক্ট করার ইন্টেলিজেন্ট ট্রিক
+                        const ua = navigator.userAgent || navigator.vendor || window.opera;
+                        const isInApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("Messenger") > -1);
 
-                        // স্ক্রিনের সাইজ অনুযায়ী পপ-আপের পজিশন ঠিক করা হচ্ছে
-                        const width = 1200;
-                        const height = 800;
-                        const left = (window.innerWidth - width) / 2;
-                        const top = (window.innerHeight - height) / 2;
-
-                        window.open(
-                            "https://shop-jewellers-client.web.app",
-                            "_blank",
-                            `noopener,noreferrer,width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
-                        );
+                        if (isInApp) {
+                            // 📱 ফেসবুক/মেসেঞ্জারের ভেতর থাকলে সরাসরি ক্রোম অ্যাপে পুশ করবে
+                            e.preventDefault();
+                            closeDropdown();
+                            window.location.href = "intent://shop-jewellers-client.web.app/#Intent;scheme=https;package=com.android.chrome;end";
+                        } else {
+                            // 💻 রেগুলার ব্রাউজার বা পিসির জন্য নরমাল ওপেন
+                            closeDropdown();
+                        }
                     }}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}
                 >
                     <FaStore /> ভিজিট শপ 👋
@@ -83,12 +93,12 @@ const NavBar = () => {
     );
 
     return (
-        <div className="navbar fixed top-8 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 pt-2 pb-2">
+        <div className="navbar fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 py-2.5">
 
             {/* ================= NAVBAR START ================= */}
             <div className="navbar-start">
                 <div className="dropdown">
-                    <label tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2">
+                    <label tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2 min-h-0 h-auto">
                         ☰
                     </label>
                     <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 p-3 bg-slate-950 text-white rounded-xl w-56 shadow-2xl border border-white/10 z-[100] space-y-1">
@@ -97,12 +107,12 @@ const NavBar = () => {
                         {isAdmin && (
                             <>
                                 <div className="divider border-white/10 my-1 text-xs text-orange-400/70 font-semibold tracking-wider uppercase pl-2">Admin Actions</div>
-                                <li><Link to="/dashboard/add-staff" className={linkStyle}><FaUserPlus /> Add Staff</Link></li>
-                                <li><Link to="/dashboard/expenses" className={linkStyle}><FaMoneyBill /> Expenses</Link></li>
-                                <li><Link to="/dashboard/add-profit" className={linkStyle}><FaMoneyBill /> Add Profit</Link></li>
-                                <li><Link to="/dashboard/add-cash" className={linkStyle}><FaPlusCircle /> Add Cash</Link></li>
-                                <li><Link to="/dashboard/paboTaka" className={linkStyle}><FaHandHoldingUsd /> Pabo Taka</Link></li>
-                                <li><Link to="/dashboard/howlad-newa" className={linkStyle}><FaFileInvoiceDollar /> Add Howlad</Link></li>
+                                <li><Link to="/dashboard/add-staff" onClick={closeDropdown} className={linkStyle}><FaUserPlus /> Add Staff</Link></li>
+                                <li><Link to="/dashboard/expenses" onClick={closeDropdown} className={linkStyle}><FaMoneyBill /> Expenses</Link></li>
+                                <li><Link to="/dashboard/add-profit" onClick={closeDropdown} className={linkStyle}><FaMoneyBill /> Add Profit</Link></li>
+                                <li><Link to="/dashboard/add-cash" onClick={closeDropdown} className={linkStyle}><FaPlusCircle /> Add Cash</Link></li>
+                                <li><Link to="/dashboard/paboTaka" onClick={closeDropdown} className={linkStyle}><FaHandHoldingUsd /> Pabo Taka</Link></li>
+                                <li><Link to="/dashboard/howlad-newa" onClick={closeDropdown} className={linkStyle}><FaFileInvoiceDollar /> Add Howlad</Link></li>
                             </>
                         )}
                     </ul>
@@ -119,17 +129,18 @@ const NavBar = () => {
                     {commonOptions}
 
                     {isAdmin && (
-                        <li className="dropdown dropdown-hover">
+                        <li className="dropdown dropdown-hover group">
                             <label tabIndex={0} className={`${linkStyle} cursor-pointer gap-1 text-orange-400 font-medium`}>
-                                Admin Management <FaChevronDown className="text-xs transition-transform duration-200 group-hover:rotate-180" />
+                                Admin Management
+                                <FaChevronDown className="text-xs transition-transform duration-200 group-hover:rotate-180" />
                             </label>
                             <ul tabIndex={0} className="dropdown-content menu p-2 bg-slate-900/95 backdrop-blur-lg border border-white/10 rounded-xl w-56 shadow-2xl mt-0 z-[100] space-y-0.5">
-                                <li><Link to="/dashboard/add-staff" className={dropdownLinkStyle}><FaUserPlus className="text-orange-400" /> Add Staff</Link></li>
-                                <li><Link to="/dashboard/expenses" className={dropdownLinkStyle}><FaMoneyBill className="text-red-400" /> Expenses</Link></li>
-                                <li><Link to="/dashboard/add-profit" className={dropdownLinkStyle}><FaMoneyBill className="text-green-400" /> Add Profit</Link></li>
-                                <li><Link to="/dashboard/add-cash" className={dropdownLinkStyle}><FaPlusCircle className="text-blue-400" /> Add Cash</Link></li>
-                                <li><Link to="/dashboard/paboTaka" className={dropdownLinkStyle}><FaHandHoldingUsd className="text-amber-400" /> Pabo Taka</Link></li>
-                                <li><Link to="/dashboard/howlad-newa" className={dropdownLinkStyle}><FaFileInvoiceDollar className="text-purple-400" /> Add Howlad</Link></li>
+                                <li><Link to="/dashboard/add-staff" onClick={closeDropdown} className={dropdownLinkStyle}><FaUserPlus className="text-orange-400" /> Add Staff</Link></li>
+                                <li><Link to="/dashboard/expenses" onClick={closeDropdown} className={dropdownLinkStyle}><FaMoneyBill className="text-red-400" /> Expenses</Link></li>
+                                <li><Link to="/dashboard/add-profit" onClick={closeDropdown} className={dropdownLinkStyle}><FaMoneyBill className="text-green-400" /> Add Profit</Link></li>
+                                <li><Link to="/dashboard/add-cash" onClick={closeDropdown} className={dropdownLinkStyle}><FaPlusCircle className="text-blue-400" /> Add Cash</Link></li>
+                                <li><Link to="/dashboard/paboTaka" onClick={closeDropdown} className={dropdownLinkStyle}><FaHandHoldingUsd className="text-amber-400" /> Pabo Taka</Link></li>
+                                <li><Link to="/dashboard/howlad-newa" onClick={closeDropdown} className={dropdownLinkStyle}><FaFileInvoiceDollar className="text-purple-400" /> Add Howlad</Link></li>
                             </ul>
                         </li>
                     )}
