@@ -17,9 +17,11 @@ const SignUp = () => {
         const name = form.name.value;
         const email = form.email.value;
         const password = form.password.value;
-        const photoURL = form.photoURL?.value || "https://i.ibb.co/vHZ369b/placeholder.png";
 
-        // পাসওয়ার্ড ভ্যালিডেশন (কমপক্ষে ৬ ক্যারেক্টার)
+        // ডিফল্ট অ্যাভাটার ইমেজ (সচল লিংক)
+        const photoURL = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+
+        // পাসওয়ার্ড ভ্যালিডেশন
         if (password.length < 6) {
             Swal.fire({
                 icon: "warning",
@@ -35,7 +37,7 @@ const SignUp = () => {
             // ১. নতুন ইউজার তৈরি করা
             await createUser(email, password);
 
-            // ২. প্রোফাইল আপডেট করা (নাম ও ছবি সেট করা)
+            // ২. প্রোফাইল আপডেট করা
             await updateUserProfile(name, photoURL);
 
             Swal.fire({
@@ -45,16 +47,15 @@ const SignUp = () => {
                 timer: 1500
             });
 
-            // অ্যাকাউন্ট তৈরির পর সরাসরি ড্যাশবোর্ডে নিয়ে যাবে
+            // রিডাইরেক্ট টু ড্যাশবোর্ড
             navigate("/dashboard/userHome", { replace: true });
 
         } catch (error) {
             console.error("SignUp Error:", error);
 
-            // 🎯 Firebase Email Already in Use এবং অন্যান্য এরর হ্যান্ডলিং
             let errorMessage = "সাইন-আপ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
 
-            if (error.code === "auth/email-already-in-use" || error.message.includes("email-already-in-use")) {
+            if (error.code === "auth/email-already-in-use" || error.message?.includes("email-already-in-use")) {
                 errorMessage = "এই ইমেইলটি দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট তৈরি করা আছে! দয়া করে লগইন করুন।";
             } else if (error.code === "auth/invalid-email") {
                 errorMessage = "ইমেইল ফরম্যাটটি সঠিক নয়। সঠিক ইমেইল দিন।";
@@ -67,7 +68,6 @@ const SignUp = () => {
                 title: "সাইন-আপ ফেইল!",
                 text: errorMessage
             });
-
         } finally {
             setSubmitLoading(false);
         }
@@ -87,11 +87,6 @@ const SignUp = () => {
                     {/* Email Input */}
                     <div className="form-control mt-3">
                         <input name="email" type="email" placeholder="Email" className="input input-bordered bg-black/40 border-yellow-500 focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400" required />
-                    </div>
-
-                    {/* Photo URL Input (Optional) */}
-                    <div className="form-control mt-3">
-                        <input name="photoURL" type="url" placeholder="Photo URL (Optional)" className="input input-bordered bg-black/40 border-yellow-500 focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400" />
                     </div>
 
                     {/* Password Input */}
