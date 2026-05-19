@@ -59,14 +59,23 @@ const Login = () => {
 
     try {
       setSubmitLoading(true);
+
+      // ১. ফায়ারবেস দিয়ে লগইন সফল করা
       await signIn(email, password);
+
       Swal.fire({
         icon: "success",
         title: "Login Successful",
         showConfirmButton: false,
         timer: 1500
       });
-      navigate(from, { replace: true });
+
+      // 🎯 ফিক্স: ১ সেকেন্ড বিরতি দেওয়া হলো যাতে AuthProvider ব্যাকএন্ড থেকে JWT টোকেন এনে 
+      // LocalStorage-এ সেট করার জন্য পর্যাপ্ত সময় পায়।
+      setTimeout(() => {
+        navigate(from || "/dashboard", { replace: true });
+      }, 1000);
+
     } catch (error) {
       console.error(error);
 
@@ -86,7 +95,11 @@ const Login = () => {
       setIsCaptchaVerified(false);
       if (captchaRef.current) captchaRef.current.value = "";
     } finally {
-      setSubmitLoading(false);
+      // 🎯 ফিক্স: সাবমিট লোডিং এখানে ফলস না করে, সফল হলে ১ সেকেন্ড পরে ফলস হবে 
+      // অথবা এরর হলে সাথে সাথে ফলস হবে।
+      if (!auth.currentUser) {
+        setSubmitLoading(false);
+      }
     }
   };
 
