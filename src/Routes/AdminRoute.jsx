@@ -7,7 +7,6 @@ const AdminRoute = ({ children }) => {
     const [isAdmin, isAdminLoading] = useAdmin();
     const location = useLocation();
 
-    // দুটি লোডিং স্টেটই একসাথে হ্যান্ডেল করা হলো যাতে ডাটা আসা পর্যন্ত পেজ হোল্ড থাকে
     if (loading || isAdminLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -16,18 +15,18 @@ const AdminRoute = ({ children }) => {
         );
     }
 
-    // ইউজার যদি লগইন করা থাকে এবং সে যদি এডমিন হয় তবেই কেবল চিলড্রেন দেখাবে
+    // ✅ ইউজার যদি লগইন করা থাকে এবং এডমিন হয়, তবেই কেবল Admin Component দেখাবে
     if (user && isAdmin) {
         return children;
     }
 
-    // ইউজার লগইন না থাকলে লগইন পেজে পাঠাবে
-    if (!user) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
+    // 🎯 ইউজার লগইন আছে কিন্তু এডমিন নয়, তাকে জেনারেল ইউজার ড্যাশবোর্ডে পাঠানো হোক
+    if (user && !isAdmin) {
+        return <Navigate to="/dashboard" replace />;
     }
 
-    // ইউজার লগইন আছে কিন্তু এডমিন নয়, তাকে ইউজার হোমে পাঠাবে
-    return <Navigate to="/dashboard/userHome" replace />;
+    // ইউজার একদমই লগইন না থাকলে লগইন পেজে পাঠাবে
+    return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default AdminRoute;
