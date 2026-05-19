@@ -4,7 +4,6 @@ import useAuth from "../../../hooks/useAuth";
 import useAdmin from "../../../hooks/useAdmin";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 
-// চার্টের কালার লিস্ট (বাকি যোগ করায় ৫টি কালার দেওয়া হয়েছে)
 const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7", "#f59e0b"];
 
 const Card = ({ title, value, colorClass, isMoney = true }) => (
@@ -49,18 +48,17 @@ const AdminHome = () => {
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
     const totalProfit = stats.totalProfit || 0;
     const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
-
-    // ডাটাবেজ থেকে আসা মাইনাস ভ্যালুগুলোকে পজিটিভ করে ড্যাশবোর্ডে দেখানোর ফিক্স
     const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0);
 
-    // পাই-চার্টে বাকি/ধারের পরিমাণ যুক্ত করা হয়েছে
     const pieChartData = [
-        { name: "অবশিষ্ট ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
+        { name: "অবशिष्ट ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
         { name: "মোট খরচ", value: stats.totalExpenseCombined || 0 },
         { name: "মোট ক্যাশ ইন", value: stats.totalCashCombined || 0 },
         { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
         { name: "মোট বাকি/ধার", value: totalTransactionMinus },
     ];
+
+    const hasData = pieChartData.some(item => item.value > 0);
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
@@ -94,7 +92,6 @@ const AdminHome = () => {
                 <Card title="Total Expenses (Combined)" value={stats.totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
                 <Card title="General Expenses" value={stats.totalExpenseAmount} colorClass="text-red-500" />
                 <Card title="Staff Salary" value={stats.totalStaffSalary} colorClass="text-red-500" />
-                {/* ফিক্সড কার্ড: এখানে Math.abs করা ভ্যালুটি নিখুঁতভাবে শো করবে */}
                 <Card title="Given / Due / Remaining" value={totalTransactionMinus} colorClass="text-red-500" />
 
                 <div className="col-span-2 md:col-span-3 lg:col-span-4 mt-2">
@@ -106,40 +103,39 @@ const AdminHome = () => {
             </div>
 
             {/* 📉 PIE CHART */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto relative">
                 <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center">
                     Business Overview Pie Chart
                 </h2>
 
-                {/* ফিক্স: এখানেও কন্ডিশনাল রেন্ডারিং করা হয়েছে */}
-                {(!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0)) ? (
-                    <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                {!hasData && (
+                    <div className="absolute inset-0 bg-white/90 z-10 flex items-center justify-center text-gray-400 text-sm font-medium rounded-2xl">
                         চার্ট তৈরি করার জন্য পর্যাপ্ত ডাটা নেই...
                     </div>
-                ) : (
-                    <div className="flex-1 w-full h-[320px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={pieChartData.map(item => ({ ...item, value: isNaN(Number(item.value)) ? 0 : Number(item.value) }))}
-                                    cx="50%"
-                                    cy="45%"
-                                    labelLine={true}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={100}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {pieChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip formatter={(value) => `৳${Number(value).toLocaleString("en-BD")}`} />
-                                <Legend verticalAlign="bottom" layout="horizontal" align="center" iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
                 )}
+
+                <div className="flex-1 w-full h-[320px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={pieChartData}
+                                cx="50%"
+                                cy="45%"
+                                labelLine={true}
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={100}
+                                fill="#8884d8"
+                                dataKey="value"
+                            >
+                                {pieChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `৳${Number(value).toLocaleString("en-BD")}`} />
+                            <Legend verticalAlign="bottom" layout="horizontal" align="center" iconType="circle" />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
         </div>
     );
