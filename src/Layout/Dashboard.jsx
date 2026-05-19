@@ -25,42 +25,34 @@ const Dashboard = () => {
     const [isAdmin, isAdminLoading] = useAdmin();
     const scrollContainerRef = useRef(null);
 
-    // মাউস দিয়ে ক্লিক করে টেনে (Drag) স্ক্রোল করার জন্য স্টেট
     const [isDown, setIsDown] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    // ১. মাউসের চাকা ঘুরালে ডানে-বামে স্ক্রোল করার লজিক
     const handleWheel = (e) => {
         if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollLeft += e.deltaY * 1.5; // ১.৫ গুণ গতি বাড়ানো হয়েছে
+            scrollContainerRef.current.scrollLeft += e.deltaY * 1.5;
         }
     };
 
-    // ২. মাউস ক্লিক করে ড্র্যাগ (Drag) শুরু করার লজিক
     const handleMouseDown = (e) => {
         setIsDown(true);
         setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
         setScrollLeft(scrollContainerRef.current.scrollLeft);
     };
 
-    // মাউস ছেড়ে দিলে বা কন্টেইনারের বাইরে চলে গেলে
     const handleMouseLeaveOrUp = () => {
         setIsDown(false);
     };
 
-    // মাউস ড্র্যাগ করার সময় স্ক্রোল মুভমেন্ট
     const handleMouseMove = (e) => {
         if (!isDown) return;
-
         const x = e.pageX - scrollContainerRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // স্ক্রোলের স্পিড দ্বিগুণ করা হয়েছে
+        const walk = (x - startX) * 2;
 
-        // 🎯 ফিক্স: ক্লিক করার সময় হাত সামান্য নড়লে যেন লিংক কাজ করে (Threshold সেট করা হলো)
         if (Math.abs(x - startX) > 5) {
-            e.preventDefault(); // শুধুমাত্র বেশি দূর ড্র্যাগ করলেই ডিফল্ট ক্লিক আটকাবে
+            e.preventDefault();
         }
-
         scrollContainerRef.current.scrollLeft = scrollLeft - walk;
     };
 
@@ -86,7 +78,6 @@ const Dashboard = () => {
             <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[96%] md:w-[94%] lg:w-[90%] xl:w-[85%] z-50">
                 <div className="bg-orange-600/95 backdrop-blur-md rounded-[2rem] shadow-2xl border border-white/20">
 
-                    {/* SCROLLABLE / FLEX BOX */}
                     <div
                         ref={scrollContainerRef}
                         onWheel={handleWheel}
@@ -94,15 +85,13 @@ const Dashboard = () => {
                         onMouseLeave={handleMouseLeaveOrUp}
                         onMouseUp={handleMouseLeaveOrUp}
                         onMouseMove={handleMouseMove}
-                        className={`overflow-x-auto no-scrollbar w-full py-3 px-4 ${isDown ? "cursor-grabbing" : "cursor-grab"
-                            }`}
+                        className={`overflow-x-auto no-scrollbar w-full py-3 px-4 ${isDown ? "cursor-grabbing" : "cursor-grab"}`}
                         style={{
                             WebkitOverflowScrolling: "touch",
                             scrollbarWidth: "none",
                             msOverflowStyle: "none",
                         }}
                     >
-                        {/* CSS: স্ক্রোলবার হাইড করার জন্য */}
                         <style>{`
                             .no-scrollbar::-webkit-scrollbar {
                                 display: none;
@@ -111,20 +100,11 @@ const Dashboard = () => {
 
                         <div className="flex items-center justify-start gap-1 sm:gap-2 md:gap-4 min-w-max mx-auto">
 
-                            {/* PROFILE */}
-                            <div className="flex-shrink-0 bg-transparent pr-1 md:pr-2 sticky left-0 z-10 pointer-events-none">
-                                <img
-                                    src={
-                                        user?.photoURL ||
-                                        "https://i.ibb.co/mJR9mkv/default-user.png"
-                                    }
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white object-cover shadow-md"
-                                    alt="user"
-                                />
-                            </div>
-
-                            {/* LINKS */}
-                            <NavLink to="/dashboard/userHome" className={linkStyle}>
+                            {/* 🎯 কন্ডিশনাল হোম রাউট ফিক্স: এডমিন হলে adminHome এ যাবে, অন্যথায় userHome */}
+                            <NavLink
+                                to={!isAdminLoading && isAdmin ? "/dashboard/adminHome" : "/dashboard/userHome"}
+                                className={linkStyle}
+                            >
                                 <FaHome className="text-lg md:text-xl" />
                                 <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Home</span>
                             </NavLink>
