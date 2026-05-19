@@ -37,7 +37,7 @@ const NavBar = () => {
         }
     };
 
-    // 🎯 ফিক্স: ড্রপডাউন মেনু এবং ইন-অ্যাপ অ্যাকশনের পর ফোকাস রিমুভ করার ফাংশন
+    // 🎯 ড্রপডাউন মেনু এবং ইন-অ্যাপ অ্যাকশনের পর ফোকাস রিমুভ করার ফাংশন
     const closeDropdown = () => {
         const elem = document.activeElement;
         if (elem) {
@@ -48,7 +48,8 @@ const NavBar = () => {
     const linkStyle = "flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:text-orange-400 hover:bg-white/5 transition duration-200";
     const dropdownLinkStyle = "flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:text-orange-400 hover:bg-slate-800 transition rounded-md";
 
-    const commonOptions = (
+    // 🛠️ ফিক্স: ভেরিয়েবলের বদলে ফাংশন করা হলো যাতে রিয়্যাক্ট লাইফসাইকেলে এরর #310 না আসে
+    const renderCommonOptions = () => (
         <>
             <li>
                 <Link to="/" onClick={closeDropdown} className={linkStyle}>Home</Link>
@@ -68,17 +69,14 @@ const NavBar = () => {
                 <a
                     href="https://shop-jewellers-client.web.app"
                     onClick={(e) => {
-                        // ইন-অ্যাপ ব্রাউজার ডিটেক্ট করার ইন্টেলিজেন্ট ট্রিক
                         const ua = navigator.userAgent || navigator.vendor || window.opera;
                         const isInApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("Messenger") > -1);
 
                         if (isInApp) {
-                            // 📱 ফেসবুক/মেসেঞ্জারের ভেতর থাকলে সরাসরি ক্রোম অ্যাপে পুশ করবে
                             e.preventDefault();
                             closeDropdown();
                             window.location.href = "intent://shop-jewellers-client.web.app/#Intent;scheme=https;package=com.android.chrome;end";
                         } else {
-                            // 💻 রেগুলার ব্রাউজার বা পিসির জন্য নরমাল ওপেন
                             closeDropdown();
                         }
                     }}
@@ -86,7 +84,7 @@ const NavBar = () => {
                     rel="noopener noreferrer"
                     className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}
                 >
-                    <FaStore /> ভিজিট শপ 👋
+                    <FaStore /> ভিジット শপ 👋
                 </a>
             </li>
         </>
@@ -102,7 +100,7 @@ const NavBar = () => {
                         ☰
                     </label>
                     <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 p-3 bg-slate-950 text-white rounded-xl w-56 shadow-2xl border border-white/10 z-[100] space-y-1">
-                        {commonOptions}
+                        {renderCommonOptions()}
 
                         {isAdmin && (
                             <>
@@ -126,7 +124,7 @@ const NavBar = () => {
             {/* ================= NAVBAR CENTER ================= */}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 gap-2 items-center">
-                    {commonOptions}
+                    {renderCommonOptions()}
 
                     {isAdmin && (
                         <li className="dropdown dropdown-hover group">
