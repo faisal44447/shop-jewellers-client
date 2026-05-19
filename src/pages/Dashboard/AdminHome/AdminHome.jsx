@@ -5,10 +5,11 @@ import useAdmin from "../../../hooks/useAdmin";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
 
-const colors = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b"];
+// চার্টের জন্য প্রফেশনাল কালার প্যালেট
+const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7"];
 
 const Card = ({ title, value, colorClass, isMoney = true }) => (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-orange-500 w-full transition-transform duration-200 hover:scale-[1.02]">
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-orange-400 w-full transition-transform duration-200 hover:scale-[1.02]">
         <h3 className="text-gray-500 text-xs font-semibold tracking-wide uppercase">{title}</h3>
         <p className={`text-xl md:text-2xl font-bold mt-1 break-words ${colorClass}`}>
             {isMoney ? `৳${(value || 0).toLocaleString("en-BD")}` : value || 0}
@@ -40,7 +41,7 @@ const AdminHome = () => {
     if (isError) {
         return (
             <div className="text-center py-10 text-red-500 font-bold w-full bg-white rounded-2xl shadow-sm border">
-                ❌ ড্যাশবোর্ড ডাটা লোড করতে ব্যর্থ হয়েছে। অনুগ্রহ করে সার্ভার কানেকশন চেক করুন।
+                ❌ ড্যাশবোর্ড ডাটা লোড করতে ব্যর্থ হয়েছে। অনুগ্রহ করে সার্ভার কানেকশন চেক করুন।
             </div>
         );
     }
@@ -48,20 +49,20 @@ const AdminHome = () => {
     const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
 
-    // 🟢 লাভ হলে সবুজ টেক্সট, 🔴 লস হলে লাল টেক্সট কন্ডিশন
     const totalProfit = stats.totalProfit || 0;
     const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
 
+    // 📉 পাই চার্ট ডাটা স্ট্রাকচার সেফটি চেক
     const pieChartData = [
-        { name: "Net Remaining Cash", value: Math.abs(netBusinessCash) },
-        { name: "Total Expenses", value: stats.totalExpenseCombined || 0 },
-        { name: "Total Cash In", value: stats.totalCashCombined || 0 },
-        { name: "Stock Value", value: stats.totalStockValue || 0 },
+        { name: "অবশিষ্ট ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
+        { name: "মোট খরচ", value: stats.totalExpenseCombined || 0 },
+        { name: "মোট ক্যাশ ইন", value: stats.totalCashCombined || 0 },
+        { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
     ];
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
-            {/* 💎 HEADER (Updated subtitle) */}
+            {/* 💎 HEADER */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
                 <img
                     src={user?.photoURL || "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150"}
@@ -115,23 +116,43 @@ const AdminHome = () => {
 
             {/* CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 w-full">
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px] w-full">
-                    <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full">
+                    <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center lg:text-left">
                         Business Overview Pie Chart
                     </h2>
-                    <div className="flex-1 w-full h-full min-h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={pieChartData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={90} fill="#8884d8" dataKey="value" >
-                                    {pieChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip formatter={(value) => `৳${value.toLocaleString("en-BD")}`} />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
+
+                    {/* সেফটি রেন্ডারিং কন্ডিশন */}
+                    {!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0) ? (
+                        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                            চার্ট তৈরি করার জন্য পর্যাপ্ত ডাটা নেই...
+                        </div>
+                    ) : (
+                        <div className="flex-1 w-full h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieChartData.map(item => ({
+                                            ...item,
+                                            value: isNaN(Number(item.value)) ? 0 : Number(item.value)
+                                        }))}
+                                        cx="50%"
+                                        cy="45%"
+                                        labelLine={true}
+                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        outerRadius={95}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {pieChartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value) => `৳${Number(value).toLocaleString("en-BD")}`} />
+                                    <Legend verticalAlign="bottom" layout="horizontal" align="center" iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
                 </div>
 
                 <div className="w-full">
