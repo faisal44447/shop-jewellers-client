@@ -58,14 +58,18 @@ const UserHome = () => {
 
     const pieChartData = [
         { name: "অবशिष्ट ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
-        { name: "মোট খরচ", value: totalExpenseCombined },
-        { name: "মোট বিক্রি", value: totalSales },
+        { name: "মোট খরচ", value: totalExpenseCombined || 0 },
+        { name: "মোট বিক্রি", value: totalSales || 0 },
         { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
-        { name: "মোট বাকি/ধার", value: totalTransactionMinus },
+        { name: "মোট বাকি/ধার", value: totalTransactionMinus || 0 },
     ];
 
-    // ডাটা আছে কিনা তা চেক করার নিরাপদ উপায়
     const hasData = pieChartData.some(item => Number(item.value) > 0);
+
+    // ডাটা না থাকলে Recharts-কে ক্র্যাশ থেকে বাঁচাতে একদম প্লেইন ডাটা পাস করব
+    const safeChartData = hasData
+        ? pieChartData
+        : [{ name: "No Data", value: 1 }];
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
@@ -109,12 +113,11 @@ const UserHome = () => {
             {/* 📉 PIE CHART (FIXED: হুক এরর আসবে না) */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto relative">
                 <h2 className="text-gray-700 font-bold mb-6 text-sm uppercase tracking-wide text-center">
-                    জুয়েলারি শপ Overview Chart
+                    Business Overview Chart
                 </h2>
 
-                {/* ডাটা না থাকলে চার্ট হাইড না করে উপরে একটি সুন্দর লেয়ার তৈরি করা হয়েছে */}
                 {!hasData && (
-                    <div className="absolute inset-0 bg-white/95 z-10 flex items-center justify-center text-gray-400 text-sm font-medium rounded-2xl">
+                    <div className="absolute inset-0 bg-white/95 z-20 flex items-center justify-center text-gray-400 text-sm font-medium rounded-2xl">
                         কোনো ডাটা পাওয়া যায়নি অথবা লোড হচ্ছে...
                     </div>
                 )}
@@ -123,21 +126,22 @@ const UserHome = () => {
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                                data={pieChartData}
+                                data={safeChartData}
                                 cx="50%"
                                 cy="45%"
-                                labelLine={true}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                labelLine={hasData}
+                                label={hasData ? ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%` : false}
                                 outerRadius={100}
                                 fill="#8884d8"
                                 dataKey="value"
+                                isAnimationActive={false} // 🌟 ফিক্স: অ্যানিমেশন অফ করলে ইন্টারনাল হুক এরর চিরতরে বন্ধ হবে
                             >
-                                {pieChartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                {safeChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={hasData ? colors[index % colors.length] : "#e5e7eb"} />
                                 ))}
                             </Pie>
-                            <Tooltip formatter={(value) => `৳${Number(value).toLocaleString("en-BD")}`} />
-                            <Legend verticalAlign="bottom" layout="horizontal" align="center" iconType="circle" />
+                            {hasData && <Tooltip formatter={(value) => `৳${Number(value).toLocaleString("en-BD")}`} />}
+                            {hasData && <Legend verticalAlign="bottom" layout="horizontal" align="center" iconType="circle" />}
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
