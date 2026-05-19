@@ -10,7 +10,8 @@ import {
     FaPlusCircle,
     FaHandHoldingUsd,
     FaFileInvoiceDollar,
-    FaChevronDown
+    FaChevronDown,
+    FaStore
 } from "react-icons/fa";
 import laivinIcon from "../../../assets/laivinIcon.png";
 
@@ -54,16 +55,25 @@ const NavBar = () => {
                     </span>
                 </Link>
             </li>
+            <li>
+                <a
+                    href="https://shop-jewellers-client.web.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${linkStyle} text-orange-400 font-medium`}
+                >
+                    <FaStore /> ভিজিট শপ 👋
+                </a>
+            </li>
         </>
     );
 
     return (
         /* 
-          ت এখানে পরিবর্তন করা হয়েছে:
-          ১. `top-0` এর বদলে `top-5` (অথবা মোবাইলে safe area র জন্য pt-[env(safe-area-inset-top)]) ব্যবহার করা হয়েছে।
-          ২. `left-5` এর কারণে ডানপাশে স্ক্রিন কেটে যেতে পারে, তাই `left-0` করে ভেতরে `px-4` বা মার্জিন অ্যাড করা হয়েছে।
+          📱 মোবাইল ফোনের টাইম এবং নেটওয়ার্ক বার থেকে ন্যাভবারকে নিচে নামানোর জন্য:
+          `top-8` (অথবা ৩২ পিক্সেল নিচে নামানো হয়েছে) এবং ওপরে প্যাডিং `pt-2` সেফ জোনের জন্য রাখা হয়েছে।
         */
-        <div className="navbar fixed top-5 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 pt-[env(safe-area-inset-top)]">
+        <div className="navbar fixed top-8 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 pt-2 pb-2">
 
             {/* ================= NAVBAR START (LOGO & MOBILE MENU) ================= */}
             <div className="navbar-start">
@@ -124,7 +134,7 @@ const NavBar = () => {
                 {user ? (
                     <div className="flex items-center gap-2.5 bg-white/5 p-1.5 pr-3 rounded-full border border-white/10">
                         <img
-                            src={user?.photoURL || "https://i.ibb.co/vHZ369b/placeholder.png"}
+                            src={user?.photoURL || "https://ui-avatars.com/api/?name=User&background=ff7e47&color=fff"}
                             className="w-8 h-8 rounded-full border border-orange-500 object-cover shadow-inner"
                             alt="User"
                             title={user?.displayName || "User"}

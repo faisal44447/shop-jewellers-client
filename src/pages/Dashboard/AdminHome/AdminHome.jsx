@@ -59,13 +59,8 @@ const AdminHome = () => {
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
-            {/* 💎 HEADER */}
+            {/* 💎 HEADER (ইমেজ সম্পূর্ণ কেটে দেওয়া হয়েছে) */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
-                <img
-                    src={user?.photoURL || "https://ui-avatars.com/api/?name=Admin&background=ff7e47&color=fff"}
-                    className="w-14 h-14 rounded-full border-2 border-orange-500 object-cover shadow-sm"
-                    alt="Admin Avatar"
-                />
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800">
                         হ্যালো, <span className="text-orange-500">{user?.displayName || "এডমিন"}</span>
@@ -104,7 +99,7 @@ const AdminHome = () => {
                 <Card title="Total Profit / Gain" value={totalProfit} colorClass={profitColorClass} />
             </div>
 
-            {/* 📉 PIE CHART ONLY */}
+            {/* 📉 PIE CHART */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto">
                 <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center">
                     Business Overview Pie Chart
