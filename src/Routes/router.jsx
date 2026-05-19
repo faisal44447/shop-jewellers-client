@@ -36,10 +36,32 @@ import SoldProducts from "../pages/Dashboard/SoldProducts/SoldProducts";
 import AddCash from "../pages/Dashboard/AddCash/AddCash";
 import CashList from "../pages/Dashboard/CashList/CashList";
 
+// ⚠️ ড্যাশবোর্ড বা চার্ট ক্র্যাশ হলে সাদা স্ক্রিন আসা বন্ধ করার জন্য এরর কম্পোনেন্ট
+const GlobalErrorPage = () => {
+  return (
+    <div className="min-h-[60vh] w-full flex flex-col items-center justify-center p-6 text-center bg-white rounded-2xl shadow-sm border border-red-100 my-4">
+      <div className="max-w-md">
+        <span className="text-5xl">⚠️</span>
+        <h1 className="text-xl font-bold text-gray-800 mt-4">কোথাও একটু ভুল হয়েছে!</h1>
+        <p className="text-sm text-gray-500 mt-2">
+          ড্যাশবোর্ডের ডাটা বা চার্ট প্রসেস করতে সাময়িক সমস্যা হচ্ছে। অনুগ্রহ করে পেজটি রিফ্রেশ দিন।
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-5 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm"
+        >
+          পেজ রিলোড দিন 🔄
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Main />,
+    errorElement: <GlobalErrorPage />, // ১. গ্লোবাল রুট লেভেলে এরর হ্যান্ডেলার
     children: [
       { path: "/", element: <Home /> },
       { path: "login", element: <Login /> },
@@ -53,9 +75,9 @@ export const router = createBrowserRouter([
         <Dashboard />
       </PrivateRoute>
     ),
+    errorElement: <GlobalErrorPage />, // ২. ড্যাশবোর্ড লেভেলে এরর হ্যান্ডেলার (চার্ট এরর রুখে দেবে)
     children: [
       // ================= USER ROUTES =================
-      // এই পেজগুলো সাধারণ ইউজার এবং অ্যাডমিন সবাই দেখতে পারবে
       { index: true, element: <UserHome /> },
       { path: "userHome", element: <UserHome /> },
       { path: "products", element: <Products /> },
@@ -71,7 +93,6 @@ export const router = createBrowserRouter([
       { path: "profit-list", element: <ProfitList /> },
 
       // ================= ADMIN ONLY ROUTES =================
-      // এই পেজগুলোতে অ্যাডমিন ছাড়া অন্য কেউ ঢুকলে AdminRoute তাকে আটকে দেবে
       { path: "adminHome", element: <AdminRoute><AdminHome /></AdminRoute> },
       { path: "all-users", element: <AdminRoute><AllUsers /></AdminRoute> },
       { path: "add-staff", element: <AdminRoute><AddStaff /></AdminRoute> },

@@ -18,7 +18,7 @@ const UserHome = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
 
-    const { data: stats = {}, isLoading, isError, refetch } = useQuery({
+    const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboardUserData"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
@@ -64,7 +64,8 @@ const UserHome = () => {
         { name: "মোট বাকি/ধার", value: totalTransactionMinus },
     ];
 
-    const hasData = pieChartData.some(item => item.value > 0);
+    // ডাটা আছে কিনা তা চেক করার নিরাপদ উপায়
+    const hasData = pieChartData.some(item => Number(item.value) > 0);
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
@@ -105,14 +106,15 @@ const UserHome = () => {
                 <Card title="মোট প্রফিট/লাভ" value={totalProfit} colorClass={profitColorClass} />
             </div>
 
-            {/* 📉 PIE CHART */}
+            {/* 📉 PIE CHART (FIXED: হুক এরর আসবে না) */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto relative">
                 <h2 className="text-gray-700 font-bold mb-6 text-sm uppercase tracking-wide text-center">
                     জুয়েলারি শপ Overview Chart
                 </h2>
 
+                {/* ডাটা না থাকলে চার্ট হাইড না করে উপরে একটি সুন্দর লেয়ার তৈরি করা হয়েছে */}
                 {!hasData && (
-                    <div className="absolute inset-0 bg-white/90 z-10 flex items-center justify-center text-gray-400 text-sm font-medium rounded-2xl">
+                    <div className="absolute inset-0 bg-white/95 z-10 flex items-center justify-center text-gray-400 text-sm font-medium rounded-2xl">
                         কোনো ডাটা পাওয়া যায়নি অথবা লোড হচ্ছে...
                     </div>
                 )}

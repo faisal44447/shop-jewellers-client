@@ -58,7 +58,8 @@ const AdminHome = () => {
         { name: "মোট বাকি/ধার", value: totalTransactionMinus },
     ];
 
-    const hasData = pieChartData.some(item => item.value > 0);
+    // ডাটা আছে কিনা তা চেক করার নিরাপদ উপায়
+    const hasData = pieChartData.some(item => Number(item.value) > 0);
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
@@ -102,7 +103,7 @@ const AdminHome = () => {
                 <Card title="Total Profit / Gain" value={totalProfit} colorClass={profitColorClass} />
             </div>
 
-            {/* 📉 PIE CHART */}
+            {/* 📉 PIE CHART (FIXED: হুক এরর আসবে না) */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col min-h-[450px] w-full max-w-3xl mx-auto relative">
                 <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center">
                     Business Overview Pie Chart
