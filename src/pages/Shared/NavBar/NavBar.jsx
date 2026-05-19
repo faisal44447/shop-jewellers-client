@@ -19,7 +19,8 @@ const NavBar = () => {
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
 
-    if (!auth) {
+    // 🔄 ফিক্স: যদি Auth কনটেক্সট লোড হতে সময় নেয় বা loading ট্রু থাকে, তবে কোনো কিছু রিটার্ন না করে অপেক্ষা করবে
+    if (!auth || auth.loading) {
         return null;
     }
 
@@ -59,11 +60,18 @@ const NavBar = () => {
                 <a
                     href="https://shop-jewellers-client.web.app"
                     onClick={(e) => {
-                        e.preventDefault(); // পেজ রিফ্রেশ হওয়া বন্ধ করবে
+                        e.preventDefault(); // ড্যাশবোর্ড পেজ রিফ্রেশ হওয়া বন্ধ করবে
+
+                        // স্ক্রিনের সাইজ অনুযায়ী পপ-আপের পজিশন ঠিক করা হচ্ছে
+                        const width = 1200;
+                        const height = 800;
+                        const left = (window.innerWidth - width) / 2;
+                        const top = (window.innerHeight - height) / 2;
+
                         window.open(
                             "https://shop-jewellers-client.web.app",
                             "_blank",
-                            "noopener,noreferrer"
+                            `noopener,noreferrer,width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
                         );
                     }}
                     className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}
@@ -75,13 +83,9 @@ const NavBar = () => {
     );
 
     return (
-        /* 
-          📱 মোবাইল ফোনের টাইম এবং নেটওয়ার্ক বার থেকে ন্যাভবারকে নিচে নামানোর জন্য:
-          `top-8` (অথবা ৩২ পিক্সেল নিচে নামানো হয়েছে) এবং ওপরে প্যাডিং `pt-2` সেফ জোনের জন্য রাখা হয়েছে।
-        */
         <div className="navbar fixed top-8 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 pt-2 pb-2">
 
-            {/* ================= NAVBAR START (LOGO & MOBILE MENU) ================= */}
+            {/* ================= NAVBAR START ================= */}
             <div className="navbar-start">
                 <div className="dropdown">
                     <label tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2">
@@ -106,13 +110,10 @@ const NavBar = () => {
 
                 <Link to="/" className="flex items-center gap-2 ml-2 transition hover:opacity-90">
                     <img src={laivinIcon} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md shadow-orange-500/20" alt="Logo" />
-                    <span className="hidden sm:inline font-bold tracking-wide bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent text-sm">
-                        Al Amin Jewellers
-                    </span>
                 </Link>
             </div>
 
-            {/* ================= NAVBAR CENTER (DESKTOP MENU) ================= */}
+            {/* ================= NAVBAR CENTER ================= */}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 gap-2 items-center">
                     {commonOptions}
@@ -135,7 +136,7 @@ const NavBar = () => {
                 </ul>
             </div>
 
-            {/* ================= NAVBAR END (PROFILE & AUTH) ================= */}
+            {/* ================= NAVBAR END ================= */}
             <div className="navbar-end flex items-center gap-3 pr-1">
                 {user ? (
                     <div className="flex items-center gap-2.5 bg-white/5 p-1.5 pr-3 rounded-full border border-white/10">
