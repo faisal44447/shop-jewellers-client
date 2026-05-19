@@ -3,7 +3,8 @@ import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAuth from "../../../hooks/useAuth";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 
-const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7"];
+// চার্টের কালার লিস্ট (বাকি যোগ করায় ৫টি কালার দেওয়া হয়েছে)
+const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7", "#f59e0b"];
 
 const Card = ({ title, value, colorClass, isMoney = true }) => (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-orange-400 w-full transition-transform duration-200 hover:scale-[1.02]">
@@ -47,22 +48,24 @@ const UserHome = () => {
     const totalStaffSalary = stats.totalStaffSalary || 0;
     const totalCashFromList = stats.totalCashFromList || 0;
     const totalTransactionPlus = stats.totalTransactionPlus || 0;
-    const totalTransactionMinus = stats.totalTransactionMinus || 0;
-
+    
+    // ডাটাবেজ থেকে আসা মাইনাস ভ্যালুগুলোকে পজিটিভ করে ড্যাশবোর্ডে দেখানোর ফিক্স
+    const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0); 
+    
     const totalCashCombined = stats.totalCashCombined || 0;
     const totalExpenseCombined = stats.totalExpenseCombined || 0;
     const netBusinessCash = stats.netBusinessCash || 0;
-
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
-
     const totalProfit = stats.totalProfit || 0;
     const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
 
+    // পাই-চার্টে বাকি/ধারের পরিমাণ যুক্ত করা হয়েছে
     const pieChartData = [
         { name: "অবশিষ্ট ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
         { name: "মোট খরচ", value: totalExpenseCombined },
         { name: "মোট বিক্রি", value: totalSales },
         { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
+        { name: "মোট বাকি/ধার", value: totalTransactionMinus }, 
     ];
 
     return (
@@ -93,12 +96,13 @@ const UserHome = () => {
                 <Card title="মোট বিক্রি (+)" value={totalSales} colorClass="text-green-500" />
                 <Card title="অ্যাড ক্যাশ লিস্ট (+)" value={totalCashFromList} colorClass="text-green-500" />
                 <Card title="ধার/আদায় প্লাস (+)" value={totalTransactionPlus} colorClass="text-green-500" />
-
+                
                 <Card title="মোট খরচ ইন (-)" value={totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
                 <Card title="সাধারণ খরচ (-)" value={totalExpenseAmount} colorClass="text-red-500" />
                 <Card title="স্টাফ বেতন (-)" value={totalStaffSalary} colorClass="text-red-500" />
+                {/* ফিক্সড কার্ড: এখানে Math.abs করা ভ্যালুটি নিখুঁতভাবে শো করবে */}
                 <Card title="ধার/বাকি মাইনাস (-)" value={totalTransactionMinus} colorClass="text-red-500" />
-
+                
                 <Card title="মোট স্টক প্রোডাক্ট" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="স্টক পণ্যের মূল্য" value={stats.totalStockValue} colorClass="text-purple-600" />
                 <Card title="মোট প্রফিট/লাভ" value={totalProfit} colorClass={profitColorClass} />
@@ -109,7 +113,6 @@ const UserHome = () => {
                 <h2 className="text-gray-700 font-bold mb-6 text-sm uppercase tracking-wide text-center">
                     জুয়েলারি শপ Overview Chart
                 </h2>
-
                 {!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0) ? (
                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         কোনো ডাটা পাওয়া যায়নি অথবা লোড হচ্ছে...
@@ -118,17 +121,14 @@ const UserHome = () => {
                     <div className="flex-1 w-full h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie
-                                    data={pieChartData.map(item => ({
-                                        ...item,
-                                        value: isNaN(Number(item.value)) ? 0 : Number(item.value)
-                                    }))}
-                                    cx="50%"
-                                    cy="45%"
-                                    labelLine={true}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={100}
-                                    fill="#8884d8"
+                                <Pie 
+                                    data={pieChartData.map(item => ({ ...item, value: isNaN(Number(item.value)) ? 0 : Number(item.value) }))} 
+                                    cx="50%" 
+                                    cy="45%" 
+                                    labelLine={true} 
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} 
+                                    outerRadius={100} 
+                                    fill="#8884d8" 
                                     dataKey="value"
                                 >
                                     {pieChartData.map((entry, index) => (

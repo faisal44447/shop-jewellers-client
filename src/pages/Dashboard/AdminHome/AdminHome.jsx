@@ -4,7 +4,8 @@ import useAuth from "../../../hooks/useAuth";
 import useAdmin from "../../../hooks/useAdmin";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 
-const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7"];
+// চার্টের কালার লিস্ট (বাকি যোগ করায় ৫টি কালার দেওয়া হয়েছে)
+const colors = ["#3b82f6", "#ef4444", "#10b981", "#a855f7", "#f59e0b"];
 
 const Card = ({ title, value, colorClass, isMoney = true }) => (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-orange-400 w-full transition-transform duration-200 hover:scale-[1.02]">
@@ -46,20 +47,24 @@ const AdminHome = () => {
 
     const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
-
     const totalProfit = stats.totalProfit || 0;
     const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
 
+    // ডাটাবেজ থেকে আসা মাইনাস ভ্যালুগুলোকে পজিটিভ করে ড্যাশবোর্ডে দেখানোর ফিক্স
+    const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0);
+
+    // পাই-চার্টে বাকি/ধারের পরিমাণ যুক্ত করা হয়েছে
     const pieChartData = [
         { name: "অবশিষ্ট ক্যাশ", value: netBusinessCash > 0 ? netBusinessCash : 0 },
         { name: "মোট খরচ", value: stats.totalExpenseCombined || 0 },
         { name: "মোট ক্যাশ ইন", value: stats.totalCashCombined || 0 },
         { name: "স্টক ভ্যালু", value: stats.totalStockValue || 0 },
+        { name: "মোট বাকি/ধার", value: totalTransactionMinus },
     ];
 
     return (
         <div className="w-full space-y-6 px-2 sm:px-4 py-4 bg-gray-50/50 min-h-screen">
-            {/* 💎 HEADER (ইমেজ সম্পূর্ণ কেটে দেওয়া হয়েছে) */}
+            {/* 💎 HEADER */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800">
@@ -89,7 +94,8 @@ const AdminHome = () => {
                 <Card title="Total Expenses (Combined)" value={stats.totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
                 <Card title="General Expenses" value={stats.totalExpenseAmount} colorClass="text-red-500" />
                 <Card title="Staff Salary" value={stats.totalStaffSalary} colorClass="text-red-500" />
-                <Card title="Given / Due / Remaining" value={stats.totalTransactionMinus} colorClass="text-red-500" />
+                {/* ফিক্সড কার্ড: এখানে Math.abs করা ভ্যালুটি নিখুঁতভাবে শো করবে */}
+                <Card title="Given / Due / Remaining" value={totalTransactionMinus} colorClass="text-red-500" />
 
                 <div className="col-span-2 md:col-span-3 lg:col-span-4 mt-2">
                     <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">Inventory & Profits</h4>
@@ -104,7 +110,6 @@ const AdminHome = () => {
                 <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide text-center">
                     Business Overview Pie Chart
                 </h2>
-
                 {!pieChartData || pieChartData.length === 0 || pieChartData.every(item => Number(item.value) === 0) ? (
                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         চার্ট তৈরি করার জন্য পর্যাপ্ত ডাটা নেই...
@@ -114,10 +119,7 @@ const AdminHome = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={pieChartData.map(item => ({
-                                        ...item,
-                                        value: isNaN(Number(item.value)) ? 0 : Number(item.value)
-                                    }))}
+                                    data={pieChartData.map(item => ({ ...item, value: isNaN(Number(item.value)) ? 0 : Number(item.value) }))}
                                     cx="50%"
                                     cy="45%"
                                     labelLine={true}
