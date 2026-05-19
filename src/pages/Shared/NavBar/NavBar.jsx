@@ -58,9 +58,15 @@ const NavBar = () => {
             <li>
                 <a
                     href="https://shop-jewellers-client.web.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${linkStyle} text-orange-400 font-medium`}
+                    onClick={(e) => {
+                        e.preventDefault(); // পেজ রিফ্রেশ হওয়া বন্ধ করবে
+                        window.open(
+                            "https://shop-jewellers-client.web.app",
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }}
+                    className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}
                 >
                     <FaStore /> ভিজিট শপ 👋
                 </a>
