@@ -1,51 +1,48 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import { AuthContext } from "../../providers/AuthProvider";
+import { useContext, useEffect, useRef, useState } from "react";
+import {
+  loadCaptchaEnginge,
+  LoadCanvasTemplate,
+  validateCaptcha
+} from "react-simple-captcha";
+import { AuthContext } from "../../providers/AuthProvider"; // আপনার পাথ অনুযায়ী ঠিক থাকতে পারে
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import SocialLogin from "../../components/SocialLogin/SocialLogin";
-import { LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
+import { Helmet } from "react-helmet-async";
 import Swal from "sweetalert2";
-import { Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const Login = () => {
-  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
-  const [showPass, setShowPass] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
   const captchaRef = useRef(null);
-  const { signIn } = useContext(AuthContext);
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  const { signIn, googleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard/userHome";
 
+  // ইউজার যে পেজ থেকে ব্যাক করেছে সেখানে পাঠানো, অথবা সরাসরি ড্যাশবোর্ডে পাঠানো
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  // ================= CAPTCHA INITIALIZATION =================
   useEffect(() => {
     loadCaptchaEnginge(6);
   }, []);
 
-  const handleVerifyCaptcha = () => {
-    const user_captcha_value = captchaRef.current.value;
+  // ================= HANDLE CAPTCHA VALIDATION =================
+  const handleValidateCaptcha = (e) => {
+    const user_captcha_value = e.target.value;
     if (validateCaptcha(user_captcha_value)) {
       setIsCaptchaVerified(true);
       Swal.fire({
-        toast: true,
-        position: "top-end",
         icon: "success",
-        title: "Captcha Verified",
+        title: "Captcha Verified Successfully!",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1000
       });
     } else {
       setIsCaptchaVerified(false);
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Invalid Captcha! Try again.",
-        showConfirmButton: false,
-        timer: 1500
-      });
-      captchaRef.current.value = "";
     }
   };
 
+  // ================= MAIN LOGIN HANDLER =================
   const handleLogin = async (event) => {
     event.preventDefault();
     const form = event.target;
@@ -73,11 +70,12 @@ const Login = () => {
       // 🎯 ফিক্স: ১ সেকেন্ড বিরতি দেওয়া হলো যাতে AuthProvider ব্যাকএন্ড থেকে JWT টোকেন এনে 
       // LocalStorage-এ সেট করার জন্য পর্যাপ্ত সময় পায়।
       setTimeout(() => {
-        navigate(from || "/dashboard", { replace: true });
+        navigate(from, { replace: true });
       }, 1000);
 
     } catch (error) {
-      console.error(error);
+      console.error("Login Error Details:", error);
+      setSubmitLoading(false); // এরর আসলে লোডিং এখানেই বন্ধ হবে
 
       // 🎯 Firebase Invalid Credential Error Handling
       let errorMessage = "লগইন ব্যর্থ হয়েছে। দয়া করে আবার চেষ্টা করুন।";
@@ -91,76 +89,130 @@ const Login = () => {
         text: errorMessage
       });
 
+      // ক্যাপচা রিসেট করা
       loadCaptchaEnginge(6);
       setIsCaptchaVerified(false);
       if (captchaRef.current) captchaRef.current.value = "";
-    } finally {
-      // 🎯 ফিক্স: সাবমিট লোডিং এখানে ফলস না করে, সফল হলে ১ সেকেন্ড পরে ফলস হবে 
-      // অথবা এরর হলে সাথে সাথে ফলস হবে।
-      if (!auth.currentUser) {
-        setSubmitLoading(false);
-      }
+    }
+  };
+
+  // ================= GOOGLE LOGIN HANDLER =================
+  const handleGoogleLogin = async () => {
+    try {
+      setSubmitLoading(true);
+      await googleLogin();
+      Swal.fire({
+        icon: "success",
+        title: "Google Login Successful",
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+      // গুগল লগইনের জন্যও ১ সেকেন্ডের সেফটি ডিলে
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 1000);
+
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      setSubmitLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Google Login Failed",
+        text: error.message
+      });
     }
   };
 
   return (
-    <div className="hero min-h-screen flex items-center justify-center bg-gray-900 p-4">
-      <div className="card w-full max-w-md p-[2px] rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 shadow-[0_20px_60px_rgba(255,215,0,0.25)]">
-        <form onSubmit={handleLogin} className="card-body rounded-2xl bg-black/70 backdrop-blur-xl text-white">
-          <h2 className="text-3xl font-bold text-center text-yellow-400 tracking-wide">Welcome Back</h2>
-
-          {/* Email Input */}
-          <div className="form-control mt-4">
-            <input name="email" type="email" placeholder="Email" className="input input-bordered bg-black/40 border-yellow-500 focus:ring-2 focus:ring-yellow-400 text-white placeholder-gray-400" required />
+    <>
+      <Helmet>
+        <title>Al Amin Jewellers | Login</title>
+      </Helmet>
+      <div className="hero min-h-screen bg-base-200">
+        <div className="hero-content flex-col lg:flex-row-reverse">
+          <div className="text-center lg:text-left md:w-1/2">
+            <h1 className="text-5xl font-bold">Login now! 💎</h1>
+            <p className="py-6">
+              Welcome back to Al Amin Jewellers Shop Management System. Please securely log in to access your dashboard.
+            </p>
           </div>
+          <div className="card md:w-1/2 max-w-sm shadow-2xl bg-base-100">
+            <form onSubmit={handleLogin} className="card-body">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Email</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="email"
+                  className="input input-bordered"
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Password</span>
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="password"
+                  className="input input-bordered"
+                  required
+                />
+              </div>
 
-          {/* Password Input */}
-          <div className="form-control relative mt-3">
-            <input name="password" type={showPass ? "text" : "password"} placeholder="Password" className="input input-bordered w-full bg-black/40 border-yellow-500 text-white pr-10" required />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3 text-yellow-400 focus:outline-none">
-              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
+              {/* ================= CAPTCHA CANVAS ================= */}
+              <div className="form-control">
+                <label className="label">
+                  <LoadCanvasTemplate />
+                </label>
+                <input
+                  onBlur={handleValidateCaptcha}
+                  type="text"
+                  ref={captchaRef}
+                  name="captcha"
+                  placeholder="Type the captcha text above"
+                  className="input input-bordered"
+                  required
+                />
+              </div>
 
-          {/* Captcha Section */}
-          <div className="form-control mt-3">
-            <div className="bg-white rounded-lg p-1 overflow-hidden flex justify-center items-center">
-              <LoadCanvasTemplate />
-            </div>
-            <div className="relative flex gap-2 mt-2">
-              <input
-                ref={captchaRef}
-                type="text"
-                placeholder="Type captcha above"
-                className="input input-bordered flex-1 bg-black/40 border-yellow-500 text-white"
-                disabled={isCaptchaVerified}
-                required
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleVerifyCaptcha();
-                  }
-                }}
-              />
-              <button type="button" onClick={handleVerifyCaptcha} disabled={isCaptchaVerified} className={`btn font-bold px-4 transition-all ${isCaptchaVerified ? "bg-green-600 border-none text-white disabled:bg-green-600 disabled:text-white" : "bg-yellow-500 hover:bg-yellow-600 text-black border-none"}`}>
-                {isCaptchaVerified ? <CheckCircle size={18} /> : "Verify"}
+              <div className="form-control mt-6">
+                <button
+                  disabled={submitLoading}
+                  className="btn btn-primary"
+                >
+                  {submitLoading ? (
+                    <span className="loading loading-spinner"></span>
+                  ) : (
+                    "Login"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="p-6 text-center pt-0">
+              <div className="divider">OR</div>
+              <button
+                disabled={submitLoading}
+                onClick={handleGoogleLogin}
+                className="btn btn-outline btn-secondary w-full mb-4"
+              >
+                Sign in with Google
               </button>
+              <p>
+                <small>
+                  New here? <Link to="/signup" className="text-primary font-bold">Create an account</Link>
+                </small>
+              </p>
             </div>
           </div>
-
-          {/* Login Button */}
-          <button type="submit" disabled={!isCaptchaVerified || submitLoading} className="btn mt-5 bg-gradient-to-r from-yellow-400 to-orange-500 border-none text-black font-bold shadow-lg hover:scale-105 transition-all disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-500 disabled:scale-100">
-            {submitLoading ? "Logging in..." : "Login"}
-          </button>
-
-          <p className="text-sm mt-3 text-center text-gray-300">
-            New here? <Link to="/signup" className="text-yellow-400 font-bold hover:underline">Create account</Link>
-          </p>
-          <div className="divider before:bg-gray-700 after:bg-gray-700 text-gray-400 text-xs">OR CONNECT WITH</div>
-          <SocialLogin />
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
