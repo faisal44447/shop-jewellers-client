@@ -19,7 +19,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const googleProvider = new GoogleAuthProvider();
-  const axiosPublic = useAxiosPublic();
+  const axiosPublic = useAxiosPublic(); // 👈 এটি অলরেডি ছিল
 
   // CREATE USER
   const createUser = (email, password) => {
@@ -54,33 +54,33 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // OBSERVER (JWT Token handler)
-  // OBSERVER (JWT Token handler)
+  // 🌟 OBSERVER (JWT Token handler Fixed)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, currentUser => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
-      // টোকেন হ্যান্ডেল করার লজিক
       if (currentUser) {
-        // আপনার ব্যাকএন্ডে টোকেনের জন্য রিকোয়েস্ট (যদি axios ব্যবহার করেন)
-        axios.post('https://your-server-url.com/jwt', { email: currentUser.email })
-          .then(data => {
-            if (data.data.token) {
-              localStorage.setItem('access-token', data.data.token);
-              setLoading(false); // 👈 টোকেন পাওয়ার পরই কেবল লোডিং ফলস হবে
-            }
-          })
-      }
-      else {
-        // ইউজার লগআউট করলে টোকেন মুছে যাবে
+        const userInfo = { email: currentUser.email };
+        try {
+          // 🎯 ফিক্স: axios এর বদলে axiosPublic ব্যবহার এবং টোকেন রিকোয়েস্ট
+          const res = await axiosPublic.post('/jwt', userInfo);
+          if (res.data.token) {
+            localStorage.setItem('access-token', res.data.token);
+            setLoading(false); // 👈 টোকেন পাওয়ার পর সাকসেসফুলি লোডিং ফলস
+          }
+        } catch (error) {
+          console.error("JWT Token Fetch Error:", error);
+          localStorage.removeItem('access-token');
+          setLoading(false);
+        }
+      } else {
         localStorage.removeItem('access-token');
         setLoading(false);
       }
     });
-    return () => {
-      return unsubscribe();
-    }
-  }, []);
+
+    return () => unsubscribe();
+  }, [axiosPublic]);
 
   const authInfo = {
     user,
