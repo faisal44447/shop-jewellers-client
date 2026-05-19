@@ -4,12 +4,10 @@ import useAuth from "../../../hooks/useAuth";
 import useAdmin from "../../../hooks/useAdmin";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import MonthlyReport from "../../../components/MonthlyReport/MonthlyReport";
-// 🚀 নতুন ইম্পোর্ট: তোমার তৈরি করা মান্থলি বার চার্টটি ড্যাশবোর্ডে যুক্ত করা হলো
-
 
 const colors = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b"];
 
-// ✅ রেউজেবল কার্ড কম্পোনেন্ট
+// ✅ রেউজেবল কার্ড কম্পোনেন্ট 
 const Card = ({ title, value, colorClass, isMoney = true }) => (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-gray-300 w-full transition-transform duration-200 hover:scale-[1.02]">
         <h3 className="text-gray-500 text-xs font-medium tracking-wide uppercase">{title}</h3>
@@ -25,15 +23,13 @@ const AdminHome = () => {
     const [isAdmin, isAdminLoading] = useAdmin();
 
     // ================= DASHBOARD DATA ================= 
-    const { data: responseData = {}, isLoading, isError } = useQuery({
+    const { data: stats = {}, isLoading, isError } = useQuery({
         queryKey: ["dashboard"],
         queryFn: async () => {
             const res = await axiosSecure.get("/dashboard");
-            return res.data;
+            return res.data; // 🎯 ফিক্স: ব্যাকএন্ড থেকে সরাসরি res.data রিটার্ন নেওয়া হলো
         },
     });
-
-    const stats = responseData.stats || {};
 
     // ================= LOADING STATE ================= 
     if (isAdminLoading || isLoading) {
@@ -53,19 +49,15 @@ const AdminHome = () => {
         );
     }
 
-    // 🌟 লাভ অথবা লস লজিক (Total Cash - Total Expenses) 
-    const totalCashCombined = stats.totalCash || 0;
-    const totalExpenseCombined = stats.totalExpense || 0;
-    const netBusinessCash = totalCashCombined - totalExpenseCombined;
-
-    // নেট ক্যাশ লাভ বা লস অনুযায়ী কালার সিলেক্ট 
+    // 🌟 লাভ অথবা লস লজিক এবং টেক্সট কালার নির্ধারণ (আপনার রিকোয়ারমেন্ট)
+    const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
 
     // পাই চার্ট ডাটা স্ট্রাকচার 
     const pieChartData = [
-        { name: "Net Cash", value: Math.abs(netBusinessCash) },
-        { name: "Expenses", value: totalExpenseCombined },
-        { name: "Sales", value: stats.totalSales || 0 },
+        { name: "Net Remaining Cash", value: Math.abs(netBusinessCash) },
+        { name: "Total Expenses", value: stats.totalExpenseCombined || 0 },
+        { name: "Total Cash In", value: stats.totalCashCombined || 0 },
         { name: "Stock Value", value: stats.totalStockValue || 0 },
     ];
 
@@ -86,38 +78,45 @@ const AdminHome = () => {
 
             {/* ================= STATS CARDS ================= */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 w-full">
-                {/* 🎯 ফাইনাল ক্যাশ কার্ড */}
+
+                {/* 🎯 ফাইনাল ক্যাশ কার্ড (লাভ/ক্ষতি অনুযায়ী রঙ পরিবর্তন হবে) */}
                 <div className="col-span-2 md:col-span-3 lg:col-span-4 bg-white p-1 rounded-2xl shadow-sm border border-orange-100">
-                    <Card title="Final Remaining Cash (Total Cash - Total Expenses)" value={netBusinessCash} colorClass={`${cashColorClass} text-2xl md:text-3xl font-black`} />
+                    <Card title="Final Remaining Cash (Total Cash In - Total Expenses)" value={netBusinessCash} colorClass={`${cashColorClass} text-2xl md:text-3xl font-black`} />
                 </div>
 
-                {/* প্লাস (+) কার্ডস */}
-                <Card title="Total Cash In (+)" value={totalCashCombined} colorClass="text-green-600 font-extrabold" />
-                <Card title="Sales (+)" value={stats.totalSales} colorClass="text-green-600" />
-                <Card title="Profits List (+)" value={stats.totalProfitsCollection} colorClass="text-green-600" />
-                <Card title="Cashs List (+)" value={stats.totalCashFromList} colorClass="text-green-600" />
-                <Card title="Transactions (+)" value={stats.totalTransactionPlus} colorClass="text-green-600" />
-                <Card title="Receivables (+)" value={stats.totalReceivablesPlus} colorClass="text-green-600" />
+                {/* ================= প্লাস (+) সেকশন ================= */}
+                <div className="col-span-2 md:col-span-3 lg:col-span-4 mt-2">
+                    <h4 className="text-xs font-bold text-green-600 uppercase tracking-wider">Total Cash In Sources (+)</h4>
+                </div>
+                <Card title="Total Cash In (Combined)" value={stats.totalCashCombined} colorClass="text-green-600 font-extrabold" />
+                <Card title="Product Sales" value={stats.totalSales} colorClass="text-green-600" />
+                <Card title="Added Cash List" value={stats.totalCashFromList} colorClass="text-green-600" />
+                <Card title="Received / Loan Taken" value={stats.totalTransactionPlus} colorClass="text-green-600" />
 
-                {/* মাইনাস (-) খরচ কার্ডস */}
-                <Card title="Total Expenses (-)" value={totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
-                <Card title="Expenses (-)" value={stats.totalExpenseAmount} colorClass="text-red-600" />
-                <Card title="Staff Salary (-)" value={stats.totalStaffSalary} colorClass="text-red-600" />
-                <Card title="Transactions (-)" value={stats.totalTransactionMinus} colorClass="text-red-600" />
-                <Card title="Receivables (-)" value={stats.totalReceivablesMinus} colorClass="text-red-600" />
+                {/* ================= মাইনাস (-) সেকশন ================= */}
+                <div className="col-span-2 md:col-span-3 lg:col-span-4 mt-2">
+                    <h4 className="text-xs font-bold text-red-600 uppercase tracking-wider">Total Expenses & Outflows (-)</h4>
+                </div>
+                <Card title="Total Expenses (Combined)" value={stats.totalExpenseCombined} colorClass="text-red-600 font-extrabold" />
+                <Card title="General Expenses" value={stats.totalExpenseAmount} colorClass="text-red-600" />
+                <Card title="Staff Salary" value={stats.totalStaffSalary} colorClass="text-red-600" />
+                <Card title="Given / Due / Remaining" value={stats.totalTransactionMinus} colorClass="text-red-600" />
 
-                {/* স্টকের সাধারণ কার্ডস */}
+                {/* ================= স্টক ট্র্যাকিং ================= */}
+                <div className="col-span-2 md:col-span-3 lg:col-span-4 mt-2">
+                    <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">Inventory Stock Tracking</h4>
+                </div>
                 <Card title="Stock Qty" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="Stock Value" value={stats.totalStockValue} colorClass="text-purple-600" />
             </div>
 
-            {/* ================= CHARTS (SIDE BY SIDE) ================= */}
+            {/* ================= CHARTS ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 w-full">
-
                 {/* 1. PIE CHART */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col min-h-[400px] w-full">
                     <h2 className="text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">
-                        Business Overview Pie Chart </h2>
+                        Business Overview Pie Chart
+                    </h2>
                     <div className="flex-1 w-full h-full min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -133,11 +132,10 @@ const AdminHome = () => {
                     </div>
                 </div>
 
-                {/* 🚀 2. MONTHLY BAR CHART (যোগ করা হলো) */}
+                {/* 2. MONTHLY BAR CHART */}
                 <div className="w-full">
                     <MonthlyReport />
                 </div>
-
             </div>
         </div>
     );
