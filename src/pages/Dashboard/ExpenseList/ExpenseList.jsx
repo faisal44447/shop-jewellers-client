@@ -115,6 +115,7 @@ const ExpenseList = () => {
                         <tr>
                             <th>#</th>
                             <th className="text-orange-500">Title</th>
+                            <th className="text-orange-500">Category</th>
                             <th>Amount</th>
                             <th className="text-orange-500">Date & Time</th>
                             {isAdmin && <th>Edit</th>}
@@ -126,6 +127,7 @@ const ExpenseList = () => {
                             <tr key={item._id} className="hover">
                                 <td className="text-black">{i + 1}</td>
                                 <td className="text-black font-bold">{item.title}</td>
+                                <td className="text-blue-500">{item.category || "Uncategorized"}</td>
                                 <td className="text-red-500 font-bold">৳ {item.amount}</td>
                                 <td className="text-black">
                                     {item.createdAt ? new Date(item.createdAt).toLocaleString() : "No Date"}
