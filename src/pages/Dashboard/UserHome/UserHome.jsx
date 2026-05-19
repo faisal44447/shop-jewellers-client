@@ -61,7 +61,11 @@ const UserHome = () => {
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-gray-200 pb-5 w-full text-center sm:text-left">
                 {/* ✅ ফিক্সড ইমেজ লিংক (যা কখনো 404 হবে না) */}
-                <img src={user?.photoURL || "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150"} className="w-14 h-14 rounded-full border-2 border-orange-400 object-cover shadow-sm" alt="User" />
+                <img
+                    src={user?.photoURL || "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150"}
+                    className="w-14 h-14 rounded-full border-2 border-orange-400 object-cover shadow-sm"
+                    alt="User"
+                />
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800 truncate">
                         Welcome, <span className="text-orange-500">{user?.displayName || "User"}</span> 🛍️
