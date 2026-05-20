@@ -3,8 +3,9 @@ import { useContext } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
 import useCart from "../../../hooks/useCart";
 import useAdmin from "../../../hooks/useAdmin";
-import { FaShoppingCart, FaUserPlus, FaMoneyBill, FaPlusCircle, FaHandHoldingUsd, FaFileInvoiceDollar, FaChevronDown, FaStore } from "react-icons/fa";
+import { FaShoppingCart, FaUserPlus, FaMoneyBill, FaPlusCircle, FaHandHoldingUsd, FaFileInvoiceDollar, FaChevronDown } from "react-icons/fa";
 import laivinIcon from "../../../assets/laivinIcon.png";
+import { TbBrowserShare } from "react-icons/tb";
 
 const NavBar = () => {
     const auth = useContext(AuthContext);
@@ -68,7 +69,7 @@ const NavBar = () => {
                         closeDropdown();
                     }
                 }} target="_blank" rel="noopener noreferrer" className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}>
-                    <FaStore /> ভিジット শপ 👋
+                    <TbBrowserShare />
                 </a>
             </li>
         </>
