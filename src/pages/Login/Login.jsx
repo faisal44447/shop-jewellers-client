@@ -11,30 +11,34 @@ import Swal from "sweetalert2";
 
 const Login = () => {
   const captchaRef = useRef(null);
+
+  // 🎯 প্রোডাকশন এরর দূর করার জন্য স্টেট ডিফাইন (Controlled Inputs)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [captchaInput, setCaptchaInput] = useState("");
+
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  // 🎯 ফিক্স: AuthProvider এর সাথে মিলিয়ে এখানে googleSignIn ব্যবহার করা হলো
+  // AuthContext থেকে ফাংশনগুলো আনা হলো
   const { signIn, googleSignIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-  // কম্পোনেন্ট লোড হওয়ার সময় ক্যাপচা ইঞ্জিন চালু হবে
+  // ক্যাপচা ইঞ্জিন লোড
   useEffect(() => {
     loadCaptchaEnginge(6);
   }, []);
 
   // ক্যাপচা ভ্যালিডেশন হ্যান্ডলার
   const handleValidateCaptcha = () => {
-    const user_captcha_value = captchaRef.current.value;
-
-    if (validateCaptcha(user_captcha_value)) {
+    if (validateCaptcha(captchaInput)) {
       setIsCaptchaVerified(true);
       Swal.fire({
         icon: "success",
-        title: "Captcha Verified Successfully!",
+        title: "Captcha Verified!",
         showConfirmButton: false,
         timer: 1500
       });
@@ -45,6 +49,7 @@ const Login = () => {
         title: "Wrong Captcha!",
         text: "ক্যাপচা কোডটি মিলেনি, আবার চেষ্টা করুন।"
       });
+      setCaptchaInput("");
       if (captchaRef.current) captchaRef.current.value = "";
     }
   };
@@ -52,11 +57,14 @@ const Login = () => {
   // ইমেইল-পাসওয়ার্ড লগইন হ্যান্ডলার
   const handleLogin = async (event) => {
     event.preventDefault();
-    const form = event.target;
-    const email = form.email.value;
-    const password = form.password.value;
 
-    // ক্যাপচা চেক
+    // সেফটি চেক: ডাটা খালি আছে কিনা
+    if (!email || !password) {
+      Swal.fire({ icon: "error", title: "ইমেইল এবং পাসওয়ার্ড দুটিই আবশ্যক!" });
+      return;
+    }
+
+    // ক্যাপচা ভেরিফিকেশন চেক
     if (!isCaptchaVerified) {
       Swal.fire({
         icon: "warning",
@@ -68,6 +76,8 @@ const Login = () => {
 
     try {
       setSubmitLoading(true);
+
+      // 🎯 ফায়ারবেজে স্টেট থেকে সরাসরি ডাটা পাঠানো হচ্ছে (১০০% নিরাপদ)
       await signIn(email, password);
 
       Swal.fire({
@@ -77,18 +87,24 @@ const Login = () => {
         timer: 1500
       });
 
-      // ১ সেকেন্ড বিরতি যাতে AuthProvider টোকেন সেট করার সুযোগ পায়
+      // টোকেন সেট হওয়ার জন্য সামান্য বিরতি
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 1000);
 
     } catch (error) {
-      console.error(error);
+      console.error("Firebase Auth Error Details:", error);
       setSubmitLoading(false);
 
       let errorMessage = "লগইন ব্যর্থ হয়েছে। দয়া করে আবার চেষ্টা করুন।";
+
+      // সুনির্দিষ্ট এরর মেসেজ হ্যান্ডলিং
       if (error.code === "auth/invalid-credential" || error.message.includes("invalid-credential")) {
-        errorMessage = "ভুল ইমেইল অথবা পাসওয়ার্ড দিয়েছেন! দয়া করে সঠিক তথ্য দিন।";
+        errorMessage = "ভুল ইমেইল অথবা পাসওয়ার্ড দিয়েছেন! অথবা আপনার ফায়ারবেজে এই অ্যাকাউন্টটি নেই।";
+      } else if (error.code === "auth/user-not-found") {
+        errorMessage = "এই ইমেইলে কোনো অ্যাকাউন্ট পাওয়া যায়নি। প্রথমে সাইন-আপ করুন।";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "পাসওয়ার্ডটি সঠিক নয়! আবার চেষ্টা করুন।";
       }
 
       Swal.fire({
@@ -97,9 +113,10 @@ const Login = () => {
         text: errorMessage
       });
 
-      // লগইন ফেইল করলে ক্যাপচা রিসেট হবে
+      // এরর হলে ক্যাপচা রিসেট
       loadCaptchaEnginge(6);
       setIsCaptchaVerified(false);
+      setCaptchaInput("");
       if (captchaRef.current) captchaRef.current.value = "";
     }
   };
@@ -108,7 +125,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       setSubmitLoading(true);
-      await googleSignIn(); // 🎯 ফিক্স: googleSignIn কল করা হলো
+      await googleSignIn();
 
       Swal.fire({
         icon: "success",
@@ -145,13 +162,30 @@ const Login = () => {
           </div>
           <div className="card md:w-1/2 max-w-sm shadow-2xl bg-base-100">
             <form onSubmit={handleLogin} className="card-body">
+              {/* ইমেল ইনপুট */}
               <div className="form-control">
                 <label className="label"><span className="label-text">Email</span></label>
-                <input type="email" name="email" placeholder="email" className="input input-bordered" required />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="input input-bordered"
+                  required
+                />
               </div>
+
+              {/* পাসওয়ার্ড ইনপুট */}
               <div className="form-control">
                 <label className="label"><span className="label-text">Password</span></label>
-                <input type="password" name="password" placeholder="password" className="input input-bordered" required />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="input input-bordered"
+                  required
+                />
               </div>
 
               {/* ক্যাপচা সেকশন */}
@@ -161,7 +195,8 @@ const Login = () => {
                   <input
                     type="text"
                     ref={captchaRef}
-                    name="captcha"
+                    value={captchaInput}
+                    onChange={(e) => setCaptchaInput(e.target.value)}
                     placeholder="Type captcha"
                     className="input input-bordered w-full"
                     required
@@ -169,7 +204,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleValidateCaptcha}
-                    className="btn btn-outline btn-xs h-full"
+                    className="btn btn-outline btn-xs h-auto py-3"
                   >
                     Verify
                   </button>
@@ -183,6 +218,7 @@ const Login = () => {
                 </button>
               </div>
             </form>
+
             <div className="p-6 text-center pt-0">
               <div className="divider">OR</div>
               <button disabled={submitLoading} onClick={handleGoogleLogin} className="btn btn-outline btn-secondary w-full mb-4">
