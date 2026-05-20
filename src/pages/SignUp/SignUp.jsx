@@ -15,10 +15,10 @@ const SignUp = () => {
         event.preventDefault();
         const form = event.target;
         const name = form.name.value;
-        const email = form.email.value;
+        const email = form.email.value.trim();
         const password = form.password.value;
 
-        // ডিফল্ট অ্যাভাটার ইমেজ (সচল লিংক)
+        // ডিফল্ট অ্যাভাটার ইমেজ
         const photoURL = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
         // পাসওয়ার্ড ভ্যালিডেশন
@@ -34,23 +34,20 @@ const SignUp = () => {
         try {
             setSubmitLoading(true);
 
-            // ১. নতুন ইউজার ফায়ারবেসে তৈরি করা
+            // ১. নতুন ইউজার ফায়ারবেসে তৈরি করা
             await createUser(email, password);
 
-            // ২. ফায়ারবেস প্রোফাইল আপডেট করা (Name & Photo)
+            // ২. ফায়ারবেস প্রোফাইল আপডেট করা
             await updateUserProfile(name, photoURL);
 
-            // ৩. ব্যাকএন্ডের মঙ্গোডিবি ডাটাবেজে ইউজার ডাটা সেভ করা (যুক্ত করা হলো)
+            // ৩. ব্যাকএন্ডের মঙ্গোডিবি ডাটাবেজে ইউজার ডাটা সেভ করা
             const userInfo = {
                 name: name,
                 email: email,
                 image: photoURL
             };
 
-            // আপনার লোকাল বা লাইভ ব্যাকএন্ড ইউআরএলটি এখানে ব্যবহার করুন
-            // উদাহরণস্বরূপ: 'https://your-vercel-server.vercel.app/users' অথবা 'http://localhost:5000/users'
             const backendUrl = "http://localhost:5000/users";
-
             const response = await fetch(backendUrl, {
                 method: "POST",
                 headers: {
@@ -61,7 +58,7 @@ const SignUp = () => {
 
             const dbData = await response.json();
 
-            // ডাটাবেজে সফলভাবে সেভ হলে বা ইউজার আগে থেকে থাকলে ড্যাশবোর্ডে পাঠাবো
+            // এখানে ফিক্স করা হয়েছে: insertedId অথবা success যেকোনো একটা ট্রু হলেই সাকসেস হবে
             if (dbData.insertedId || dbData.success) {
                 Swal.fire({
                     icon: "success",
@@ -70,15 +67,13 @@ const SignUp = () => {
                     timer: 1500
                 });
 
-                // রিডাইরেক্ট টু ড্যাশবোর্ড
                 navigate("/dashboard/userHome", { replace: true });
             } else {
-                throw new Error("ডাটাবেজে ইউজার ইনফো সেভ করা যায়নি।");
+                throw new Error(dbData.message || "ডাটাবেজে ইউজার ইনফো সেভ করা যায়নি।");
             }
 
         } catch (error) {
             console.error("SignUp Error:", error);
-
             let errorMessage = "সাইন-আপ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
 
             if (error.code === "auth/email-already-in-use" || error.message?.includes("email-already-in-use")) {
@@ -88,7 +83,7 @@ const SignUp = () => {
             } else if (error.code === "auth/weak-password") {
                 errorMessage = "পাসওয়ার্ডটি খুবই দুর্বল। আরও শক্তিশালী পাসওয়ার্ড দিন।";
             } else if (error.message) {
-                errorMessage = error.message; // ডাটাবেজ এরর মেসেজ হ্যান্ডল করার জন্য
+                errorMessage = error.message;
             }
 
             Swal.fire({

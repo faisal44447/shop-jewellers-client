@@ -23,23 +23,28 @@ const SocialLogin = () => {
                 role: "user",
             };
 
-            // ১. ডাটাবেজে ইউজার চেক/সেভ হবে
-            await axiosPublic.post("/users", userInfo);
+            // ১. ডাটাবেজে ইউজার চেক/সেভ হবে (পুরাতন ইউজার হলেও এখন আর এরর দিবে না)
+            const dbResponse = await axiosPublic.post("/users", userInfo);
 
-            // ২. JWT টোকেন তৈরি এবং লোকাল স্টোরেজে সেভ (নিরাপত্তার জন্য যুক্ত করা হলো)
-            const jwtResponse = await axiosPublic.post("/jwt", { email: currentUser?.email });
-            if (jwtResponse.data?.token) {
-                localStorage.setItem("access-token", jwtResponse.data.token);
+            if (dbResponse.data?.insertedId || dbResponse.data?.success) {
+                // ২. JWT টোকেন তৈরি এবং লোকাল স্টোরেজে সেভ
+                const jwtResponse = await axiosPublic.post("/jwt", { email: currentUser?.email });
+                if (jwtResponse.data?.token) {
+                    localStorage.setItem("access-token", jwtResponse.data.token);
+                }
+
+                Swal.fire({
+                    icon: "success",
+                    title: "লগইন সফল হয়েছে!",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+
+                navigate(from, { replace: true });
+            } else {
+                throw new Error("ডাটাবেজ ভেরিফিকেশন ব্যর্থ হয়েছে।");
             }
 
-            Swal.fire({
-                icon: "success",
-                title: "Login Successful",
-                showConfirmButton: false,
-                timer: 1500,
-            });
-
-            navigate(from, { replace: true });
         } catch (error) {
             console.error("Google Sign-In Error:", error);
             Swal.fire({
