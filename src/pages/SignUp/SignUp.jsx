@@ -18,10 +18,8 @@ const SignUp = () => {
         const email = form.email.value.trim();
         const password = form.password.value;
 
-        // ডিফল্ট অ্যাভাটার ইমেজ
         const photoURL = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
-        // পাসওয়ার্ড ভ্যালিডেশন
         if (password.length < 6) {
             Swal.fire({
                 icon: "warning",
@@ -58,7 +56,7 @@ const SignUp = () => {
 
             const dbData = await response.json();
 
-            // এখানে ফিক্স করা হয়েছে: insertedId অথবা success যেকোনো একটা ট্রু হলেই সাকসেস হবে
+            // 🎯 ফিক্স: insertedId অথবা success যেকোনো একটা ট্রু হলেই অ্যাকাউন্ট সফল দেখাবে
             if (dbData.insertedId || dbData.success) {
                 Swal.fire({
                     icon: "success",

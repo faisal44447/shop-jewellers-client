@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../../providers/AuthProvider"; // আপনার পাথ অনুযায়ী চেঞ্জ করতে পারেন
+import { AuthContext } from "../../providers/AuthProvider"; 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SocialLogin from "../../components/SocialLogin/SocialLogin";
 import Swal from "sweetalert2";
@@ -9,7 +9,9 @@ import useAxiosPublic from "../../hooks/useAxiosPublic";
 const Login = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signInUser } = useContext(AuthContext); // AuthProvider এ আপনার লিঙ্কিং মেথড (যেমন: signIn)
+  
+  // 🎯 ফিক্স: AuthProvider এর আসল নাম signIn ব্যবহার করা হলো
+  const { signIn } = useContext(AuthContext); 
   const axiosPublic = useAxiosPublic();
 
   const navigate = useNavigate();
@@ -19,14 +21,14 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     const form = event.target;
-    const email = form.email.value.trim(); // ট্রিমিং করা হলো যেন এক্সট্রা স্পেস না থাকে
+    const email = form.email.value.trim(); 
     const password = form.password.value;
 
     try {
       setLoading(true);
 
-      // ১. ফায়ারবেস সাইন-ইন
-      const result = await signInUser(email, password);
+      // ১. ফায়ারবেস সাইন-ইন
+      const result = await signIn(email, password);
       const loggedUser = result.user;
 
       // ২. লগইন সফল হলে JWT টোকেন জেনারেট ও লোকাল স্টোরেজে সেট
@@ -37,7 +39,7 @@ const Login = () => {
 
       Swal.fire({
         icon: "success",
-        title: "লগইন সফল হয়েছে!",
+        title: "লগইন সফল হয়েছে!",
         showConfirmButton: false,
         timer: 1500
       });
@@ -47,17 +49,18 @@ const Login = () => {
     } catch (error) {
       console.error("Firebase Auth Error Details:", error);
 
-      let errorMessage = "লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
+      let errorMessage = "লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
 
-      // সুনির্দিষ্টভাবে invalid-credential বা ভুল পাসওয়ার্ড ক্যাচ করা
       if (
         error.code === "auth/invalid-credential" ||
         error.code === "auth/wrong-password" ||
         error.code === "auth/user-not-found"
       ) {
-        errorMessage = "আপনার দেওয়া ইমেইল অথবা পাসওয়ার্ডটি সঠিক নয়! দয়া করে আবার চেক করুন।";
+        errorMessage = "আপনার দেওয়া ইমেইল অথবা পাসওয়ার্ডটি সঠিক নয়! দয়া করে আবার চেক করুন।";
       } else if (error.code === "auth/too-many-requests") {
-        errorMessage = "ভুল পাসওয়ার্ড দিয়ে অনেকবার চেষ্টা করা হয়েছে। অ্যাকাউন্টটি সাময়িকভাবে লক করা হয়েছে। একটু পরে চেষ্টা করুন।";
+        errorMessage = "ভুল পাসওয়ার্ড দিয়ে অনেকবার চেষ্টা করা হয়েছে। অ্যাকাউন্টটি সাময়িকভাবে লক করা হয়েছে। একটু পরে চেষ্টা করুন।";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       Swal.fire({

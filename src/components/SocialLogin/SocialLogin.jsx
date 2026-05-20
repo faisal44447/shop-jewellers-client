@@ -23,7 +23,7 @@ const SocialLogin = () => {
                 role: "user",
             };
 
-            // ১. ডাটাবেজে ইউজার চেক/সেভ হবে (পুরাতন ইউজার হলেও এখন আর এরর দিবে না)
+            // ১. ডাটাবেজে ইউজার চেক/সেভ হবে
             const dbResponse = await axiosPublic.post("/users", userInfo);
 
             if (dbResponse.data?.insertedId || dbResponse.data?.success) {

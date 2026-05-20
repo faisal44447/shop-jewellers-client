@@ -16,7 +16,7 @@ export const AuthContext = createContext(null);
 const auth = getAuth(app);
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // 🎯 ফিক্স: স্ট্যান্ডার্ড ক্লিন স্টেট
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const googleProvider = new GoogleAuthProvider();
 
@@ -32,7 +32,7 @@ const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // ৩. গুগল লগইন (🎯 নাম পরিবর্তন করে googleSignIn করা হলো যাতে সোশ্যাল লগইনের সাথে মিলে)
+  // ৩. গুগল লগইন
   const googleSignIn = () => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
@@ -55,7 +55,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
-      setUser(loggedUser); // 🎯 ফিক্স: সরাসরি ইউজার সেট
+      setUser(loggedUser);
 
       if (loggedUser?.email) {
         const userInfo = { email: loggedUser.email };
@@ -85,7 +85,7 @@ const AuthProvider = ({ children }) => {
     loading,
     createUser,
     signIn,
-    googleSignIn, // 🎯 ফিক্সড এক্সপোর্ট নাম
+    googleSignIn,
     logOut,
     updateUserProfile,
   };
