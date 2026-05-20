@@ -92,19 +92,21 @@ const NavBar = () => {
 
     return (
         <div className="navbar fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md text-white shadow-lg border-b border-white/5 px-4 md:px-6 py-2.5">
-
             {/* ================= NAVBAR START ================= */}
             <div className="navbar-start">
                 <div className="dropdown">
-                    <label tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2 min-h-0 h-auto">
+                    {/* 🎯 ফিক্স: label এর বদলে div role="button" ব্যবহার */}
+                    <div role="button" tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2 min-h-0 h-auto">
                         ☰
-                    </label>
+                    </div>
                     <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 p-3 bg-slate-950 text-white rounded-xl w-56 shadow-2xl border border-white/10 z-[100] space-y-1">
                         {renderCommonOptions()}
-
                         {isAdmin && (
                             <>
-                                <div className="divider border-white/10 my-1 text-xs text-orange-400/70 font-semibold tracking-wider uppercase pl-2">Admin Actions</div>
+                                {/* 🎯 ফিক্স: divider কে <li> এর ভেতরে রাখা হলো */}
+                                <li className="menu-title px-2 py-1 text-xs text-orange-400/70 font-semibold tracking-wider uppercase border-b border-white/10 my-1">
+                                    Admin Actions
+                                </li>
                                 <li><Link to="/dashboard/add-staff" onClick={closeDropdown} className={linkStyle}><FaUserPlus /> Add Staff</Link></li>
                                 <li><Link to="/dashboard/expenses" onClick={closeDropdown} className={linkStyle}><FaMoneyBill /> Expenses</Link></li>
                                 <li><Link to="/dashboard/add-profit" onClick={closeDropdown} className={linkStyle}><FaMoneyBill /> Add Profit</Link></li>
