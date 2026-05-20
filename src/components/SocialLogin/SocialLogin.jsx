@@ -9,20 +9,28 @@ const SocialLogin = () => {
     const axiosPublic = useAxiosPublic();
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || "/dashboard/userHome"; // এখানে রুটটি আপডেট করে /dashboard/userHome দেওয়া হলো যাতে গুগল লগইনেও সরাসরি ইউজার হোম-এ যায়।
+    const from = location.state?.from?.pathname || "/dashboard/userHome";
 
     const handleGoogleSignIn = async () => {
         try {
             const result = await googleSignIn();
+            const currentUser = result.user;
+
             const userInfo = {
-                email: result.user?.email,
-                name: result.user?.displayName,
-                image: result.user?.photoURL || "https://i.ibb.co/vHZ369b/placeholder.png",
+                email: currentUser?.email,
+                name: currentUser?.displayName,
+                image: currentUser?.photoURL || "https://i.ibb.co/vHZ369b/placeholder.png",
                 role: "user",
             };
 
-            // ডাটাবেজে ইউজার চেক/সেভ হবে
+            // ১. ডাটাবেজে ইউজার চেক/সেভ হবে
             await axiosPublic.post("/users", userInfo);
+
+            // ২. JWT টোকেন তৈরি এবং লোকাল স্টোরেজে সেভ (নিরাপত্তার জন্য যুক্ত করা হলো)
+            const jwtResponse = await axiosPublic.post("/jwt", { email: currentUser?.email });
+            if (jwtResponse.data?.token) {
+                localStorage.setItem("access-token", jwtResponse.data.token);
+            }
 
             Swal.fire({
                 icon: "success",
@@ -30,9 +38,10 @@ const SocialLogin = () => {
                 showConfirmButton: false,
                 timer: 1500,
             });
+
             navigate(from, { replace: true });
         } catch (error) {
-            console.error(error);
+            console.error("Google Sign-In Error:", error);
             Swal.fire({
                 icon: "error",
                 title: "Google Login Failed",

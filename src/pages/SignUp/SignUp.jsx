@@ -34,21 +34,47 @@ const SignUp = () => {
         try {
             setSubmitLoading(true);
 
-            // ১. নতুন ইউজার তৈরি করা
+            // ১. নতুন ইউজার ফায়ারবেসে তৈরি করা
             await createUser(email, password);
 
-            // ২. প্রোফাইল আপডেট করা
+            // ২. ফায়ারবেস প্রোফাইল আপডেট করা (Name & Photo)
             await updateUserProfile(name, photoURL);
 
-            Swal.fire({
-                icon: "success",
-                title: "অ্যাকাউন্ট তৈরি সফল হয়েছে!",
-                showConfirmButton: false,
-                timer: 1500
+            // ৩. ব্যাকএন্ডের মঙ্গোডিবি ডাটাবেজে ইউজার ডাটা সেভ করা (যুক্ত করা হলো)
+            const userInfo = {
+                name: name,
+                email: email,
+                image: photoURL
+            };
+
+            // আপনার লোকাল বা লাইভ ব্যাকএন্ড ইউআরএলটি এখানে ব্যবহার করুন
+            // উদাহরণস্বরূপ: 'https://your-vercel-server.vercel.app/users' অথবা 'http://localhost:5000/users'
+            const backendUrl = "http://localhost:5000/users";
+
+            const response = await fetch(backendUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(userInfo)
             });
 
-            // রিডাইরেক্ট টু ড্যাশবোর্ড
-            navigate("/dashboard/userHome", { replace: true });
+            const dbData = await response.json();
+
+            // ডাটাবেজে সফলভাবে সেভ হলে বা ইউজার আগে থেকে থাকলে ড্যাশবোর্ডে পাঠাবো
+            if (dbData.insertedId || dbData.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "অ্যাকাউন্ট তৈরি সফল হয়েছে!",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+                // রিডাইরেক্ট টু ড্যাশবোর্ড
+                navigate("/dashboard/userHome", { replace: true });
+            } else {
+                throw new Error("ডাটাবেজে ইউজার ইনফো সেভ করা যায়নি।");
+            }
 
         } catch (error) {
             console.error("SignUp Error:", error);
@@ -61,6 +87,8 @@ const SignUp = () => {
                 errorMessage = "ইমেইল ফরম্যাটটি সঠিক নয়। সঠিক ইমেইল দিন।";
             } else if (error.code === "auth/weak-password") {
                 errorMessage = "পাসওয়ার্ডটি খুবই দুর্বল। আরও শক্তিশালী পাসওয়ার্ড দিন।";
+            } else if (error.message) {
+                errorMessage = error.message; // ডাটাবেজ এরর মেসেজ হ্যান্ডল করার জন্য
             }
 
             Swal.fire({
