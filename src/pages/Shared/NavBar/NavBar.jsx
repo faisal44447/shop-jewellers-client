@@ -3,30 +3,23 @@ import { useContext } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
 import useCart from "../../../hooks/useCart";
 import useAdmin from "../../../hooks/useAdmin";
-import {
-    FaShoppingCart,
-    FaUserPlus,
-    FaMoneyBill,
-    FaPlusCircle,
-    FaHandHoldingUsd,
-    FaFileInvoiceDollar,
-    FaChevronDown,
-    FaStore
-} from "react-icons/fa";
+import { FaShoppingCart, FaUserPlus, FaMoneyBill, FaPlusCircle, FaHandHoldingUsd, FaFileInvoiceDollar, FaChevronDown, FaStore } from "react-icons/fa";
 import laivinIcon from "../../../assets/laivinIcon.png";
 
 const NavBar = () => {
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // 🔄 যদি Auth কনটেক্সট লোড হতে সময় নেয় বা loading ট্রু থাকে, তবে কোনো কিছু রিটার্ন না করে অপেক্ষা করবে
+    // 🎯 ফিক্স ১: কন্ডিশনের উপর সব কাস্টম হুক নিয়ে আসা হলো। এখন রিয়্যাক্ট লাইফসাইকেল ঠিক থাকবে।
+    const [isAdmin] = useAdmin() || [false];
+    const [cart] = useCart() || [[]];
+
+    // 🎯 ফিক্স ২: হুক ডিক্লেয়ার করার পর এখন আপনি সেফলি আর্লি রিটার্ন করতে পারবেন।
     if (!auth || auth.loading) {
         return null;
     }
 
     const { user, logOut } = auth;
-    const [isAdmin] = useAdmin() || [false];
-    const [cart] = useCart() || [[]];
 
     const handleLogOut = async () => {
         try {
@@ -37,7 +30,6 @@ const NavBar = () => {
         }
     };
 
-    // 🎯 ড্রপডাউন মেনু এবং ইন-অ্যাপ অ্যাকশনের পর ফোকাস রিমুভ করার ফাংশন
     const closeDropdown = () => {
         const elem = document.activeElement;
         if (elem) {
@@ -48,7 +40,6 @@ const NavBar = () => {
     const linkStyle = "flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:text-orange-400 hover:bg-white/5 transition duration-200";
     const dropdownLinkStyle = "flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:text-orange-400 hover:bg-slate-800 transition rounded-md";
 
-    // 🛠️ ফিক্স: ভেরিয়েবলের বদলে ফাংশন করা হলো যাতে রিয়্যাক্ট লাইফসাইকেলে এরর #310 না আসে
     const renderCommonOptions = () => (
         <>
             <li>
@@ -66,24 +57,17 @@ const NavBar = () => {
                 </Link>
             </li>
             <li>
-                <a
-                    href="https://shop-jewellers-client.web.app"
-                    onClick={(e) => {
-                        const ua = navigator.userAgent || navigator.vendor || window.opera;
-                        const isInApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("Messenger") > -1);
-
-                        if (isInApp) {
-                            e.preventDefault();
-                            closeDropdown();
-                            window.location.href = "intent://shop-jewellers-client.web.app/#Intent;scheme=https;package=com.android.chrome;end";
-                        } else {
-                            closeDropdown();
-                        }
-                    }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}
-                >
+                <a href="https://shop-jewellers-client.web.app" onClick={(e) => {
+                    const ua = navigator.userAgent || navigator.vendor || window.opera;
+                    const isInApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("Messenger") > -1);
+                    if (isInApp) {
+                        e.preventDefault();
+                        closeDropdown();
+                        window.location.href = "intent://shop-jewellers-client.web.app/#Intent;scheme=https;package=com.android.chrome;end";
+                    } else {
+                        closeDropdown();
+                    }
+                }} target="_blank" rel="noopener noreferrer" className={`${linkStyle} text-orange-400 font-medium cursor-pointer`}>
                     <FaStore /> ভিジット শপ 👋
                 </a>
             </li>
@@ -95,7 +79,7 @@ const NavBar = () => {
             {/* ================= NAVBAR START ================= */}
             <div className="navbar-start">
                 <div className="dropdown">
-                    {/* 🎯 ফিক্স: label এর বদলে div role="button" ব্যবহার */}
+                    {/* 🎯 ফিক্স ৩: label এর বদলে div role="button" ব্যবহার করে HTML ও DaisyUI ওয়ার্নিং দূর করা হলো */}
                     <div role="button" tabIndex={0} className="btn btn-ghost lg:hidden text-orange-500 text-xl p-2 min-h-0 h-auto">
                         ☰
                     </div>
@@ -103,7 +87,7 @@ const NavBar = () => {
                         {renderCommonOptions()}
                         {isAdmin && (
                             <>
-                                {/* 🎯 ফিক্স: divider কে <li> এর ভেতরে রাখা হলো */}
+                                {/* 🎯 ফিক্স ৪: divider-কে সঠিক HTML স্ট্রাকচারে <li> এর ভেতরে রাখা হলো */}
                                 <li className="menu-title px-2 py-1 text-xs text-orange-400/70 font-semibold tracking-wider uppercase border-b border-white/10 my-1">
                                     Admin Actions
                                 </li>
@@ -117,7 +101,6 @@ const NavBar = () => {
                         )}
                     </ul>
                 </div>
-
                 <Link to="/" className="flex items-center gap-2 ml-2 transition hover:opacity-90">
                     <img src={laivinIcon} className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md shadow-orange-500/20" alt="Logo" />
                 </Link>
@@ -127,12 +110,10 @@ const NavBar = () => {
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 gap-2 items-center">
                     {renderCommonOptions()}
-
                     {isAdmin && (
                         <li className="dropdown dropdown-hover group">
                             <label tabIndex={0} className={`${linkStyle} cursor-pointer gap-1 text-orange-400 font-medium`}>
-                                Admin Management
-                                <FaChevronDown className="text-xs transition-transform duration-200 group-hover:rotate-180" />
+                                Admin Management <FaChevronDown className="text-xs transition-transform duration-200 group-hover:rotate-180" />
                             </label>
                             <ul tabIndex={0} className="dropdown-content menu p-2 bg-slate-900/95 backdrop-blur-lg border border-white/10 rounded-xl w-56 shadow-2xl mt-0 z-[100] space-y-0.5">
                                 <li><Link to="/dashboard/add-staff" onClick={closeDropdown} className={dropdownLinkStyle}><FaUserPlus className="text-orange-400" /> Add Staff</Link></li>
@@ -151,24 +132,13 @@ const NavBar = () => {
             <div className="navbar-end flex items-center gap-3 pr-1">
                 {user ? (
                     <div className="flex items-center gap-2.5 bg-white/5 p-1.5 pr-3 rounded-full border border-white/10">
-                        <img
-                            src={user?.photoURL || "https://ui-avatars.com/api/?name=User&background=ff7e47&color=fff"}
-                            className="w-8 h-8 rounded-full border border-orange-500 object-cover shadow-inner"
-                            alt="User"
-                            title={user?.displayName || "User"}
-                        />
-                        <button
-                            onClick={handleLogOut}
-                            className="text-xs font-semibold text-orange-400 hover:text-orange-500 transition-colors"
-                        >
+                        <img src={user?.photoURL || "https://ui-avatars.com/api/?name=User&background=ff7e47&color=fff"} className="w-8 h-8 rounded-full border border-orange-500 object-cover shadow-inner" alt="User" title={user?.displayName || "User"} />
+                        <button onClick={handleLogOut} className="text-xs font-semibold text-orange-400 hover:text-orange-500 transition-colors">
                             Logout
                         </button>
                     </div>
                 ) : (
-                    <Link
-                        to="/login"
-                        className="px-4 py-1.5 text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-black rounded-md hover:from-orange-600 hover:to-amber-600 transition-all duration-200 shadow-md shadow-orange-500/10"
-                    >
+                    <Link to="/login" className="px-4 py-1.5 text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 text-black rounded-md hover:from-orange-600 hover:to-amber-600 transition-all duration-200 shadow-md shadow-orange-500/10">
                         Login
                     </Link>
                 )}
