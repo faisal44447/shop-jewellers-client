@@ -14,39 +14,55 @@ const Login = () => {
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  const { signIn, googleLogin } = useContext(AuthContext);
+  // 🎯 ফিক্স: AuthProvider এর সাথে মিলিয়ে এখানে googleSignIn ব্যবহার করা হলো
+  const { signIn, googleSignIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  // কম্পোনেন্ট লোড হওয়ার সময় ক্যাপচা ইঞ্জিন চালু হবে
   useEffect(() => {
     loadCaptchaEnginge(6);
   }, []);
 
-  const handleValidateCaptcha = (e) => {
-    const user_captcha_value = e.target.value;
+  // ক্যাপচা ভ্যালিডেশন হ্যান্ডলার
+  const handleValidateCaptcha = () => {
+    const user_captcha_value = captchaRef.current.value;
+
     if (validateCaptcha(user_captcha_value)) {
       setIsCaptchaVerified(true);
       Swal.fire({
         icon: "success",
         title: "Captcha Verified Successfully!",
         showConfirmButton: false,
-        timer: 1000
+        timer: 1500
       });
     } else {
       setIsCaptchaVerified(false);
+      Swal.fire({
+        icon: "error",
+        title: "Wrong Captcha!",
+        text: "ক্যাপচা কোডটি মিলেনি, আবার চেষ্টা করুন।"
+      });
+      if (captchaRef.current) captchaRef.current.value = "";
     }
   };
 
+  // ইমেইল-পাসওয়ার্ড লগইন হ্যান্ডলার
   const handleLogin = async (event) => {
     event.preventDefault();
     const form = event.target;
     const email = form.email.value;
     const password = form.password.value;
 
+    // ক্যাপচা চেক
     if (!isCaptchaVerified) {
-      Swal.fire({ icon: "warning", title: "Please verify the captcha first!" });
+      Swal.fire({
+        icon: "warning",
+        title: "Please verify the captcha first!",
+        text: "দয়া করে ক্যাপচা কোডটি লিখে পাশের Verify বাটনে ক্লিক করুন।"
+      });
       return;
     }
 
@@ -61,7 +77,7 @@ const Login = () => {
         timer: 1500
       });
 
-      // ১ সেকেন্ড বিরতি যাতে AuthProvider টোকেন সেট করার সুযোগ পায়
+      // ১ সেকেন্ড বিরতি যাতে AuthProvider টোকেন সেট করার সুযোগ পায়
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 1000);
@@ -81,16 +97,19 @@ const Login = () => {
         text: errorMessage
       });
 
+      // লগইন ফেইল করলে ক্যাপচা রিসেট হবে
       loadCaptchaEnginge(6);
       setIsCaptchaVerified(false);
       if (captchaRef.current) captchaRef.current.value = "";
     }
   };
 
+  // গুগল লগইন হ্যান্ডলার
   const handleGoogleLogin = async () => {
     try {
       setSubmitLoading(true);
-      await googleLogin();
+      await googleSignIn(); // 🎯 ফিক্স: googleSignIn কল করা হলো
+
       Swal.fire({
         icon: "success",
         title: "Google Login Successful",
@@ -134,12 +153,32 @@ const Login = () => {
                 <label className="label"><span className="label-text">Password</span></label>
                 <input type="password" name="password" placeholder="password" className="input input-bordered" required />
               </div>
+
+              {/* ক্যাপচা সেকশন */}
               <div className="form-control">
                 <label className="label"><LoadCanvasTemplate /></label>
-                <input onBlur={handleValidateCaptcha} type="text" ref={captchaRef} name="captcha" placeholder="Type captcha" className="input input-bordered" required />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    ref={captchaRef}
+                    name="captcha"
+                    placeholder="Type captcha"
+                    className="input input-bordered w-full"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={handleValidateCaptcha}
+                    className="btn btn-outline btn-xs h-full"
+                  >
+                    Verify
+                  </button>
+                </div>
+                {isCaptchaVerified && <span className="text-xs text-success mt-1">✓ Captcha Verified</span>}
               </div>
+
               <div className="form-control mt-6">
-                <button disabled={submitLoading} className="btn btn-primary">
+                <button disabled={submitLoading} className="btn btn-primary w-full">
                   {submitLoading ? <span className="loading loading-spinner"></span> : "Login"}
                 </button>
               </div>

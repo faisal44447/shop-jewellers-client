@@ -9,45 +9,43 @@ import {
   signOut,
   updateProfile
 } from "firebase/auth";
-import { app } from "../firebase/firebase.config"; // আপনার ফাইল পাথ অনুযায়ী দিন
+import { app } from "../firebase/firebase.config";
 import axios from "axios";
 
 export const AuthContext = createContext(null);
 const auth = getAuth(app);
 
 const AuthProvider = ({ children }) => {
-  const comedies = useState(null);
-  const [user, setUser] = comedies[0] ? comedies : [null, () => { }]; // (নিরাপত্তার জন্য স্ট্যান্ডার্ড স্টেট)
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null); // 🎯 ফিক্স: স্ট্যান্ডার্ড ক্লিন স্টেট
   const [loading, setLoading] = useState(true);
   const googleProvider = new GoogleAuthProvider();
 
-  // ১. ইউজার তৈরি করা (Sign Up)
+  // ১. ইউজার তৈরি করা
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  // ২. লগইন করা (Sign In)
+  // ২. লগইন করা
   const signIn = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // ৩. গুগল লগইন (Google Login)
-  const googleLogin = () => {
+  // ৩. গুগল লগইন (🎯 নাম পরিবর্তন করে googleSignIn করা হলো যাতে সোশ্যাল লগইনের সাথে মিলে)
+  const googleSignIn = () => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
   };
 
-  // ৪. লগআউট (Log Out)
+  // ৪. লগআউট
   const logOut = () => {
     setLoading(true);
-    localStorage.removeItem("access-token"); // লগআউট হলে টোকেন মুছে যাবে
+    localStorage.removeItem("access-token");
     return signOut(auth);
   };
 
-  // ৫. প্রোফাইল আপডেট (Update Profile)
+  // ৫. প্রোফাইল আপডেট
   const updateUserProfile = (name, photo) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
@@ -55,20 +53,18 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  // 🎯 মূল ফিক্সড এরিয়া: অন অথ স্টেট চেঞ্জ এবং JWT টোকেন ম্যানেজমেন্ট
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
-      setCurrentUser(loggedUser);
+      setUser(loggedUser); // 🎯 ফিক্স: সরাসরি ইউজার সেট
 
       if (loggedUser?.email) {
         const userInfo = { email: loggedUser.email };
 
-        // 🚀 ব্যাকএন্ডের /jwt এপিআই তে রিকোয়েস্ট পাঠানো হচ্ছে
         axios.post("https://shop-jewellers-server.vercel.app/jwt", userInfo)
           .then(res => {
             if (res.data.token) {
               localStorage.setItem("access-token", res.data.token);
-              setLoading(false); // 🔥 টোকেন সাকসেসফুলি সেট হওয়ার পরেই লোডিং ফলস হবে!
+              setLoading(false);
             }
           })
           .catch(err => {
@@ -81,17 +77,15 @@ const AuthProvider = ({ children }) => {
       }
     });
 
-    return () => {
-      return unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   const authInfo = {
-    user: currentUser,
+    user,
     loading,
     createUser,
     signIn,
-    googleLogin,
+    googleSignIn, // 🎯 ফিক্সড এক্সপোর্ট নাম
     logOut,
     updateUserProfile,
   };
