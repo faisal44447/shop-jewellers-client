@@ -43,8 +43,10 @@ const AdminHome = () => {
 
     const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
+
     const totalProfit = stats.totalProfit || 0;
-    const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
+    const profitColorClass = totalProfit >= 0 ? "text-emerald-600" : "text-red-600";
+
     const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0);
 
     return (
@@ -90,7 +92,7 @@ const AdminHome = () => {
                 </div>
                 <Card title="Stock Qty" value={stats.totalStock} colorClass="text-blue-600" isMoney={false} />
                 <Card title="Stock Value" value={stats.totalStockValue} colorClass="text-purple-600" />
-                <Card title="Total Profit / Gain" value={totalProfit} colorClass={profitColorClass} />
+                <Card title="Total Profit / Gain" value={totalProfit} colorClass={`${profitColorClass} font-bold`} />
             </div>
         </div>
     );

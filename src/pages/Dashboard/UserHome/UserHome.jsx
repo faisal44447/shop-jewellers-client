@@ -46,11 +46,12 @@ const UserHome = () => {
     const totalCashFromList = stats.totalCashFromList || 0;
     const totalTransactionPlus = stats.totalTransactionPlus || 0;
     const totalTransactionMinus = Math.abs(stats.totalTransactionMinus || 0);
-
     const totalCashCombined = stats.totalCashCombined || 0;
     const totalExpenseCombined = stats.totalExpenseCombined || 0;
+
     const netBusinessCash = stats.netBusinessCash || 0;
     const cashColorClass = netBusinessCash >= 0 ? "text-green-600" : "text-red-600";
+
     const totalProfit = stats.totalProfit || 0;
     const profitColorClass = totalProfit >= 0 ? "text-emerald-600 font-bold" : "text-red-600 font-bold";
 
@@ -72,7 +73,7 @@ const UserHome = () => {
                     অবशिष्ट ক্যাশ তহবিল (Total Cash In - Total Expenses)
                 </h3>
                 <p className={`text-3xl md:text-4xl font-black mt-2 text-center sm:text-left break-words ${cashColorClass}`}>
-                    ৳{netBusinessCash.toLocaleString("en-BD")}
+                    ৳{(netBusinessCash || 0).toLocaleString("en-BD")}
                 </p>
             </div>
 
