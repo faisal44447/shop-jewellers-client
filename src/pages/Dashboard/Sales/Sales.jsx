@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
+
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Sales = () => {
@@ -7,7 +8,11 @@ const Sales = () => {
     const queryClient = useQueryClient();
 
     // ================= FETCH SALES =================
-    const { data: sales = [], isLoading, isError } = useQuery({
+    const {
+        data: sales = [],
+        isLoading,
+        isError,
+    } = useQuery({
         queryKey: ["sales"],
         queryFn: async () => {
             const res = await axiosSecure.get("/sales");
@@ -19,7 +24,7 @@ const Sales = () => {
     const handleDelete = async (id) => {
         const confirm = await Swal.fire({
             title: "Are you sure?",
-            text: "This sale will be deleted and dashboard stats will update!",
+            text: "This sale will be deleted!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
@@ -31,6 +36,7 @@ const Sales = () => {
 
         try {
             await axiosSecure.delete(`/sales/${id}`);
+
             Swal.fire({
                 icon: "success",
                 title: "Deleted!",
@@ -38,10 +44,10 @@ const Sales = () => {
                 showConfirmButton: false,
             });
 
-            // ✨ FIX: ক্যাশ, প্রফিট এবং সেলস লিস্ট সব একসাথে রিফ্রেশ করবে
-            queryClient.invalidateQueries({ queryKey: ["sales"] });
-            queryClient.invalidateQueries({ queryKey: ["dashboardAdminData"] });
-            queryClient.invalidateQueries({ queryKey: ["dashboardUserData"] });
+            // refresh cache (new best practice)
+            queryClient.invalidateQueries({
+                queryKey: ["sales"],
+            });
 
         } catch (error) {
             Swal.fire({
@@ -51,6 +57,7 @@ const Sales = () => {
         }
     };
 
+    // ================= LOADING =================
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-96">
@@ -59,6 +66,7 @@ const Sales = () => {
         );
     }
 
+    // ================= ERROR =================
     if (isError) {
         return (
             <p className="text-center text-red-500 mt-10">
@@ -69,12 +77,17 @@ const Sales = () => {
 
     return (
         <div className="p-5">
+
+            {/* TITLE */}
             <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
                 🛒 Sales List ({sales.length})
             </h2>
 
+            {/* TABLE */}
             <div className="overflow-x-auto bg-white rounded-xl shadow">
+
                 <table className="table">
+
                     <thead className="bg-blue-100 text-blue-600">
                         <tr>
                             <th>Product</th>
@@ -83,36 +96,55 @@ const Sales = () => {
                             <th>Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {sales.map((s) => (
                             <tr key={s._id} className="hover">
+
+                                {/* PRODUCT */}
                                 <td className="flex items-center gap-3">
+
                                     <img
-                                        src={s.image || "https://via.placeholder.com/50"}
+                                        src={
+                                            s.image ||
+                                            "https://via.placeholder.com/50"
+                                        }
                                         alt={s.productName}
                                         className="w-10 h-10 rounded object-cover"
                                     />
+
                                     <span className="font-medium text-black">
                                         {s.productName}
                                     </span>
+
                                 </td>
+
                                 <td className="text-black">{s.quantity}</td>
+
+                                {/* Dynamic color based on profit */}
                                 <td className={`font-bold ${s.profit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                    ৳ {(s.profit || 0).toLocaleString("en-BD")}
+                                    ৳ {s.profit}
                                 </td>
+
                                 <td>
                                     <button
-                                        onClick={() => handleDelete(s._id)}
+                                        onClick={() =>
+                                            handleDelete(s._id)
+                                        }
                                         className="btn btn-sm btn-error text-white"
                                     >
                                         Delete
                                     </button>
                                 </td>
+
                             </tr>
                         ))}
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
     );
 };
