@@ -47,12 +47,14 @@ const Dashboard = () => {
 
     const handleMouseMove = (e) => {
         if (!isDown) return;
+
         const x = e.pageX - scrollContainerRef.current.offsetLeft;
         const walk = (x - startX) * 2;
 
         if (Math.abs(x - startX) > 5) {
             e.preventDefault();
         }
+
         scrollContainerRef.current.scrollLeft = scrollLeft - walk;
     };
 
@@ -65,7 +67,7 @@ const Dashboard = () => {
     return (
         <div className="min-h-screen bg-[#F3F4F6] flex flex-col">
 
-            {/* PAGE CONTENT CONTAINER */}
+            {/* PAGE CONTENT */}
             <div className="relative z-10 flex-1 pt-6 pb-48">
                 <div className="w-full max-w-7xl mx-auto px-4">
                     <div className="bg-white rounded-3xl shadow-sm min-h-[70vh] p-4 md:p-6 border border-gray-100">
@@ -85,7 +87,8 @@ const Dashboard = () => {
                         onMouseLeave={handleMouseLeaveOrUp}
                         onMouseUp={handleMouseLeaveOrUp}
                         onMouseMove={handleMouseMove}
-                        className={`overflow-x-auto no-scrollbar w-full py-3 px-4 ${isDown ? "cursor-grabbing" : "cursor-grab"}`}
+                        className={`overflow-x-auto no-scrollbar w-full py-3 px-4 ${isDown ? "cursor-grabbing" : "cursor-grab"
+                            }`}
                         style={{
                             WebkitOverflowScrolling: "touch",
                             scrollbarWidth: "none",
@@ -100,81 +103,126 @@ const Dashboard = () => {
 
                         <div className="flex items-center justify-start gap-1 sm:gap-2 md:gap-4 min-w-max mx-auto">
 
-                            {/* 🎯 কন্ডিশনাল হোম রাউট ফিক্স: এডমিন হলে adminHome এ যাবে, অন্যথায় userHome */}
+                            {/* HOME */}
                             <NavLink
-                                to={!isAdminLoading && isAdmin ? "/dashboard/adminHome" : "/dashboard/userHome"}
+                                to={
+                                    !isAdminLoading && isAdmin
+                                        ? "/dashboard/adminHome"
+                                        : "/dashboard/userHome"
+                                }
                                 className={linkStyle}
                             >
                                 <FaHome className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Home</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Home
+                                </span>
                             </NavLink>
 
+                            {/* BACK */}
                             <NavLink to="/" className={linkStyle}>
                                 <FaArrowLeft className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Back</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Back
+                                </span>
                             </NavLink>
 
+                            {/* PRODUCTS */}
                             <NavLink to="/dashboard/product-card-page" className={linkStyle}>
                                 <FaBoxOpen className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Products</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Products
+                                </span>
                             </NavLink>
 
+                            {/* SALES */}
                             <NavLink to="/dashboard/sales" className={linkStyle}>
                                 <FaCashRegister className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Sales</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Sales
+                                </span>
                             </NavLink>
 
+                            {/* SOLD */}
                             <NavLink to="/dashboard/sold-products" className={linkStyle}>
                                 <FaClipboardList className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Sold</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Sold
+                                </span>
                             </NavLink>
 
+                            {/* CASH */}
                             <NavLink to="/dashboard/cash-list" className={linkStyle}>
                                 <FaWallet className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Cash</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Cash
+                                </span>
                             </NavLink>
 
+                            {/* CART */}
                             <NavLink to="/dashboard/cart" className={linkStyle}>
                                 <FaShoppingCart className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Cart</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Cart
+                                </span>
                             </NavLink>
 
+                            {/* EXPENSE */}
                             <NavLink to="/dashboard/expense-list" className={linkStyle}>
                                 <FaMoneyBill className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Expense</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Expense
+                                </span>
                             </NavLink>
 
+                            {/* PROFIT */}
                             <NavLink to="/dashboard/profit-list" className={linkStyle}>
                                 <FaChartLine className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Profit</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Profit
+                                </span>
                             </NavLink>
 
+                            {/* PABO */}
                             <NavLink to="/dashboard/paboTaka-list" className={linkStyle}>
                                 <FaHandHoldingUsd className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Pabo</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Pabo
+                                </span>
                             </NavLink>
 
+                            {/* HOWLAD */}
                             <NavLink to="/dashboard/howlad-list" className={linkStyle}>
                                 <FaFileInvoiceDollar className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Howlad</span>
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Howlad
+                                </span>
                             </NavLink>
 
-                            {/* ADMIN LINKS */}
+                            {/* STAFF - USER + ADMIN BOTH */}
+                            <NavLink to="/dashboard/staff-list" className={linkStyle}>
+                                <FaUserPlus className="text-lg md:text-xl" />
+                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                    Staff
+                                </span>
+                            </NavLink>
+
+                            {/* ================= ADMIN LINKS ================= */}
                             {!isAdminLoading && isAdmin && (
                                 <>
+                                    {/* USERS */}
                                     <NavLink to="/dashboard/all-users" className={linkStyle}>
                                         <FaUsers className="text-lg md:text-xl" />
-                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Users</span>
+                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                            Users
+                                        </span>
                                     </NavLink>
 
+                                    {/* MANAGE PRODUCTS */}
                                     <NavLink to="/dashboard/manage-product" className={linkStyle}>
                                         <FaBoxes className="text-lg md:text-xl" />
-                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Manage</span>
-                                    </NavLink>
-
-                                    <NavLink to="/dashboard/staff-list" className={linkStyle}>
-                                        <FaUserPlus className="text-lg md:text-xl" />
-                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">Staff</span>
+                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                            Manage
+                                        </span>
                                     </NavLink>
                                 </>
                             )}
