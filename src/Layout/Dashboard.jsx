@@ -1,28 +1,23 @@
 import { useRef, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
-import useAdmin from "../hooks/useAdmin";
 
 import {
     FaHome,
     FaBoxOpen,
     FaShoppingCart,
     FaMoneyBill,
-    FaUsers,
     FaHandHoldingUsd,
     FaArrowLeft,
     FaCashRegister,
     FaChartLine,
     FaUserPlus,
     FaFileInvoiceDollar,
-    FaBoxes,
     FaWallet,
     FaClipboardList
 } from "react-icons/fa";
 
 const Dashboard = () => {
-    const { user } = useAuth();
-    const [isAdmin, isAdminLoading] = useAdmin();
+
     const scrollContainerRef = useRef(null);
 
     const [isDown, setIsDown] = useState(false);
@@ -104,16 +99,9 @@ const Dashboard = () => {
                         <div className="flex items-center justify-start gap-1 sm:gap-2 md:gap-4 min-w-max mx-auto">
 
                             {/* HOME */}
-                            <NavLink
-                                to={
-                                    !isAdminLoading && isAdmin
-                                        ? "/dashboard/adminHome"
-                                        : "/dashboard/userHome"
-                                }
-                                className={linkStyle}
-                            >
+                            <NavLink to="/dashboard/userHome" className={linkStyle}>
                                 <FaHome className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Home
                                 </span>
                             </NavLink>
@@ -121,7 +109,7 @@ const Dashboard = () => {
                             {/* BACK */}
                             <NavLink to="/" className={linkStyle}>
                                 <FaArrowLeft className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Back
                                 </span>
                             </NavLink>
@@ -129,7 +117,7 @@ const Dashboard = () => {
                             {/* PRODUCTS */}
                             <NavLink to="/dashboard/product-card-page" className={linkStyle}>
                                 <FaBoxOpen className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Products
                                 </span>
                             </NavLink>
@@ -137,7 +125,7 @@ const Dashboard = () => {
                             {/* SALES */}
                             <NavLink to="/dashboard/sales" className={linkStyle}>
                                 <FaCashRegister className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Sales
                                 </span>
                             </NavLink>
@@ -145,7 +133,7 @@ const Dashboard = () => {
                             {/* SOLD */}
                             <NavLink to="/dashboard/sold-products" className={linkStyle}>
                                 <FaClipboardList className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Sold
                                 </span>
                             </NavLink>
@@ -153,7 +141,7 @@ const Dashboard = () => {
                             {/* CASH */}
                             <NavLink to="/dashboard/cash-list" className={linkStyle}>
                                 <FaWallet className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Cash
                                 </span>
                             </NavLink>
@@ -161,7 +149,7 @@ const Dashboard = () => {
                             {/* CART */}
                             <NavLink to="/dashboard/cart" className={linkStyle}>
                                 <FaShoppingCart className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Cart
                                 </span>
                             </NavLink>
@@ -169,7 +157,7 @@ const Dashboard = () => {
                             {/* EXPENSE */}
                             <NavLink to="/dashboard/expense-list" className={linkStyle}>
                                 <FaMoneyBill className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Expense
                                 </span>
                             </NavLink>
@@ -177,7 +165,7 @@ const Dashboard = () => {
                             {/* PROFIT */}
                             <NavLink to="/dashboard/profit-list" className={linkStyle}>
                                 <FaChartLine className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Profit
                                 </span>
                             </NavLink>
@@ -185,7 +173,7 @@ const Dashboard = () => {
                             {/* PABO */}
                             <NavLink to="/dashboard/paboTaka-list" className={linkStyle}>
                                 <FaHandHoldingUsd className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Pabo
                                 </span>
                             </NavLink>
@@ -193,39 +181,19 @@ const Dashboard = () => {
                             {/* HOWLAD */}
                             <NavLink to="/dashboard/howlad-list" className={linkStyle}>
                                 <FaFileInvoiceDollar className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Howlad
                                 </span>
                             </NavLink>
 
-                            {/* STAFF - USER + ADMIN BOTH */}
+                            {/* STAFF */}
                             <NavLink to="/dashboard/staff-list" className={linkStyle}>
                                 <FaUserPlus className="text-lg md:text-xl" />
-                                <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
+                                <span className="text-[9px] md:text-[11px] uppercase">
                                     Staff
                                 </span>
                             </NavLink>
 
-                            {/* ================= ADMIN LINKS ================= */}
-                            {!isAdminLoading && isAdmin && (
-                                <>
-                                    {/* USERS */}
-                                    <NavLink to="/dashboard/all-users" className={linkStyle}>
-                                        <FaUsers className="text-lg md:text-xl" />
-                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
-                                            Users
-                                        </span>
-                                    </NavLink>
-
-                                    {/* MANAGE PRODUCTS */}
-                                    <NavLink to="/dashboard/manage-product" className={linkStyle}>
-                                        <FaBoxes className="text-lg md:text-xl" />
-                                        <span className="text-[9px] md:text-[11px] uppercase tracking-tighter sm:tracking-normal">
-                                            Manage
-                                        </span>
-                                    </NavLink>
-                                </>
-                            )}
                         </div>
                     </div>
                 </div>
